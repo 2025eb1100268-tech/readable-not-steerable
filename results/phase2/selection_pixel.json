@@ -1,0 +1,29 @@
+{
+  "model": "pixel",
+  "candidates": [
+    {
+      "run": "pixel_lr0.0003_s0",
+      "lr": 0.0003,
+      "metric": 0.07995924838030621,
+      "collapsed": false,
+      "effective_rank": 4.2543721199035645,
+      "latent_std_median": 0.005825077183544636
+    },
+    {
+      "run": "pixel_lr0.001_s0",
+      "lr": 0.001,
+      "metric": 0.034848373250444514,
+      "collapsed": false,
+      "effective_rank": 4.081170082092285,
+      "latent_std_median": 0.006338799372315407
+    }
+  ],
+  "selected": {
+    "run": "pixel_lr0.001_s0",
+    "lr": 0.001,
+    "metric": 0.034848373250444514,
+    "collapsed": false,
+    "effective_rank": 4.081170082092285,
+    "latent_std_median": 0.006338799372315407
+  }
+}
