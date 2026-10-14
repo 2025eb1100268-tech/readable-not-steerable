@@ -251,4 +251,17 @@ These are for calibration only (`results/phase1/untrained_baselines.md`). The te
 
 ## AMENDMENTS
 
-(none yet)
+**A1 (2026-10-14, before any training run except two 1-epoch smoke tests).**
+
+The no-collapse rule in §4.6 now applies only to objectives that can collapse and that set the
+latent scale through a variance target: the JEPA variants (§4.1, §4.3, §4.5) and the static
+VICReg control (§4.4). The pixel predictor (§4.2) is selected by val loss / copy baseline alone.
+
+Reason: the pixel objective has no collapse failure mode and no variance target, so its pooled
+latent's scale is arbitrary. The 1-epoch smoke run gave median per-dimension std 0.010, which
+the rule would read as collapse. The raw-covariance effective rank also says nothing for
+unregularized latents: the untrained control has effective rank 1.19 (one amplitude-like
+direction dominates its variance), yet z-scored ridge probes read it well.
+
+Collapse diagnostics, now including the effective rank of the correlation matrix (scale-free),
+are still reported for every model.

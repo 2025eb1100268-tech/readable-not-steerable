@@ -1,0 +1,77 @@
+{
+  "config": {
+    "data_dir": "data/generated/v1",
+    "weight_decay": 0.05,
+    "batch": 256,
+    "epochs": 1,
+    "warmup_frac": 0.05,
+    "amp_bf16": true,
+    "ema_start": 0.996,
+    "loss_weights": {
+      "pred": 25.0,
+      "var": 25.0,
+      "cov": 1.0
+    },
+    "predictor_width": 256,
+    "log_every": 100,
+    "eval_every_epochs": 1,
+    "collapse": {
+      "min_effective_rank": 8,
+      "min_std_median": 0.1
+    },
+    "model": "pixel",
+    "lr": 0.001,
+    "seed": 0,
+    "run_name": "smoke_pixel",
+    "_config_path": "configs/phase2/smoke_pixel.yaml"
+  },
+  "environment": {
+    "python": "3.13.5",
+    "platform": "Windows-11-10.0.22621-SP0",
+    "torch": "2.11.0+cu128",
+    "torch_cuda": "12.8",
+    "cuda_available": true,
+    "cpu_threads_torch": 8,
+    "git": "f7237f2+dirty",
+    "gpu": "NVIDIA GeForce RTX 3060"
+  },
+  "curve": [
+    {
+      "step": 100,
+      "loss": 0.1958939552307129,
+      "pred": 0.1958939552307129
+    },
+    {
+      "step": 200,
+      "loss": 0.013756318092346191,
+      "pred": 0.013756318092346191
+    }
+  ],
+  "evals": [
+    {
+      "metric": 1.1566181850736246,
+      "metric_name": "loss / copy baseline",
+      "latent_std_median": 0.010349135845899582,
+      "latent_std_min": 0.00525897229090333,
+      "effective_rank": 5.2723002433776855,
+      "epoch": 1,
+      "step": 244,
+      "elapsed_s": 44.41665119999925
+    }
+  ],
+  "final": {
+    "metric": 1.1566181850736246,
+    "metric_name": "loss / copy baseline",
+    "latent_std_median": 0.010349135845899582,
+    "latent_std_min": 0.00525897229090333,
+    "effective_rank": 5.2723002433776855,
+    "epoch": 1,
+    "step": 244,
+    "elapsed_s": 44.41665119999925
+  },
+  "collapsed": true,
+  "steps": 244,
+  "wall_seconds": 44.41670340000019,
+  "peak_gpu_mem_gb": 4.51411968,
+  "checkpoint": "results/checkpoints/smoke_pixel.pt"
+}

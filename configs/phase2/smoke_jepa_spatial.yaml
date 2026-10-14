@@ -1,0 +1,22 @@
+# Phase 2 run (python -m train.train --config configs/phase2/smoke_jepa_spatial.yaml)
+data_dir: data/generated/v1
+weight_decay: 0.05
+batch: 256
+epochs: 1
+warmup_frac: 0.05
+amp_bf16: true
+ema_start: 0.996
+loss_weights:
+  pred: 25.0
+  var: 25.0
+  cov: 1.0
+predictor_width: 256
+log_every: 100
+eval_every_epochs: 1
+collapse:
+  min_effective_rank: 8
+  min_std_median: 0.1
+model: jepa_spatial
+lr: 0.001
+seed: 0
+run_name: smoke_jepa_spatial

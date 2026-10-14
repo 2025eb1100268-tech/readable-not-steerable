@@ -158,3 +158,29 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - S2 log-nu pair R²: 0.486
   - S3 untrained max|r| E / Z: 0.938 / 0.233
   - results: results/phase1/untrained_baselines.json
+
+## 2026-10-14 18:49 — Phase 2 training: smoke_jepa_spatial
+- config: `configs/phase2/smoke_jepa_spatial.yaml`
+- command: `python -m train.train --config configs/phase2/smoke_jepa_spatial.yaml`
+- git: `f7237f2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 42.1 s
+- outcome: collapsed (fails the pre-registered no-collapse rule)
+  - final val loss / copy baseline: 14.2172
+  - effective rank / latent std median: 2.3 / 0.150
+  - steps: 244
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/smoke_jepa_spatial.json
+
+## 2026-10-14 18:50 — Phase 2 training: smoke_pixel
+- config: `configs/phase2/smoke_pixel.yaml`
+- command: `python -m train.train --config configs/phase2/smoke_pixel.yaml`
+- git: `f7237f2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 44.4 s
+- outcome: collapsed (fails the pre-registered no-collapse rule)
+  - final val loss / copy baseline: 1.1566
+  - effective rank / latent std median: 5.3 / 0.010
+  - steps: 244
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/smoke_pixel.json
