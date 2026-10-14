@@ -1,0 +1,43 @@
+{
+  "config": {
+    "seed": 31337,
+    "device": "cuda",
+    "source_dir": "data/generated/v1",
+    "out_dir": "data/generated/nonphys_v1",
+    "g_range": [
+      0.25,
+      4.0
+    ],
+    "c0": 0.5,
+    "r_range": [
+      0.02,
+      0.5
+    ],
+    "_config_path": "configs/phase2b_nonphys_data.yaml"
+  },
+  "environment": {
+    "python": "3.13.5",
+    "platform": "Windows-11-10.0.22621-SP0",
+    "torch": "2.11.0+cu128",
+    "torch_cuda": "12.8",
+    "cuda_available": true,
+    "cpu_threads_torch": 8,
+    "git": "1671301+dirty",
+    "gpu": "NVIDIA GeForce RTX 3060"
+  },
+  "n_frames_total": 108000,
+  "input_scale": 0.9548348293066171,
+  "input_scale_source": "physical dataset (train velocity std)",
+  "enstrophy_retention_last_frame": {
+    "median": 0.6204463854384585,
+    "p10": 0.17563512505736548
+  },
+  "frame_change_median": 0.026910903863608837,
+  "physical_frame_change_median_reference": 0.038,
+  "sha256": {
+    "velocity.npy": "0e1f6387e537bb960f384ad202a510bdcc3e17d647f79199e98ca70194805c66",
+    "frames.npz": "16d73d5302268933be5be1446bb8c1acc00684a16f7d97275c27d97421a796ae",
+    "trajectories.json": "574eb6cd1b3e5a8bf8200860200611a02483ff95999ec73c2187b192f4e48bbb"
+  },
+  "wall_seconds": 271.73216460000003
+}

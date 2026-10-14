@@ -1,0 +1,10 @@
+# Phase 2b non-physical dynamics dataset (python -m data.nonphysical --config configs/phase2b_nonphys_data.yaml)
+# Same initial conditions, splits, frame counts and dt as data/generated/v1; only the dynamics differ.
+seed: 31337
+device: cuda
+source_dir: data/generated/v1
+out_dir: data/generated/nonphys_v1
+g_range: [0.25, 4.0]   # per-mode damping multipliers, log-uniform, symmetric in k
+c0: 0.5                # phase speed scale: c_k = c0 * s_k * |k|, s_k uniform in [-1, 1], antisymmetric in k
+r_range: [0.02, 0.5]   # hidden per-trajectory rate, log-uniform; no r = 0 runs
+# Pre-registered requirement (§4.5): median enstrophy retained at the last frame >= 0.20.

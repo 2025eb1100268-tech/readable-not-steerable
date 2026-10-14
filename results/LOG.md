@@ -184,3 +184,14 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - steps: 244
   - peak GPU memory GB: 4.51
   - results: results/phase2/smoke_pixel.json
+
+## 2026-10-14 19:03 — Phase 2b non-physical dataset
+- config: `configs/phase2b_nonphys_data.yaml`
+- command: `python -m data.nonphysical --config configs/phase2b_nonphys_data.yaml`
+- git: `1671301+dirty`
+- device: cuda
+- wall-clock: 271.7 s
+- outcome: ok
+  - enstrophy retained at last frame (median / p10): 0.62 / 0.18
+  - median frame-to-frame change: 0.027 (physical data: 0.038)
+  - sha256 velocity.npy: 0e1f6387e537bb96…

@@ -62,6 +62,22 @@ def test_dissipation_target_is_two_nu_z():
     assert out["eps"][0] == pytest.approx(2 * 0.01 * out["Z"][0], rel=1e-12)
 
 
+def test_nonphysical_dynamics_real_and_nonconservative():
+    from data.nonphysical import mode_rates
+    from solver import diagnostics as dg
+    from solver.initial_conditions import spectral_field
+
+    g = SpectralGrid(32)
+    gk, ck = mode_rates(g, {"g_range": [0.25, 4.0], "c0": 0.5}, np.random.default_rng(0))
+    w0 = spectral_field(g, np.random.default_rng(1), 4.0)
+    wt = w0 * torch.exp((-0.2 * gk + 1j * ck) * 1.5) * g.mask
+    # Hermitian-consistent half spectrum: a real-field round trip reproduces it
+    assert float((g.fft(g.ifft(wt)) * g.mask - wt).abs().max()) < 1e-10 * float(wt.abs().max())
+    # nothing quadratic is conserved (with r = 0 the per-mode amplitudes, hence E and Z, would be)
+    for f in (dg.energy, dg.enstrophy):
+        assert abs(float(f(g, wt)) / float(f(g, w0)) - 1) > 0.05
+
+
 def _synthetic_plans(n=400, seed=0):
     rng = np.random.default_rng(seed)
     plans = []
