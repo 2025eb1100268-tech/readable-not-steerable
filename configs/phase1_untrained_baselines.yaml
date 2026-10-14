@@ -1,0 +1,9 @@
+# Phase 1 untrained-encoder baselines on train/val only
+# (python -m probes.untrained_baselines --config configs/phase1_untrained_baselines.yaml)
+seed: 0
+device: cuda
+data_dir: data/generated/v1
+encoder_seeds: [0, 1, 2]   # = the trained models' seeds: control s is exactly model s's starting weights
+n_pca: 32
+output_json: results/phase1/untrained_baselines.json
+output_md: results/phase1/untrained_baselines.md

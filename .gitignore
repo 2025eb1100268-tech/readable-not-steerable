@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# generated arrays (regenerable from configs; checksums in each manifest.json)
+data/generated/**/*.npy
+data/generated/**/*.npz
+data/*.npy
+data/*.npz
+data/*.pt
+results/checkpoints/

@@ -1,0 +1,28 @@
+# Phase 1 dataset (python -m data.generate --config configs/phase1_data.yaml)
+# Numbers set by the Phase 0 pilot (results/phase0/pilot.json).
+seed: 20261014
+device: cuda
+cpu_threads: 8
+n: 64                    # simulation grid = model input grid
+cfl: 0.3
+dt_out: 0.04             # fixed snapshot interval for every trajectory
+n_traj: 2000
+inviscid_fraction: 0.25
+frames_viscous: 64       # t = 0 .. 2.52
+frames_inviscid: 24      # t = 0 .. 0.92, before thermalization of the 64² truncated system
+nu_range: [0.003, 0.05]  # log-uniform; 0.003 = smallest nu resolved at 64² (pilot)
+batch: 250               # fixed: the CFL step is chosen per batch, so batching affects bits
+
+ic:
+  blob_fraction: 0.5
+  blob_count: [2, 12]
+  blob_radius: [0.25, 0.6]
+  spectral_k0: [2.0, 5.0]
+  omega_rms: [2.0, 4.0]  # log-uniform rms vorticity at t = 0
+
+split:
+  seed: 7
+  ood_quantiles: [0.45, 0.55]   # interior band of log Re among viscous trajectories
+  fractions: {train: 0.70, val: 0.15, test_id: 0.15}
+
+out_dir: data/generated/v1

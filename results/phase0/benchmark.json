@@ -1,0 +1,78 @@
+{
+  "environment": {
+    "python": "3.13.5",
+    "platform": "Windows-11-10.0.22621-SP0",
+    "torch": "2.11.0+cu128",
+    "torch_cuda": "12.8",
+    "cuda_available": true,
+    "cpu_threads_torch": 8,
+    "git": "no-commit+dirty",
+    "gpu": "NVIDIA GeForce RTX 3060"
+  },
+  "encoder": [
+    {
+      "device": "cuda",
+      "amp_bf16": false,
+      "batch": 256,
+      "params": 589152,
+      "fwd_bwd_ms_per_frame": 0.42141271484386067,
+      "fwd_ms_per_frame": 0.08063636718755873
+    },
+    {
+      "device": "cuda",
+      "amp_bf16": true,
+      "batch": 256,
+      "params": 589152,
+      "fwd_bwd_ms_per_frame": 0.21311500000003036,
+      "fwd_ms_per_frame": 0.0454141015623577
+    },
+    {
+      "device": "cpu",
+      "amp_bf16": false,
+      "batch": 256,
+      "params": 589152,
+      "fwd_bwd_ms_per_frame": 6.307708203124207,
+      "fwd_ms_per_frame": 1.3712274739591617
+    }
+  ],
+  "solver": [
+    {
+      "device": "cuda",
+      "n": 64,
+      "batch": 256,
+      "dtype": "float64",
+      "ms_per_step": 14.952662000014243,
+      "us_per_trajectory_step": 58.40883593755564
+    },
+    {
+      "device": "cuda",
+      "n": 64,
+      "batch": 1024,
+      "dtype": "float64",
+      "ms_per_step": 55.59771999996883,
+      "us_per_trajectory_step": 54.29464843746956
+    },
+    {
+      "device": "cuda",
+      "n": 128,
+      "batch": 256,
+      "dtype": "float64",
+      "ms_per_step": 63.3746500000143,
+      "us_per_trajectory_step": 247.55722656255585
+    },
+    {
+      "device": "cpu",
+      "n": 64,
+      "batch": 256,
+      "dtype": "float64",
+      "ms_per_step": 103.9043999999194,
+      "us_per_trajectory_step": 405.8765624996852
+    }
+  ],
+  "shift_average": [
+    {
+      "device": "cuda",
+      "ms_per_frame_64_shifts": 7.9776164062508315
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+# Run log
+
+Every run, its config and outcome, including failed runs. Commands are run from the repo root
+with the project venv (`.venv\Scripts\python.exe`).
+
+## Before the project: planning pilots (2026-10-13/14, not reproducible from this repo)
+
+About 70 throwaway CPU runs made while reviewing the brief (toy solvers, untrained CNNs, ridge
+probes; up to 768 trajectories, mostly 64², resolution checks at 128²/256²). They shaped the
+pre-registration; none of their numbers is a result of this project. Main findings:
+
+- Untrained encoders (Kaiming init, z-scored latents) reach time-partialled ridge R² of
+  0.86–0.92 (log enstrophy), 0.79–0.85 (log palinstrophy), 0.72–0.80 (vortex count),
+  0.23–0.70 (Okubo–Weiss fraction), 0.27–0.31 (log dissipation). PyTorch's default init gives
+  baselines 0.1–0.4 lower and a nearly constant latent (std ≈ 0.2–0.4% of its mean).
+- Slow-direction analysis on untrained encoders: held-out |r| with energy 0.98–1.00; with
+  enstrophy 0.62–0.74 (Kaiming) / 0.72–0.90 (default init). Data had inviscid energy spread
+  10–20× and ran into thermalization.
+- Per-sample normalization (instance norm; group/layer norm with bias-free convs) erased
+  energy (log-E R² 0.01–0.02).
+- Strided CNN + global pooling is not shift-invariant: 4-px shifts move the pooled latent
+  about as far as a different flow; 8-px shifts ~0.
+- A flipped advection sign passed every solver test in the brief; only an analytic-RHS
+  test, a vortex-pair rotation test and a stored-frame residual / ν-recovery test caught it.
+- An idealized single-frame log-spectrum reads log ν at R² 0.77–0.81 (frame pair 0.86).
+- Copying the current pooled latent (untrained features) scored normalized MSE ≈ 0.02 at
+  k = 1; spatial map 0.11–0.20.
+- R² against a narrow held-out band's own variance reached −4 to −29 for log ν.
+- Raw palinstrophy / dissipation: 1% of frames held 65–99% of the sum of squares.
+
+## 2026-10-14 (before 17:16) — environment
+- `py -3.13 -m venv .venv`; `pip install torch --index-url https://download.pytorch.org/whl/cu128`;
+  `pip install numpy scipy scikit-learn matplotlib pyyaml pytest`; pinned in `requirements.txt`
+- outcome: torch 2.11.0+cu128, CUDA 12.8, NVIDIA GeForce RTX 3060 visible
+
+## 2026-10-14 17:16 — Phase 0 hardware benchmark
+- config: `configs/phase0_benchmark.yaml`
+- command: `python -m common.benchmark --config configs/phase0_benchmark.yaml`
+- git: `no-commit+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 26.5 s
+- outcome: ok
+  - encoder fwd+bwd ms/frame (GPU fp32 / GPU bf16 / CPU 8 threads): 0.4214 / 0.2131 / 6.31
+  - solver: cuda 64^2 B=256 float64: 15.0 ms/step; cuda 64^2 B=1024 float64: 55.6 ms/step; cuda 128^2 B=256 float64: 63.4 ms/step; cpu 64^2 B=256 float64: 103.9 ms/step
+  - results: results/phase0/benchmark.json
+
+## 2026-10-14 (17:16–17:20) — Phase 0 unit tests (FAILED)
+- command: `python -m pytest`
+- outcome: 15 passed, 1 failed (`test_time_stepping_is_fourth_order`). Cause: test-helper bug —
+  with t_end = 0.5 and dt = 0.04 the helper rounded 12.5 steps to 12 and compared solutions at
+  different times. Fixed in `solver/checks.py::convergence` (steps now land exactly on t_end).
+
+## 2026-10-14 (17:16–17:20) — Phase 0 unit tests
+- command: `python -m pytest`
+- outcome: 16 passed in 8.7 s
+
+## 2026-10-14 17:20 — Phase 0 solver validation
+- config: `configs/phase0_solver_validation.yaml`
+- command: `python -m solver.validate --config configs/phase0_solver_validation.yaml`
+- git: `no-commit+dirty`
+- device: cpu
+- wall-clock: 16.6 s
+- outcome: all checks pass
+  - inviscid drift E / Z / int w^4 (T=8): 2.6e-06 / 4.0e-05 / 0.33
+  - dE/dt vs -2 nu Z: 6.2e-07
+  - convergence orders: 4.13, 4.04, 4.03
+  - figure: results/solver_validation.png
+
+## 2026-10-14 17:21 — Phase 0 solver validation (re-run after figure layout fix; identical numbers)
+- config: `configs/phase0_solver_validation.yaml`
+- command: `python -m solver.validate --config configs/phase0_solver_validation.yaml`
+- git: `no-commit+dirty`
+- device: cpu
+- wall-clock: 16.9 s
+- outcome: all checks pass
+  - inviscid drift E / Z / int w^4 (T=8): 2.6e-06 / 4.0e-05 / 0.33
+  - dE/dt vs -2 nu Z: 6.2e-07
+  - convergence orders: 4.13, 4.04, 4.03
+  - figure: results/solver_validation.png
+
+## 2026-10-14 17:34 — Phase 0 pilot calibration
+- config: `configs/phase0_pilot.yaml`
+- command: `python -m solver.pilot --config configs/phase0_pilot.yaml`
+- git: `no-commit+dirty`
+- device: cuda
+- wall-clock: 541.3 s
+- outcome: ok (figure later redrawn from the saved JSON with `--plot-only` after a legend/tick layout fix)
+  - windows (T_w: share >5% tail; untrained slow |r| logE/logZ): 0.32: 0.00, 0.92/0.31; 0.64: 0.00, 0.93/0.31; 0.96: 0.07, 0.93/0.31; 1.28: 0.20, 0.93/0.31; 1.92: 0.51, 0.93/0.31; 2.56: 0.70, 0.93/0.30; 3.2: 0.80, 0.93/0.30
+  - resolution (nu: P err p95): 0.0005: 0.354; 0.001: 0.239; 0.0015: 0.167; 0.002: 0.117; 0.003: 0.060; 0.005: 0.020
+  - results: results/phase0/pilot.json
+  - figure: results/phase0_pilot.png
+
+## 2026-10-14 (after the pilot) — Phase 0 unit tests
+- command: `python -m pytest`
+- outcome: 17 passed in 10.4 s (adds the 64↔128 resampling test)
+
+## 2026-10-14 18:21 — Phase 1 data generation
+- config: `configs/phase1_data.yaml`
+- command: `python -m data.generate --config configs/phase1_data.yaml`
+- git: `no-commit+dirty`
+- device: cuda
+- wall-clock: 307.6 s
+- outcome: ok
+  - frames: 108000
+  - split counts (trajectories): {'train': 1295, 'val': 279, 'test_id': 276, 'test_ood': 150}
+  - OOD Re band: 286–389
+  - inviscid max drift E / Z / C4: 4.8e-09 / 1.1e-06 / 0.097
+  - input scale (train velocity std): 0.9548
+  - sha256 velocity.npy: ef3fbb8d3c5ac41b…
+
+## 2026-10-14 18:26 — Phase 1 untrained baselines (train/val only) — superseded
+- note: run with control seeds 100–102; superseded by the 18:39 run with seeds 0–2 (the control
+  must be exactly the trained models' starting weights, which use seeds 0–2)
+- config: `configs/phase1_untrained_baselines.yaml`
+- command: `python -m probes.untrained_baselines --config configs/phase1_untrained_baselines.yaml`
+- git: `no-commit+dirty`
+- device: cuda
+- wall-clock: 92.9 s
+- outcome: ok
+  - S1 partial R² (Z, P, count, OW, eps): 0.770, 0.495, 0.900, 0.851, 0.242
+  - S2 log-nu pair R²: 0.467
+  - S3 untrained max|r| E / Z: 0.938 / 0.264
+  - results: results/phase1/untrained_baselines.json
+
+## 2026-10-14 18:39 — Phase 1 untrained baselines (train/val only)
+- config: `configs/phase1_untrained_baselines.yaml`
+- command: `python -m probes.untrained_baselines --config configs/phase1_untrained_baselines.yaml`
+- git: `no-commit+dirty`
+- device: cuda
+- wall-clock: 40.8 s
+- outcome: ok
+  - S1 partial R² (Z, P, count, OW, eps): 0.782, 0.511, 0.899, 0.844, 0.259
+  - S2 log-nu pair R²: 0.486
+  - S3 untrained max|r| E / Z: 0.938 / 0.233
+  - results: results/phase1/untrained_baselines.json
+
+## 2026-10-14 ~18:45 — Phase 1 ad-hoc check: initial-condition family (train/val only)
+- command: scratch script (not in repo), control seed 0; run with the user's OK after an
+  interrupted first attempt
+- outcome: family alone (after time partialling) explains 0.11 (log Z), 0.10 (log P),
+  0.79 (log1p vortex count), 0.76 (OW fraction), 0.05 (log eps) of val variance. Untrained
+  OW-fraction R² is 0.72 within blob runs but 0.08 within spectral runs.
+
+## 2026-10-14 ~18:50 — Phase 1 ad-hoc check: S1 baselines partialling time x family (train/val only)
+- command: scratch script (not in repo), control seeds 0–2; frame-index one-hot crossed with family
+- outcome: untrained val R² 0.762 (log Z), 0.443 (log P), 0.580 (log1p count), 0.606 (OW fraction),
+  0.236 (log eps); bars for a trained model 0.881 / 0.643 / 0.780 / 0.803 / 0.436.
+  If this definition is adopted it moves into `probes/untrained_baselines.py` and is re-run there.
+
+## 2026-10-14 18:45 — Phase 1 untrained baselines (train/val only)
+- config: `configs/phase1_untrained_baselines.yaml`
+- command: `python -m probes.untrained_baselines --config configs/phase1_untrained_baselines.yaml`
+- git: `no-commit+dirty`
+- device: cuda
+- wall-clock: 49.4 s
+- outcome: ok
+  - S1 partial R² (Z, P, count, OW, eps): 0.762, 0.443, 0.580, 0.606, 0.236
+  - S2 log-nu pair R²: 0.486
+  - S3 untrained max|r| E / Z: 0.938 / 0.233
+  - results: results/phase1/untrained_baselines.json

@@ -1,0 +1,38 @@
+# Phase 0 pilot calibration (python -m solver.pilot --config configs/phase0_pilot.yaml)
+seed: 0
+device: cuda
+cpu_threads: 8
+cfl: 0.3
+
+# Candidate Phase 1 initial-condition distribution. Fields are normalized by rms vorticity
+# (sets the eddy time 1/omega_rms, which controls thermalization timing); E and Z still vary.
+ic:
+  blob_fraction: 0.5
+  blob_count: [2, 12]
+  blob_radius: [0.25, 0.6]
+  spectral_k0: [2.0, 5.0]
+  omega_rms: [2.0, 4.0]
+
+inviscid:
+  seed: 100
+  n_traj: 400
+  t_max: 3.2
+  dt_fine: 0.04
+  k_tail: 16            # top shells |k| > 16 (~0.75 k_max)
+  tail_thresholds: [0.01, 0.02, 0.05]
+  windows: [0.32, 0.64, 0.96, 1.28, 1.92, 2.56, 3.2]
+  n_compare_128: 48
+  fit_fraction: 0.75
+  n_pca: 32
+  encoder_seeds: [0, 1, 2]
+  lag_frames: [1, 2, 4, 8, 16]
+
+resolution:
+  seed: 200
+  n_traj: 96
+  nus: [0.0005, 0.001, 0.0015, 0.002, 0.003, 0.005]
+  t_end: 3.2
+  dt_out: 0.08
+
+output_json: results/phase0/pilot.json
+output_figure: results/phase0_pilot.png

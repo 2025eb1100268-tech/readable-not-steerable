@@ -1,0 +1,36 @@
+# Phase 0 solver validation (python -m solver.validate --config configs/phase0_solver_validation.yaml)
+# float64 on CPU with a fixed thread count, so the numbers are reproducible bit-for-bit on this machine.
+seed: 0
+device: cpu
+cpu_threads: 8
+
+inviscid:        {n: 64, t_end: 8.0, n_out: 81, cfl: 0.3, seed: 0}
+viscous_budget:  {n: 64, nu: 0.01, t_end: 2.0, h: 0.002, cfl: 0.3, seed: 1}
+forced_budget:   {n: 64, nu: 0.005, alpha: 0.1, forcing_amp: 1.0, forcing_k: 4, t_end: 2.0, h: 0.002, cfl: 0.3, seed: 1}
+taylor_green:    {n: 32, nu: 0.01, t_end: 2.0, n_out: 21}
+lamb_oseen:      {n: 64, sigma0: 0.3, nu: 0.01, t_end: 5.0, n_out: 26}
+convergence:     {n: 64, nu: 0.02, t_end: 1.0, dts: [0.04, 0.02, 0.01, 0.005], seed: 2}
+analytic_rhs:    {n: 32}
+vortex_pair:     {n: 64, sep: 1.25, sigma: 0.25, t_end: 1.5, n_out: 31}
+stored_frames:   {n: 64, nus: [0.0, 0.002, 0.005, 0.01, 0.02, 0.05], dt_out: 0.01, n_frames: 41, seed: 3}
+
+# Pass/fail tolerances (stated before running; the same bounds are asserted in tests/test_solver.py
+# except where the longer windows here need looser drift bounds).
+tolerances:
+  inviscid_energy_drift: 1.0e-5       # max |E/E0 - 1| over the window
+  inviscid_enstrophy_drift: 1.0e-4    # max |Z/Z0 - 1|
+  budget_pointwise: 1.0e-5            # max |dE/dt - budget| / max|budget|
+  budget_integrated: 1.0e-5
+  taylor_green: 1.0e-10
+  lamb_oseen: 1.0e-3                  # vs periodized heat kernel (images make it non-exact)
+  order_min: 3.8
+  order_max: 4.3
+  analytic_rhs_abs: 1.0e-10
+  vortex_pair_ratio: [0.85, 1.05]     # rotation / point-vortex prediction, and must be > 0
+  nu_fit_rel: 0.02
+  nu_fit_abs_inviscid: 1.0e-4
+  stored_residual: 5.0e-3
+  stored_divergence: 1.0e-6
+
+output_json: results/phase0/solver_validation.json
+output_figure: results/solver_validation.png
