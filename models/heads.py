@@ -1,7 +1,7 @@
 """Heads on top of the shared encoder (PREREGISTRATION.md §4).
 
-All convolutions use circular padding. The prediction horizon k in {1, 4} is fed as a learned
-vector selected by a one-hot matmul (deterministic on CUDA, unlike nn.Embedding's backward).
+All convolutions use circular padding. The prediction horizon k (in {1, 4}, or one horizon for
+the [EXPLORE] Stage 2 models) is fed as a learned vector selected by a one-hot matmul (deterministic on CUDA, unlike nn.Embedding's backward).
 Upsampling uses PixelShuffle (deterministic, unlike nearest-neighbour interpolation's backward).
 """
 from __future__ import annotations
@@ -16,23 +16,24 @@ HORIZONS = (1, 4)
 
 
 class HorizonEmbedding(nn.Module):
-    def __init__(self, dim: int):
+    def __init__(self, dim: int, n_horizons: int = len(HORIZONS)):
         super().__init__()
-        self.table = nn.Parameter(torch.zeros(len(HORIZONS), dim))
+        self.n = n_horizons
+        self.table = nn.Parameter(torch.zeros(n_horizons, dim))
         nn.init.normal_(self.table, std=0.02)
 
     def forward(self, k_index: torch.Tensor) -> torch.Tensor:
-        """k_index: (B,) integer index into HORIZONS."""
-        return F.one_hot(k_index, len(HORIZONS)).to(self.table.dtype) @ self.table
+        """k_index: (B,) integer index into the model's horizon list (HORIZONS by default)."""
+        return F.one_hot(k_index, self.n).to(self.table.dtype) @ self.table
 
 
 class SpatialPredictor(nn.Module):
     """Main JEPA predictor: context maps of frames (t-1, t) -> target map of frame t+k."""
 
-    def __init__(self, d: int = 128, width: int = 256):
+    def __init__(self, d: int = 128, width: int = 256, n_horizons: int = len(HORIZONS)):
         super().__init__()
         self.inp = _conv(2 * d, width)
-        self.k = HorizonEmbedding(width)
+        self.k = HorizonEmbedding(width, n_horizons)
         self.body = nn.Sequential(nn.GELU(), _conv(width, width), nn.GELU(), _conv(width, d))
         kaiming_init(self)
 
@@ -44,9 +45,9 @@ class SpatialPredictor(nn.Module):
 class PooledPredictor(nn.Module):
     """Ablation: pooled latents of (t-1, t) -> pooled target latent of t+k."""
 
-    def __init__(self, d: int = 128, width: int = 512, k_dim: int = 16):
+    def __init__(self, d: int = 128, width: int = 512, k_dim: int = 16, n_horizons: int = len(HORIZONS)):
         super().__init__()
-        self.k = HorizonEmbedding(k_dim)
+        self.k = HorizonEmbedding(k_dim, n_horizons)
         self.net = nn.Sequential(nn.Linear(2 * d + k_dim, width), nn.GELU(), nn.Linear(width, width),
                                  nn.GELU(), nn.Linear(width, d))
 
@@ -57,10 +58,10 @@ class PooledPredictor(nn.Module):
 class PixelDecoder(nn.Module):
     """Pixel predictor head: context maps of (t-1, t) -> velocity field (u, v) at t+k."""
 
-    def __init__(self, d: int = 128, widths=(256, 128, 64, 32)):
+    def __init__(self, d: int = 128, widths=(256, 128, 64, 32), n_horizons: int = len(HORIZONS)):
         super().__init__()
         self.inp = _conv(2 * d, widths[0])
-        self.k = HorizonEmbedding(widths[0])
+        self.k = HorizonEmbedding(widths[0], n_horizons)
         layers = []
         for c_in, c_out in zip(widths[:-1], widths[1:]):
             layers += [nn.GELU(), _conv(c_in, 4 * c_out), nn.PixelShuffle(2)]

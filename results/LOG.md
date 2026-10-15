@@ -643,3 +643,46 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - (b) matched pixel / control: 0.979 / 0.177, gap CI [+0.718, +0.827]
   - (b) frames 0–15 (unscored): 0.976 / 0.170
   - results: results/explore/stage1.md, results/explore/stage1.png, results/explore/stage1.json.gz
+
+## 2026-10-15 21:06 — [EXPLORE] regression check: Phase 2 cosine path unchanged: regress_smoke_pixel
+- config: `C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/regress_smoke_pixel.yaml`
+- command: `python -m train.train --config C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/regress_smoke_pixel.yaml`
+- git: `6207b9f+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 51.6 s
+- outcome: ok
+  - final val loss / copy baseline: 1.1566
+  - effective rank / latent std median: 5.3 / 0.010
+  - steps: 244
+  - peak GPU memory GB: 4.51
+  - results: C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/runs/regress_smoke_pixel.json
+
+## 2026-10-15 21:07 — [EXPLORE] Stage 2 smoke (code check, 460 steps): smoke_stage2_pixel_vicreg_k32
+- config: `C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/smoke_stage2_pixel_vicreg.yaml`
+- command: `python -m train.train --config C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/smoke_stage2_pixel_vicreg.yaml`
+- git: `6207b9f+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 94.5 s
+- outcome: ok
+  - final val loss / copy baseline: 0.1993
+  - effective rank / latent std median: 28.8 / 0.956
+  - steps: 460
+  - peak GPU memory GB: 4.51
+  - results: C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/runs/smoke_stage2_pixel_vicreg_k32.json
+  - stop reason / lr reductions: step cap / 0
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.308, copy_over_true_energy_k_ge_5: 1.844, pred_over_true_energy_k_ge_10: 2.124, copy_over_true_energy_k_ge_10: 0.702
+
+## 2026-10-15 21:09 — [EXPLORE] Stage 2 smoke (code check, 460 steps): smoke_stage2_jepa_spatial_k32
+- config: `C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/smoke_stage2_jepa_spatial.yaml`
+- command: `python -m train.train --config C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/smoke_stage2_jepa_spatial.yaml`
+- git: `6207b9f+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 88.3 s
+- outcome: ok
+  - final val loss / copy baseline: 0.5524
+  - effective rank / latent std median: 13.1 / 0.558
+  - steps: 460
+  - peak GPU memory GB: 4.51
+  - results: C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/runs/smoke_stage2_jepa_spatial_k32.json
+  - stop reason / lr reductions: step cap / 0
+  - diagnostics: pred_over_target_map_variance: 0.590
