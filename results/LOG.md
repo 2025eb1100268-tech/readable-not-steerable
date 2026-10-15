@@ -569,3 +569,46 @@ pre-registration; none of their numbers is a result of this project. Main findin
     Code path dry-run beforehand on train/val only (test splits swapped for val; no test rows read).
   - results: results/final/final_evaluation.json
   - tables: results/final/final_evaluation.md
+
+## 2026-10-15 19:58 — [EXPLORE] data generation: explore
+- config: `configs/explore/data_explore.yaml`
+- command: `python -m data.generate --config configs/explore/data_explore.yaml`
+- git: `c11e97a+dirty`
+- device: cuda
+- wall-clock: 62.9 s
+- outcome: ok
+  - frames: 54000
+  - split counts (trajectories): {'excluded_re_band': 74, 'explore': 1006}
+  - inviscid trajectories: 378
+  - inviscid max drift E / Z / C4: 7.7e-09 / 1.2e-06 / 0.080
+  - inviscid top-shell enstrophy share at last frame (median / share > 5%): 0.008 / 0.061
+  - input scale (copied from data/generated/v1): 0.9548
+  - sha256 velocity.npy: 81b741f57720b176…
+
+## 2026-10-15 19:59 — [EXPLORE] data generation: confirm (sealed; counts and checksums only)
+- config: `configs/explore/data_confirm.yaml`
+- command: `python -m data.generate --config configs/explore/data_confirm.yaml`
+- git: `c11e97a+dirty`
+- device: cuda
+- wall-clock: 64.3 s
+- outcome: ok
+  - frames: 54000
+  - split counts (trajectories): {'confirm': 1005, 'excluded_re_band': 75}
+  - inviscid trajectories: 378
+  - input scale (copied from data/generated/v1): 0.9548
+  - sha256 velocity.npy: ab1e009e41f14f15…
+
+## 2026-10-15 19:59 — [EXPLORE] data generation: matched-energy
+- config: `configs/explore/data_matched_energy.yaml`
+- command: `python -m data.generate --config configs/explore/data_matched_energy.yaml`
+- git: `c11e97a+dirty`
+- device: cuda
+- wall-clock: 6.6 s
+- outcome: ok
+  - frames: 7200
+  - split counts (trajectories): {'matched': 300}
+  - inviscid trajectories: 300
+  - inviscid max drift E / Z / C4: 1.6e-09 / 3.7e-08 / 0.077
+  - inviscid top-shell enstrophy share at last frame (median / share > 5%): 0.015 / 0.167
+  - input scale (copied from data/generated/v1): 0.9548
+  - sha256 velocity.npy: d450453f12e7d14c…

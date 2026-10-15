@@ -48,15 +48,17 @@ def random_blobs(grid: SpectralGrid, rng: np.random.Generator, count_range=(2, 1
     return normalize_energy(grid, gaussian_blobs(grid, centers, radii, signs), e0)
 
 
-def spectral_field(grid: SpectralGrid, rng: np.random.Generator, k0: float, e0: float = 0.5) -> torch.Tensor:
-    """Random-phase field with expected shell spectrum E(k) ∝ k^4 exp(-2 (k/k0)^2).
+def spectral_field(grid: SpectralGrid, rng: np.random.Generator, k0: float, e0: float = 0.5,
+                   slope: float = 4) -> torch.Tensor:  # int default: k**4 exactly as before (bit-identical v1)
+    """Random-phase field with expected shell spectrum E(k) ∝ k^slope exp(-2 (k/k0)^2) (slope 4 by
+    default; varied only for the exploratory matched-energy set).
 
     White noise has a flat expected spectrum per mode; per-mode vorticity variance must scale as
     k E(k), so the noise is filtered by sqrt(k E(k)).
     """
     noise = torch.as_tensor(rng.standard_normal((grid.n, grid.n)), dtype=grid.dtype, device=grid.device)
     k = grid.kmag
-    shape = k**4 * torch.exp(-2.0 * (k / k0) ** 2)
+    shape = k**slope * torch.exp(-2.0 * (k / k0) ** 2)
     w_hat = grid.fft(noise) * torch.sqrt(k * shape) * grid.mask
     w_hat[0, 0] = 0.0
     return normalize_energy(grid, w_hat, e0)

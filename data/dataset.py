@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 
 from common.run import REPO
+from data import seal
 
 # Pre-registered transforms. log for heavy-tailed positive quantities, log1p for the count.
 TRANSFORMS = {
@@ -32,13 +33,14 @@ class Dataset:
         if not root.is_absolute():
             root = REPO / root
         self.root = root
+        with open(root / "manifest.json", encoding="utf-8") as fh:
+            self.manifest = json.load(fh)
+        seal.check(root, self.manifest)  # [EXPLORE] the confirmation set refuses to load
         self.velocity = np.load(root / "velocity.npy", mmap_mode="r")
         with np.load(root / "frames.npz") as f:
             self.f = {k: f[k] for k in f.files}
         with open(root / "trajectories.json", encoding="utf-8") as fh:
             self.trajectories = json.load(fh)
-        with open(root / "manifest.json", encoding="utf-8") as fh:
-            self.manifest = json.load(fh)
         self.input_scale = float(self.manifest["input_scale"])
         self.traj_split = np.array([t["split"] for t in self.trajectories])
         self.traj_inviscid = np.array([t["inviscid"] for t in self.trajectories])

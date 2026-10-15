@@ -7,6 +7,20 @@ Writes to cfg["out_dir"]:
   frames.npz        per-frame index (traj, frame, time) and every probe target
   trajectories.json per-trajectory parameters (family, IC params, omega_rms, nu, Re, ...) and split
   manifest.json     config, environment, input scale (train velocity std), SHA-256 checksums
+  ic_index.json     per trajectory: IC seed and SHA-256 of the stored frame-0 velocity (overlap tests)
+
+Optional config keys, all for the [EXPLORE] datasets (absent = the original behaviour):
+  split.mode: single         one split label for every trajectory (cfg split.label); with
+                             split.exclude_re_band_from, viscous runs inside that dataset's OOD Re
+                             band are labelled "excluded_re_band"
+  input_scale_from           copy the input scale from another dataset's manifest (models were
+                             trained with v1's scale)
+  ic.matched_energy          {e0, slope, z0}: spectral fields scaled to energy e0, spectral slope
+                             uniform in `slope`, target Z0 log-uniform in `z0`; realized Z0 outside
+                             `z0` is redrawn
+  sealed: true               confirmation set: manifest flagged (data.seal refuses to load it) and
+                             only counts and checksums are logged
+  log_title                  title of the results/LOG.md entry
 """
 from __future__ import annotations
 
@@ -24,7 +38,7 @@ from common.run import (REPO, append_log, command_line, environment, load_config
                         save_json, seed_everything, set_threads)
 from data.targets import frame_targets, integral_scale
 from solver import diagnostics as dg
-from solver.initial_conditions import gaussian_blobs, normalize_omega_rms, spectral_field
+from solver.initial_conditions import gaussian_blobs, normalize_energy, normalize_omega_rms, spectral_field
 from solver.ns2d import NavierStokes2D, SpectralGrid
 
 
@@ -59,15 +73,40 @@ def plan_trajectories(cfg: dict) -> list[dict]:
     return plans
 
 
+def plan_matched_energy(plans: list[dict], grid: SpectralGrid, cfg: dict) -> None:
+    """[EXPLORE] matched-energy set: every IC scaled to the same energy e0; enstrophy varies through
+    the spectral peak k0 and slope p. Expected Z0/E0 = k0^2 (p + 1) / 4, so k0 is set from a target
+    Z0 drawn log-uniform in the z0 range; a realized Z0 outside that range is redrawn (one
+    deterministic RNG stream per trajectory)."""
+    me = cfg["ic"]["matched_energy"]
+    (z_lo, z_hi), (s_lo, s_hi), e0 = me["z0"], me["slope"], me["e0"]
+    for p in plans:
+        assert p["family"] == "spectral" and p["inviscid"], "matched-energy set is spectral and inviscid only"
+        rng = np.random.default_rng([cfg["seed"], 1, p["traj"]])
+        for attempt in range(1, 101):
+            slope = float(rng.uniform(s_lo, s_hi))
+            z_target = float(math.exp(rng.uniform(math.log(z_lo), math.log(z_hi))))
+            p.update({"slope": slope, "z0_target": z_target, "e0": e0, "omega_rms": None,
+                      "k0": math.sqrt(4 * z_target / (e0 * (slope + 1))), "ic_seed": int(rng.integers(0, 2**63 - 1))})
+            z0 = float(dg.enstrophy(grid, build_ic(grid, p, cfg["ic"])))
+            if z_lo <= z0 <= z_hi:
+                p["attempts"] = attempt
+                break
+        else:
+            raise RuntimeError(f"no matched-energy IC within {me['z0']} after 100 draws (traj {p['traj']})")
+
+
 def build_ic(grid: SpectralGrid, p: dict, cic: dict) -> torch.Tensor:
     rng = np.random.default_rng(p["ic_seed"])
     if p["family"] == "spectral":
-        w = spectral_field(grid, rng, p["k0"])
+        w = spectral_field(grid, rng, p["k0"]) if "slope" not in p else spectral_field(grid, rng, p["k0"], slope=p["slope"])
     else:
         centers = rng.uniform(0, 2 * math.pi, size=(p["count"], 2))
         r0, r1 = cic["blob_radius"]
         radii = np.exp(rng.uniform(math.log(r0), math.log(r1), size=p["count"]))
         w = gaussian_blobs(grid, centers, radii, rng.choice([-1.0, 1.0], size=p["count"]))
+    if "e0" in p:  # [EXPLORE] matched-energy set
+        return normalize_energy(grid, w, p["e0"])
     return normalize_omega_rms(grid, w, p["omega_rms"])
 
 
@@ -106,6 +145,19 @@ def assign_splits(plans: list[dict], cs: dict) -> None:
     return meta
 
 
+def assign_single_split(plans: list[dict], cs: dict) -> dict:
+    """[EXPLORE] one split label for every trajectory; optionally exclude viscous runs inside another
+    dataset's OOD Re band (the retired test-OOD band of v1)."""
+    band = None
+    if cs.get("exclude_re_band_from"):
+        with open(REPO / cs["exclude_re_band_from"] / "manifest.json", encoding="utf-8") as f:
+            band = json.load(f)["ood_re_band"]
+    for p in plans:
+        in_band = band is not None and not p["inviscid"] and band[0] <= p["Re"] <= band[1]
+        p["split"] = "excluded_re_band" if in_band else cs["label"]
+    return {"split_mode": "single", "excluded_re_band": band}
+
+
 def sha256(path: Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -127,6 +179,8 @@ def main():
 
     g = SpectralGrid(cfg["n"], device)
     plans = plan_trajectories(cfg)
+    if cfg["ic"].get("matched_energy"):
+        plan_matched_energy(plans, g, cfg)
     for p in plans:
         p["n_frames"] = cfg["frames_inviscid"] if p["inviscid"] else cfg["frames_viscous"]
     total = sum(p["n_frames"] for p in plans)
@@ -168,36 +222,58 @@ def main():
                   f"{time.perf_counter() - t_start:.0f} s")
     vel.flush()
 
-    split_meta = assign_splits(plans, cfg["split"])
+    single = cfg["split"].get("mode") == "single"
+    split_meta = assign_single_split(plans, cfg["split"]) if single else assign_splits(plans, cfg["split"])
     split_of = np.array([p["split"] for p in plans])
-    train_rows = np.flatnonzero(split_of[index["traj"]] == "train")
-    sample = np.sort(np.random.default_rng(0).choice(train_rows, size=min(20000, len(train_rows)), replace=False))
-    input_scale = float(np.asarray(vel[sample], dtype=np.float64).std())
+    if cfg.get("input_scale_from"):
+        with open(REPO / cfg["input_scale_from"] / "manifest.json", encoding="utf-8") as f:
+            input_scale = float(json.load(f)["input_scale"])
+    else:
+        train_rows = np.flatnonzero(split_of[index["traj"]] == "train")
+        sample = np.sort(np.random.default_rng(0).choice(train_rows, size=min(20000, len(train_rows)), replace=False))
+        input_scale = float(np.asarray(vel[sample], dtype=np.float64).std())
 
     np.savez(out_dir / "frames.npz", **index, nu=np.array([p["nu"] for p in plans])[index["traj"]], **targets)
     with open(out_dir / "trajectories.json", "w", encoding="utf-8") as f:
         json.dump(plans, f, indent=1)
+    ic_index = [{"traj": p["traj"], "ic_seed": p["ic_seed"],
+                 "ic_sha256": hashlib.sha256(np.ascontiguousarray(vel[offsets[p["traj"]]]).tobytes()).hexdigest()} for p in plans]
+    save_json(ic_index, out_dir / "ic_index.json")
     wall = time.perf_counter() - t_start
-    counts = {s: int((split_of == s).sum()) for s in ("train", "val", "test_id", "test_ood")}
+    labels = sorted({str(s) for s in split_of}) if single else ("train", "val", "test_id", "test_ood")
+    counts = {s: int((split_of == s).sum()) for s in labels}
     inv_rows = np.flatnonzero(np.array([p["inviscid"] for p in plans])[index["traj"]])
     def drift(name):
         x = targets[name][inv_rows].reshape(-1, cfg["frames_inviscid"])
         return float(np.abs(x / x[:, :1] - 1).max())
+    files = ("velocity.npy", "frames.npz", "trajectories.json", "ic_index.json")
     manifest = {"config": cfg, "environment": environment(), "n_frames_total": int(total),
                 "input_scale": input_scale, "split_counts": counts, **split_meta,
-                "inviscid_max_drift": {"E": drift("E"), "Z": drift("Z"), "C4": drift("C4")},
-                "inviscid_tail16_last_frame": {"median": float(np.median(targets["tail16"][inv_rows].reshape(-1, cfg["frames_inviscid"])[:, -1])),
-                                               "share_above_0.05": float((targets["tail16"][inv_rows].reshape(-1, cfg["frames_inviscid"])[:, -1] > 0.05).mean())},
-                "sha256": {name: sha256(out_dir / name) for name in ("velocity.npy", "frames.npz", "trajectories.json")},
-                "wall_seconds": wall}
+                "n_inviscid": int(sum(p["inviscid"] for p in plans)),
+                "sha256": {name: sha256(out_dir / name) for name in files}, "wall_seconds": wall}
+    if cfg.get("sealed"):  # confirmation set: counts and checksums only
+        manifest["sealed"] = True
+        summary = {k: manifest[k] for k in ("split_counts", "n_inviscid", "input_scale")}
+    else:
+        manifest["inviscid_max_drift"] = {"E": drift("E"), "Z": drift("Z"), "C4": drift("C4")}
+        manifest["inviscid_tail16_last_frame"] = {
+            "median": float(np.median(targets["tail16"][inv_rows].reshape(-1, cfg["frames_inviscid"])[:, -1])),
+            "share_above_0.05": float((targets["tail16"][inv_rows].reshape(-1, cfg["frames_inviscid"])[:, -1] > 0.05).mean())}
+        summary = {k: manifest[k] for k in ("split_counts", "n_inviscid", "inviscid_max_drift", "inviscid_tail16_last_frame", "input_scale")}
+        summary.update({k: manifest[k] for k in ("ood_re_band", "excluded_re_band") if k in manifest})
     save_json(manifest, out_dir / "manifest.json")
-    append_log("Phase 1 data generation", cfg["_config_path"], command_line(), "ok",
-               {"frames": total, "split counts (trajectories)": counts,
-                "OOD Re band": f"{split_meta['ood_re_band'][0]:.0f}–{split_meta['ood_re_band'][1]:.0f}",
-                "inviscid max drift E / Z / C4": f"{manifest['inviscid_max_drift']['E']:.1e} / {manifest['inviscid_max_drift']['Z']:.1e} / {manifest['inviscid_max_drift']['C4']:.3f}",
-                "input scale (train velocity std)": f"{input_scale:.4f}",
-                "sha256 velocity.npy": manifest["sha256"]["velocity.npy"][:16] + "…"}, wall, device)
-    print(json.dumps({k: manifest[k] for k in ("split_counts", "ood_re_band", "inviscid_max_drift", "inviscid_tail16_last_frame", "input_scale")}, indent=1))
+    details = {"frames": total, "split counts (trajectories)": counts, "inviscid trajectories": manifest["n_inviscid"]}
+    if not single:
+        details["OOD Re band"] = f"{split_meta['ood_re_band'][0]:.0f}–{split_meta['ood_re_band'][1]:.0f}"
+    if not cfg.get("sealed"):
+        d = manifest["inviscid_max_drift"]
+        details["inviscid max drift E / Z / C4"] = f"{d['E']:.1e} / {d['Z']:.1e} / {d['C4']:.3f}"
+        details["inviscid top-shell enstrophy share at last frame (median / share > 5%)"] = \
+            f"{manifest['inviscid_tail16_last_frame']['median']:.3f} / {manifest['inviscid_tail16_last_frame']['share_above_0.05']:.3f}"
+    details["input scale" + (f" (copied from {cfg['input_scale_from']})" if cfg.get("input_scale_from") else " (train velocity std)")] = f"{input_scale:.4f}"
+    details["sha256 velocity.npy"] = manifest["sha256"]["velocity.npy"][:16] + "…"
+    append_log(cfg.get("log_title", "Phase 1 data generation"), cfg["_config_path"], command_line(), "ok", details, wall, device)
+    print(json.dumps(summary, indent=1))
 
 
 if __name__ == "__main__":

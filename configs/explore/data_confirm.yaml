@@ -1,0 +1,32 @@
+# [EXPLORE] confirmation set, SEALED (python -m data.generate --config configs/explore/data_confirm.yaml)
+# Same recipe and size as the explore set, new seed. Loadable only after data.seal.unseal(),
+# which only the Stage 3 script calls, after PREREGISTRATION_v2.md is committed.
+seed: 20261017
+device: cuda
+cpu_threads: 8
+n: 64
+cfl: 0.3
+dt_out: 0.04
+n_traj: 1080
+inviscid_fraction: 0.35
+frames_viscous: 64
+frames_inviscid: 24
+nu_range: [0.003, 0.05]
+batch: 250
+
+ic:
+  blob_fraction: 0.5
+  blob_count: [2, 12]
+  blob_radius: [0.25, 0.6]
+  spectral_k0: [2.0, 5.0]
+  omega_rms: [2.0, 4.0]
+
+split:
+  mode: single
+  label: confirm
+  exclude_re_band_from: data/generated/v1
+
+input_scale_from: data/generated/v1
+sealed: true
+log_title: "[EXPLORE] data generation: confirm (sealed; counts and checksums only)"
+out_dir: data/generated/confirm_v2

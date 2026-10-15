@@ -1,0 +1,31 @@
+# [EXPLORE] explore set (python -m data.generate --config configs/explore/data_explore.yaml)
+# Original recipe (configs/phase1_data.yaml) with a new seed, a 35% inviscid share and one
+# evaluation split; viscous runs inside v1's retired OOD band (Re 286–389) are excluded.
+seed: 20261016
+device: cuda
+cpu_threads: 8
+n: 64
+cfl: 0.3
+dt_out: 0.04
+n_traj: 1080             # ~70 viscous runs fall in the excluded band -> ~1,010 kept
+inviscid_fraction: 0.35  # 378 inviscid
+frames_viscous: 64
+frames_inviscid: 24
+nu_range: [0.003, 0.05]
+batch: 250
+
+ic:
+  blob_fraction: 0.5
+  blob_count: [2, 12]
+  blob_radius: [0.25, 0.6]
+  spectral_k0: [2.0, 5.0]
+  omega_rms: [2.0, 4.0]
+
+split:
+  mode: single
+  label: explore
+  exclude_re_band_from: data/generated/v1
+
+input_scale_from: data/generated/v1
+log_title: "[EXPLORE] data generation: explore"
+out_dir: data/generated/explore_v2

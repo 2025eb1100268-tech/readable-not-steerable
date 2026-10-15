@@ -1,0 +1,85 @@
+{
+  "config": {
+    "seed": 20261016,
+    "device": "cuda",
+    "cpu_threads": 8,
+    "n": 64,
+    "cfl": 0.3,
+    "dt_out": 0.04,
+    "n_traj": 1080,
+    "inviscid_fraction": 0.35,
+    "frames_viscous": 64,
+    "frames_inviscid": 24,
+    "nu_range": [
+      0.003,
+      0.05
+    ],
+    "batch": 250,
+    "ic": {
+      "blob_fraction": 0.5,
+      "blob_count": [
+        2,
+        12
+      ],
+      "blob_radius": [
+        0.25,
+        0.6
+      ],
+      "spectral_k0": [
+        2.0,
+        5.0
+      ],
+      "omega_rms": [
+        2.0,
+        4.0
+      ]
+    },
+    "split": {
+      "mode": "single",
+      "label": "explore",
+      "exclude_re_band_from": "data/generated/v1"
+    },
+    "input_scale_from": "data/generated/v1",
+    "log_title": "[EXPLORE] data generation: explore",
+    "out_dir": "data/generated/explore_v2",
+    "_config_path": "configs/explore/data_explore.yaml"
+  },
+  "environment": {
+    "python": "3.13.5",
+    "platform": "Windows-11-10.0.22621-SP0",
+    "torch": "2.11.0+cu128",
+    "torch_cuda": "12.8",
+    "cuda_available": true,
+    "cpu_threads_torch": 8,
+    "git": "c11e97a+dirty",
+    "gpu": "NVIDIA GeForce RTX 3060"
+  },
+  "n_frames_total": 54000,
+  "input_scale": 0.9548348293066171,
+  "split_counts": {
+    "excluded_re_band": 74,
+    "explore": 1006
+  },
+  "split_mode": "single",
+  "excluded_re_band": [
+    286.07814401885264,
+    389.3973797160809
+  ],
+  "n_inviscid": 378,
+  "sha256": {
+    "velocity.npy": "81b741f57720b176f64de60445145726bf446872fec7e009b65c2abbdf70c523",
+    "frames.npz": "308129b64ed9db2f4f5d1d137412e404fe79a51116523243816bce532afb1550",
+    "trajectories.json": "b240b3430fe182e1c5d3cc00b37cdb581f4975f2347bcc421472745c68f290c1",
+    "ic_index.json": "7fa74bb5530048287621d612b845d05351f5131a32a65054e3c06d2e74bade5b"
+  },
+  "wall_seconds": 62.89775019999979,
+  "inviscid_max_drift": {
+    "E": 7.678942148814372e-09,
+    "Z": 1.159471013978397e-06,
+    "C4": 0.07950650427539963
+  },
+  "inviscid_tail16_last_frame": {
+    "median": 0.007963670580473977,
+    "share_above_0.05": 0.06084656084656084
+  }
+}
