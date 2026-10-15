@@ -612,3 +612,22 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - inviscid top-shell enstrophy share at last frame (median / share > 5%): 0.015 / 0.167
   - input scale (copied from data/generated/v1): 0.9548
   - sha256 velocity.npy: d450453f12e7d14c…
+
+## 2026-10-15 20:42 — [EXPLORE] Stage 0: spatial-map readouts of the existing models (explore set)
+- config: `configs/explore/stage0.yaml`
+- command: `python -m explore.stage0 --config configs/explore/stage0.yaml`
+- git: `bf9be1a+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2109.0 s
+- outcome: ok
+  - JEPA enstrophy |r| by readout: pooled 0.353, map_meanstd 0.303, map_pca512 0.295
+  - results: results/explore/stage0.json, results/explore/stage0.md, results/explore/stage0_readouts.png
+
+## 2026-10-15 20:45 — [EXPLORE] Stage 0 diagnostic: PCA-512 vs the spatial-mean subspace
+- config: `configs/explore/stage0.yaml`
+- command: `inline script (see results/explore/stage0_pca_diagnostic.md)`
+- git: `bf9be1a+dirty`
+- device: NVIDIA GeForce RTX 3060
+- outcome: ok
+  - share of spatial-mean subspace inside top-512 PCs (seed 0): untrained 0.101, jepa_spatial 0.488, pixel 0.083, static_vicreg 0.643
+  - results: results/explore/stage0_pca_diagnostic.md

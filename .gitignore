@@ -9,3 +9,6 @@ data/*.npy
 data/*.npz
 data/*.pt
 results/checkpoints/
+
+# [EXPLORE] full result JSONs are large; committed gzipped (*.json.gz)
+results/explore/stage*.json

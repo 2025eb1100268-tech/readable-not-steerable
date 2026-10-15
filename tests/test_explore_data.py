@@ -105,6 +105,23 @@ def test_matched_energy_spreads():
     assert z0.min() >= 2.0 and z0.max() <= 8.0 and z0.max() / z0.min() >= 3.0
 
 
+@need(V1, EXPLORE)
+def test_combined_dataset_maps_rows_and_excludes_v1_test_splits():
+    from data.combined import CombinedDataset
+    from data.dataset import Dataset
+
+    ds = CombinedDataset([("data/generated/v1", ["train", "val"]), ("data/generated/explore_v2", ["explore"])], "test")
+    v1, ex = Dataset(V1), Dataset(EXPLORE)
+    r1, r2 = v1.rows(["train", "val"]), ex.rows(["explore"])
+    assert set(ds.split) == {"train", "val", "explore"} and len(ds.traj) == len(r1) + len(r2)
+    pick = np.random.default_rng(0).choice(len(ds.traj), 64, replace=False)
+    got = ds.velocity[pick]
+    for g, i in zip(got, pick):
+        np.testing.assert_array_equal(g, v1.velocity[r1[i]] if i < len(r1) else ex.velocity[r2[i - len(r1)]])
+    assert len(np.unique(ds.traj)) == len(ds.trajectories)
+    np.testing.assert_array_equal(ds.target("log_Z")[: len(r1)], v1.target("log_Z")[r1])
+
+
 @need(CONFIRM)
 def test_confirmation_set_is_sealed():
     from data import seal

@@ -1,0 +1,22 @@
+# [EXPLORE] Stage 0 (python -m explore.stage0 --config configs/explore/stage0.yaml)
+# Existing checkpoints, three readouts, scored on explore. Matched-energy rows are included in the
+# extraction (shared latent cache with Stage 1) but not used here.
+seed: 0
+data_parts:
+  - [data/generated/v1, [train, val]]
+  - [data/generated/explore_v2, [explore]]
+  - [data/generated/matched_energy_v2, [matched]]
+cache_tag: v1tv_explore_matched
+control_group: untrained
+models:
+  untrained: [untrained_s0, untrained_s1, untrained_s2]
+  jepa_spatial: [jepa_spatial_lr0.001_s0, jepa_spatial_lr0.001_s1, jepa_spatial_lr0.001_s2]
+  pixel: [pixel_lr0.001_s0, pixel_lr0.001_s1, pixel_lr0.001_s2]
+  jepa_pooled: [jepa_pooled_lr0.001_s0, jepa_pooled_lr0.001_s1, jepa_pooled_lr0.001_s2]
+  static_vicreg: [static_vicreg_lr0.001_s0, static_vicreg_lr0.001_s1, static_vicreg_lr0.001_s2]
+  nonphys_jepa_spatial: [nonphys_jepa_spatial_lr0.001_s0, nonphys_jepa_spatial_lr0.001_s1, nonphys_jepa_spatial_lr0.001_s2]
+n_pca: 32            # slow-direction method (pre-registered)
+map_pca_dims: 512
+output_json: results/explore/stage0.json
+output_md: results/explore/stage0.md
+figure: results/explore/stage0_readouts.png
