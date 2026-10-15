@@ -1,0 +1,18 @@
+# [EXPLORE] Stage 1 (python -m explore.stage1 --config configs/explore/stage1.yaml)
+# Existing checkpoints; gate as committed in results/explore/PREDICTIONS.md (entries 1-2).
+seed: 0
+data_parts:
+  - [data/generated/v1, [train, val]]
+  - [data/generated/explore_v2, [explore]]
+  - [data/generated/matched_energy_v2, [matched]]
+cache_tag: v1tv_explore_matched     # latents shared with Stage 0
+models:
+  untrained: [untrained_s0, untrained_s1, untrained_s2]
+  pixel: [pixel_lr0.001_s0, pixel_lr0.001_s1, pixel_lr0.001_s2]
+  jepa_spatial: [jepa_spatial_lr0.001_s0, jepa_spatial_lr0.001_s1, jepa_spatial_lr0.001_s2]   # context
+readouts: [pooled, map_meanstd]     # pooled decides the gate; map_meanstd reported, unscored
+deciding_readout: pooled
+n_pca: 32
+output_md: results/explore/stage1.md
+output_json_gz: results/explore/stage1.json.gz
+figure: results/explore/stage1.png

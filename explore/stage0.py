@@ -33,9 +33,9 @@ EVAL = "explore"
 SPECIFICITY = {"log P (traj mean, not conserved)": "P", "log kurtosis (traj mean)": "kurtosis", "log max|ω| (traj mean)": "max_abs_w"}
 
 
-def slow_extra(ds, slow: dict) -> dict:
+def slow_extra(ds, slow: dict, eval_split: str = EVAL) -> dict:
     """Per-direction specificity and partial r for the slow directions scored on the eval set."""
-    ev = ds.rows([EVAL], viscous=False)
+    ev = ds.rows([eval_split], viscous=False)
     ids, inv = np.unique(ds.traj[ev], return_inverse=True)
     assert ids.tolist() == slow["traj"]
     counts = np.bincount(inv)

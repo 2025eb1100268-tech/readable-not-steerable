@@ -631,3 +631,15 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - outcome: ok
   - share of spatial-mean subspace inside top-512 PCs (seed 0): untrained 0.101, jepa_spatial 0.488, pixel 0.083, static_vicreg 0.643
   - results: results/explore/stage0_pca_diagnostic.md
+
+## 2026-10-15 20:53 — [EXPLORE] Stage 1: does the pixel model's enstrophy lead survive? (kill gate)
+- config: `configs/explore/stage1.yaml`
+- command: `python -m explore.stage1 --config configs/explore/stage1.yaml`
+- git: `153f20c+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 88.9 s
+- outcome: gate passed: lead survives
+  - (a) explore gap: +0.411 [+0.326, +0.514]
+  - (b) matched pixel / control: 0.979 / 0.177, gap CI [+0.718, +0.827]
+  - (b) frames 0–15 (unscored): 0.976 / 0.170
+  - results: results/explore/stage1.md, results/explore/stage1.png, results/explore/stage1.json.gz
