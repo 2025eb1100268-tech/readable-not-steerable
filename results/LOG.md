@@ -520,3 +520,39 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - outcome: ok
   - preview verdicts (raw readout): {'jepa_spatial': 'not supported', 'pixel': 'not supported', 'jepa_pooled': 'not supported', 'static_vicreg': 'not supported', 'nonphys_jepa_spatial': 'not supported'}
   - results: results/phase3/val_preview.json
+
+## 2026-10-15 18:26 — Phase 4 views (val; unscored) — superseded
+- note: superseded by the 18:29 run. Traversal readout changed from nearest neighbours in the
+  full 32-dim PCA space (the other directions dominated the distance, so several steps returned
+  the same trajectory) to the frames nearest each step along the slow coordinate, and extended
+  from the slowest direction to the top 3. Embedding views unchanged.
+- config: `configs/phase4_views.yaml`
+- command: `python -m probes.phase4_views --config configs/phase4_views.yaml`
+- git: `04b3a17+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 50.7 s
+- outcome: ok
+  - figures: results/phase4_pca.png, results/phase4_tsne.png, results/phase4_traversals.png
+  - results: results/phase4/views.json
+
+## 2026-10-15 18:29 — Phase 4 views (val; unscored) — superseded
+- note: superseded by the next run, identical except the embedding figures are saved with a tight
+  bounding box (colorbar labels were clipped).
+- config: `configs/phase4_views.yaml`
+- command: `python -m probes.phase4_views --config configs/phase4_views.yaml`
+- git: `04b3a17+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 53.1 s
+- outcome: ok
+  - figures: results/phase4_pca.png, results/phase4_tsne.png, results/phase4_traversals_untrained.png, results/phase4_traversals_jepa_spatial.png, results/phase4_traversals_pixel.png
+  - results: results/phase4/views.json
+
+## 2026-10-15 18:32 — Phase 4 views (val; unscored)
+- config: `configs/phase4_views.yaml`
+- command: `python -m probes.phase4_views --config configs/phase4_views.yaml`
+- git: `04b3a17+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 55.7 s
+- outcome: ok
+  - figures: results/phase4_pca.png, results/phase4_tsne.png, results/phase4_traversals_untrained.png, results/phase4_traversals_jepa_spatial.png, results/phase4_traversals_pixel.png
+  - results: results/phase4/views.json

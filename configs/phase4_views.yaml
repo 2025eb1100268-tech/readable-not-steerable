@@ -1,0 +1,22 @@
+# Phase 4 views on val, unscored (python -m probes.phase4_views --config configs/phase4_views.yaml)
+# PREREGISTRATION.md §6 "also reported". Fitted on train, shown on val; test sets not touched.
+seed: 0
+data_dir: data/generated/v1
+readout: raw
+models:   # seed 0 of each model
+  untrained: untrained_s0
+  jepa_spatial: jepa_spatial_lr0.001_s0
+  pixel: pixel_lr0.001_s0
+  jepa_pooled: jepa_pooled_lr0.001_s0
+  static_vicreg: static_vicreg_lr0.001_s0
+  nonphys_jepa_spatial: nonphys_jepa_spatial_lr0.001_s0
+traversal_models: [untrained, jepa_spatial, pixel]
+n_pca: 32
+n_points: 3000
+n_directions: 3                      # top-3 slow directions, as scored in §6
+traversal_steps: [-2, -1, 0, 1, 2]   # in units of the slow coordinate's std over val inviscid frames
+n_neighbours: 16                     # val inviscid frames whose slow coordinate is nearest each step
+out_pca: results/phase4_pca.png
+out_tsne: results/phase4_tsne.png
+out_traversals: results/phase4_traversals_{model}.png
+output_json: results/phase4/views.json

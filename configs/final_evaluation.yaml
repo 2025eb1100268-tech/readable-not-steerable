@@ -1,0 +1,18 @@
+# The single test-set evaluation (PREREGISTRATION.md §8): run exactly once; its output is final.
+# (python -m probes.final_evaluation --config configs/final_evaluation.yaml)
+seed: 0
+data_dir: data/generated/v1
+readouts: [raw, shift_avg]      # raw decides the verdict; shift_avg for the §2.6 attribution rule
+control_group: untrained
+main_group: jepa_spatial
+models:
+  untrained: [untrained_s0, untrained_s1, untrained_s2]
+  jepa_spatial: [jepa_spatial_lr0.001_s0, jepa_spatial_lr0.001_s1, jepa_spatial_lr0.001_s2]
+  pixel: [pixel_lr0.001_s0, pixel_lr0.001_s1, pixel_lr0.001_s2]
+  jepa_pooled: [jepa_pooled_lr0.001_s0, jepa_pooled_lr0.001_s1, jepa_pooled_lr0.001_s2]
+  static_vicreg: [static_vicreg_lr0.001_s0, static_vicreg_lr0.001_s1, static_vicreg_lr0.001_s2]
+  nonphys_jepa_spatial: [nonphys_jepa_spatial_lr0.001_s0, nonphys_jepa_spatial_lr0.001_s1, nonphys_jepa_spatial_lr0.001_s2]
+n_pca: 32
+mlp: true
+output_json: results/final/final_evaluation.json
+output_md: results/final/final_evaluation.md
