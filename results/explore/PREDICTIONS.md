@@ -183,3 +183,18 @@ Written after Stage 1 (gate passed) and before the Stage 2 training code exists.
 - **P2.9 (lr)** The summarizer selects 1e-3 and the imaginer 3e-3. Probability: 40%.
 - **P2.10 (compute)** Stage 2 training totals about 13 GPU-hours (35 runs); at least one run hits the
   12,000-step cap.
+
+---
+
+## Entry 4 — 2026-10-15 — schedule clarification (before any Stage 2 code ran)
+
+Found while writing the training loop, before any Stage 2 run: in the Phase 2 training curves the
+JEPA's prediction loss rises for its first ~1,500 steps (the target encoder spreads out) before it
+falls. Counting plateaus from step 0 could cut the lr during that transient or, worse, store an
+early "best" that the later metric never beats. Therefore, for every Stage 2 model alike:
+
+- Plateau counting starts at step 2,300 (10 evaluations). Earlier evaluations are logged but neither
+  set the best value nor count towards patience; the first evaluation at or after step 2,300
+  initializes the best value.
+- Everything else in entry 3's schedule is unchanged (warmup 575 steps, evaluation every 230 steps,
+  0.5% improvement threshold, patience 4, lr × 0.3, at most 2 reductions, cap 12,000 steps).
