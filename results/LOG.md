@@ -556,3 +556,16 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - outcome: ok
   - figures: results/phase4_pca.png, results/phase4_tsne.png, results/phase4_traversals_untrained.png, results/phase4_traversals_jepa_spatial.png, results/phase4_traversals_pixel.png
   - results: results/phase4/views.json
+
+## 2026-10-15 19:22 — FINAL test evaluation (single test-set touch)
+- config: `configs/final_evaluation.yaml`
+- command: `python -m probes.final_evaluation --config configs/final_evaluation.yaml`
+- git: `c2c3a79+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2553.8 s
+- outcome: verdict: not supported
+  - note (added by hand): the tree was clean at c2c3a79 when the run started (18:39:49); "+dirty"
+    is this run's own output in results/final/, written before the log call. Run once, no rerun.
+    Code path dry-run beforehand on train/val only (test splits swapped for val; no test rows read).
+  - results: results/final/final_evaluation.json
+  - tables: results/final/final_evaluation.md
