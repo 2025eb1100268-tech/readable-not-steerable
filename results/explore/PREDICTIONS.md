@@ -108,3 +108,78 @@ run on them.
   still decides.
 - **Prediction.** For both the pixel model and the control, the 16-frame value differs from the
   24-frame value by less than 0.05, and the robustness check agrees with gate (b)'s outcome.
+
+---
+
+## Entry 3 — 2026-10-15 — Stage 2 (before any Stage 2 code or training)
+
+Written after Stage 1 (gate passed) and before the Stage 2 training code exists.
+
+### Fixed in advance: training
+
+- **Data and anchors.** All Stage 2 models except the bridge use one common anchor set: v1
+  trajectories with 64-frame windows (the viscous runs), input frames t ∈ [1, 31], target frame
+  t + k. Inputs are identical across horizons; only the target moves. The fake-physics imaginer uses
+  the same rule on `nonphys_v1` (its 64-frame runs). The **bridge** uses the original rule for a
+  single k = 4: every trajectory, t ∈ [1, n_frames − 5].
+- **Models.**
+  - Imaginer: pixel predictor (same encoder, decoder, loss), k ∈ {1, 4, 16, 32}, seeds 0–2.
+  - Summarizer: spatial JEPA (same setup), single horizon, k ∈ {1, 4, 16, 32}, seeds 0–2.
+  - Bridge: imaginer at k = 4 on the original anchor rule, seeds 0–2.
+  - Fake-physics imaginer: imaginer trained on `nonphys_v1` at k*, seeds 0–2.
+  - Pixel + VICReg: imaginer loss 25·MSE + 25·variance hinge + 1·covariance on the online pooled
+    latent (the JEPA's regularizer and weights), at k*, seeds 0–2.
+- **k\*** (logged before those runs): the horizon maximizing the imaginer's seed-mean explore
+  enstrophy |r| (E1 below); if the top two are within 0.02, the one with the larger E2.
+- **Learning rate.** Peak lr ∈ {1e-3, 3e-3}, chosen once per family (imaginer, summarizer) at k = 4,
+  seed 0, by the final label-free val metric (val loss / copy baseline at k), collapsed runs excluded
+  (amendment A1 rule). The imaginer's lr is used for the bridge, fake-physics and pixel + VICReg runs.
+- **Schedule (identical for every Stage 2 model).** Batch 256, AdamW (weight decay 0.05), bf16
+  autocast. Linear warmup over 575 steps, then constant lr. Val metric every 230 steps on v1 val
+  (same anchor rule and k). Improvement = metric below best × (1 − 0.005). After 4 consecutive evals
+  without improvement: lr × 0.3 if fewer than 2 reductions so far, otherwise stop. Hard cap 12,000
+  steps. The checkpoint is the model at stop. JEPA EMA momentum m = 1 − 0.004 · (current plateau lr /
+  peak lr), with m = 0.996 during warmup.
+- **Diagnostics logged per run.** Val loss / copy baseline at k; steps and stop reason; for pixel
+  models, the energy spectrum of predicted, true and copied frames at t + k on 1,024 fixed val
+  anchors; for JEPA models, the variance of the predicted map relative to the target map.
+
+### Fixed in advance: evaluation (explore and matched-energy; pooled latent primary, map mean ⊕ std secondary)
+
+- **E1 (primary).** Explore enstrophy |r|: best of top-3 slow directions with log Z₀, seed mean (slow
+  directions fitted on v1 train+val inviscid runs as pre-registered). CIs: paired trajectory
+  bootstrap vs the untrained control, and imaginer − summarizer at each k (`probes/criteria.py`).
+- **E2 (primary companion).** Explore partial r with log Z₀ given log E₀ and family, best of top 3.
+- **E3 (specificity, added after Stage 1).** For each model's enstrophy-tracking direction (top-3
+  direction with the largest |r| with log Z₀): partial r with log Z₀ given trajectory-mean log P, and
+  partial r with trajectory-mean log P given log Z₀ (explore; on matched-energy the two correlate at
+  0.996 in the data, so it cannot separate them).
+- **E4 (the enstrophy combination, added after Stage 1).** Regression of that direction on the
+  unstandardized log E₀ and log(Z₀/E₀) (explore): coefficient ratio a/b and R². a/b = 1 means the
+  direction is a function of log Z₀ = log E₀ + log(Z₀/E₀) alone within this family.
+- **E5.** Matched-energy best-of-top-3 |r| with log Z₀.
+- **Secondary.** S1 partialled R² (5 targets), log ν pair R², Okubo–Weiss fraction, all vs k
+  (explore). Traversals along the imaginer's enstrophy direction at k*.
+
+### Predictions, Stage 2
+
+- **P2.1 (bridge)** The common-anchor imaginer at k = 4 has E1 ≥ 0.6, and the bridge is within ±0.1
+  of it. Probability: 65%.
+- **P2.2 (horizon)** The imaginer's E1 is ≥ 0.6 at every k, and its range across k is < 0.15 (no
+  strong horizon effect). Probability: 55%. Reason: rendering any future frame needs the field's
+  amplitude and spectral scale, at every horizon.
+- **P2.3 (summarizer)** The summarizer's E1 is below the imaginer's at every k by ≥ 0.2 (70%), and
+  ≤ 0.5 at every k (65%).
+- **P2.4 (matched-energy)** Every imaginer and summarizer has E5 ≥ 0.8 at every k; the control stays
+  near 0.18. Probability: 70%. So E5 will not separate imaginer from summarizer.
+- **P2.5 (blur)** The imaginer's predicted / true energy in shells k ≥ 10 falls with horizon: < 0.5 at
+  k = 16 and < 0.25 at k = 32. Probability: 70%.
+- **P2.6 (regularization)** Pixel + VICReg at k* has E1 at least 0.2 below the plain imaginer at k*.
+  Probability: 50%. Reason: every VICReg-regularized model so far (JEPA, static VICReg) has low E1.
+- **P2.7 (fake physics)** The fake-physics imaginer at k* has E1 within 0.15 of the real imaginer.
+  Probability: 55%.
+- **P2.8 (specificity)** At k = 4, the imaginer's partial r with log Z₀ given trajectory-mean log P is
+  ≥ 0.3. Probability: 50%.
+- **P2.9 (lr)** The summarizer selects 1e-3 and the imaginer 3e-3. Probability: 40%.
+- **P2.10 (compute)** Stage 2 training totals about 13 GPU-hours (35 runs); at least one run hits the
+  12,000-step cap.
