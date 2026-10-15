@@ -1,0 +1,44 @@
+{
+  "imaginer": {
+    "candidates": [
+      {
+        "run": "s2_imaginer_k4_lr0.001_s0",
+        "lr": 0.001,
+        "metric": 0.011660855374702829,
+        "collapsed": false,
+        "steps": 12000,
+        "stop_reason": "step cap"
+      },
+      {
+        "run": "s2_imaginer_k4_lr0.003_s0",
+        "lr": 0.003,
+        "metric": 0.010726821177731237,
+        "collapsed": false,
+        "steps": 8740,
+        "stop_reason": "plateau"
+      }
+    ],
+    "selected_lr": 0.003
+  },
+  "summarizer": {
+    "candidates": [
+      {
+        "run": "s2_summarizer_k4_lr0.001_s0",
+        "lr": 0.001,
+        "metric": 0.4318939047561429,
+        "collapsed": false,
+        "steps": 12000,
+        "stop_reason": "step cap"
+      },
+      {
+        "run": "s2_summarizer_k4_lr0.003_s0",
+        "lr": 0.003,
+        "metric": 0.4761880458666678,
+        "collapsed": false,
+        "steps": 10350,
+        "stop_reason": "plateau"
+      }
+    ],
+    "selected_lr": 0.001
+  }
+}

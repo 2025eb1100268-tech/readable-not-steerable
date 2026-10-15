@@ -734,3 +734,56 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - git: `0439951+dirty`
 - outcome: protocol unchanged; Stage 2 resumes
   - basis: first Stage 2 run: 12,000 steps in 40.6 min; 35 runs project to ~25 GPU-h in total
+
+## 2026-10-15 22:28 — [EXPLORE] Stage 2 training: s2_imaginer_k4_lr0.003_s0
+- config: `configs/explore/stage2/s2_imaginer_k4_lr0.003_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k4_lr0.003_s0.yaml`
+- git: `0cd168f+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1771.6 s
+- outcome: ok
+  - final val loss / copy baseline: 0.0107
+  - effective rank / latent std median: 2.8 / 0.012
+  - steps: 8740
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k4_lr0.003_s0.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.979, copy_over_true_energy_k_ge_5: 1.098, pred_over_true_energy_k_ge_10: 0.763, copy_over_true_energy_k_ge_10: 0.876
+
+## 2026-10-15 23:03 — [EXPLORE] Stage 2 training: s2_summarizer_k4_lr0.001_s0
+- config: `configs/explore/stage2/s2_summarizer_k4_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k4_lr0.001_s0.yaml`
+- git: `0cd168f+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2079.2 s
+- outcome: ok
+  - final val loss / copy baseline: 0.4319
+  - effective rank / latent std median: 57.1 / 1.016
+  - steps: 12000
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k4_lr0.001_s0.json
+  - stop reason / lr reductions: step cap / 2
+  - diagnostics: pred_over_target_map_variance: 0.975
+
+## 2026-10-15 23:33 — [EXPLORE] Stage 2 training: s2_summarizer_k4_lr0.003_s0
+- config: `configs/explore/stage2/s2_summarizer_k4_lr0.003_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k4_lr0.003_s0.yaml`
+- git: `0cd168f+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1799.5 s
+- outcome: ok
+  - final val loss / copy baseline: 0.4762
+  - effective rank / latent std median: 64.1 / 0.979
+  - steps: 10350
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k4_lr0.003_s0.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_target_map_variance: 0.962
+
+## 2026-10-15 23:33 — [EXPLORE] Stage 2 lr selection (label-free, k = 4, seed 0)
+- config: `-`
+- command: `python -m explore.stage2_configs select`
+- git: `0cd168f+dirty`
+- outcome: imaginer: lr 0.003, summarizer: lr 0.001
+  - candidates (run: metric, collapsed): s2_imaginer_k4_lr0.001_s0: 0.0117, False; s2_imaginer_k4_lr0.003_s0: 0.0107, False; s2_summarizer_k4_lr0.001_s0: 0.4319, False; s2_summarizer_k4_lr0.003_s0: 0.4762, False
+  - configs written: 25
