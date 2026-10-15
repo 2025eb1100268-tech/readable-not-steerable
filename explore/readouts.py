@@ -33,11 +33,23 @@ def _paths(run: str, tag: str) -> dict:
 
 
 @torch.no_grad()
-def readouts_for(run: str, ds, x: torch.Tensor, fit_rows: np.ndarray, n_pca: int = 512, batch: int = 1024) -> dict:
-    paths = _paths(run, ds.cache_tag)
+def readouts_for(run: str, ds, x: torch.Tensor, fit_rows: np.ndarray, n_pca: int = 512, batch: int = 1024,
+                 readouts=READOUTS) -> dict:
+    paths = {r: p for r, p in _paths(run, ds.cache_tag).items() if r in readouts}
     if all(p.exists() for p in paths.values()):
         return {r: np.load(p) for r, p in paths.items()}
     enc = load_probed_encoder(run).to(x.device).eval()
+    if "map_pca512" not in readouts:  # pooled and mean ⊕ std only (Stage 2)
+        out = {"pooled": [], "map_meanstd": []}
+        for i in range(0, len(x), batch):
+            m = enc(x[i:i + batch])
+            out["pooled"].append(m.mean(dim=(2, 3)).cpu())
+            out["map_meanstd"].append(torch.cat([m.mean(dim=(2, 3)), m.std(dim=(2, 3), unbiased=False)], 1).cpu())
+        res = {r: torch.cat(v).numpy().astype(np.float32) for r, v in out.items() if r in readouts}
+        CACHE.mkdir(parents=True, exist_ok=True)
+        for r, p in paths.items():
+            np.save(p, res[r])
+        return res
     fit = torch.as_tensor(np.sort(fit_rows), device=x.device)
     # PCA of the flattened map on the fit rows: mean, then centred covariance (float32 batches, float64 sum)
     mean = torch.zeros(enc.d * 64, dtype=torch.float64, device=x.device)

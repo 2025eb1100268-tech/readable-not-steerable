@@ -686,3 +686,20 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - results: C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/runs/smoke_stage2_jepa_spatial_k32.json
   - stop reason / lr reductions: step cap / 0
   - diagnostics: pred_over_target_map_variance: 0.590
+
+## 2026-10-15 21:13 — [EXPLORE] Stage 2 phase A launch (ABORTED)
+- config: `configs/explore/stage2/ (4 selection configs)`
+- command: `scratchpad driver stage2_phaseA.sh`
+- git: `d1cbcfd+dirty`
+- outcome: aborted
+  - cause: driver read the run list with Windows line endings; 3 runs failed at config load (path ended in a carriage return), no training
+  - s2_summarizer_k4_lr0.003_s0: started, orphaned when the driver was stopped, killed after ~1 min; no outputs
+  - fix: driver strips carriage returns; all 4 selection runs restarted from scratch
+
+## 2026-10-15 21:23 — [EXPLORE] Stage 2 evaluation dry run (code check on Phase 2 checkpoints, cached latents)
+- config: `configs/explore/stage2_eval.yaml`
+- command: `scratchpad dry_stage2_eval.py`
+- git: `d1cbcfd+dirty`
+- outcome: ok (outputs in the scratchpad, not results)
+  - E3 r(Z0|mean P) / r(mean P|Z0), seeds 0-2: untrained 0.84/-0.83, 0.85/-0.85, 0.84/-0.83; Phase 2 pixel 0.85/0.83, 0.84/0.79, 0.63/0.26; Phase 2 JEPA 0.29/0.04, -0.01/0.50, 0.31/-0.01
+  - E4 a/b (R2), seeds 0-2: untrained 5.8 (0.88), 6.3 (0.90), 6.3 (0.87); Phase 2 pixel 0.83 (0.92), 0.83 (0.91), 0.89 (0.62); Phase 2 JEPA 0.88 (0.15), 0.57 (0.43), 0.93 (0.14)

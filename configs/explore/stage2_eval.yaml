@@ -1,0 +1,15 @@
+# [EXPLORE] Stage 2 evaluation (python -m explore.stage2_eval --config configs/explore/stage2_eval.yaml [--decide-kstar])
+# Groups are read from results/explore/stage2/{lr_selection,kstar}.json and the finished runs.
+seed: 0
+data_parts:
+  - [data/generated/v1, [train, val]]
+  - [data/generated/explore_v2, [explore]]
+  - [data/generated/matched_energy_v2, [matched]]
+cache_tag: v1tv_explore_matched     # shares the untrained-control latents with Stages 0-1
+readouts: [pooled, map_meanstd]
+primary_readout: pooled
+n_pca: 32
+output_md: results/explore/stage2/eval.md
+output_json_gz: results/explore/stage2/eval.json.gz
+figure_primary: results/explore/stage2/primary.png
+figure_spectra: results/explore/stage2/spectra.png
