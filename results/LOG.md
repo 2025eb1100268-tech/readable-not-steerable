@@ -703,3 +703,34 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - outcome: ok (outputs in the scratchpad, not results)
   - E3 r(Z0|mean P) / r(mean P|Z0), seeds 0-2: untrained 0.84/-0.83, 0.85/-0.85, 0.84/-0.83; Phase 2 pixel 0.85/0.83, 0.84/0.79, 0.63/0.26; Phase 2 JEPA 0.29/0.04, -0.01/0.50, 0.31/-0.01
   - E4 a/b (R2), seeds 0-2: untrained 5.8 (0.88), 6.3 (0.90), 6.3 (0.87); Phase 2 pixel 0.83 (0.92), 0.83 (0.91), 0.89 (0.62); Phase 2 JEPA 0.88 (0.15), 0.57 (0.43), 0.93 (0.14)
+
+## 2026-10-15 21:55 — [EXPLORE] Stage 2 training: s2_imaginer_k4_lr0.001_s0
+- config: `configs/explore/stage2/s2_imaginer_k4_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k4_lr0.001_s0.yaml`
+- git: `0439951+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2435.8 s
+- outcome: ok
+  - final val loss / copy baseline: 0.0117
+  - effective rank / latent std median: 2.9 / 0.010
+  - steps: 12000
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k4_lr0.001_s0.json
+  - stop reason / lr reductions: step cap / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.978, copy_over_true_energy_k_ge_5: 1.098, pred_over_true_energy_k_ge_10: 0.670, copy_over_true_energy_k_ge_10: 0.876
+
+## 2026-10-15 21:57 — [EXPLORE] Stage 2 phase A PAUSED for the compute budget
+- config: `configs/explore/stage2/`
+- command: `scratchpad driver stage2_phaseA.sh (stopped)`
+- git: `0439951+dirty`
+- outcome: paused; asking the investigator
+  - completed: s2_imaginer_k4_lr0.001_s0: 12,000 steps (step cap), 40.6 min
+  - killed, no outputs (will be rerun from scratch): s2_imaginer_k4_lr0.003_s0 (~1 min in), s2_summarizer_k4_lr0.001_s0 (seconds in)
+  - reason: at ~40 min per run the 35 Stage 2 runs project to ~25 GPU-h in total, above the 18 GPU-h cap (BRIEF agreed change 11)
+
+## 2026-10-15 21:59 — [EXPLORE] Budget raised to 26 GPU-h (investigator decision, option A)
+- config: `results/explore/BRIEF.md (agreed change 12)`
+- command: `-`
+- git: `0439951+dirty`
+- outcome: protocol unchanged; Stage 2 resumes
+  - basis: first Stage 2 run: 12,000 steps in 40.6 min; 35 runs project to ~25 GPU-h in total

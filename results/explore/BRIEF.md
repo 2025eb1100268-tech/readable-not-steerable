@@ -130,3 +130,8 @@ If Stage 2 shows no pattern, write `results/explore/SUMMARY.md` saying so plainl
    slope varied, Z₀ kept inside the original range [2, 8].
 10. **Stage 3** runs on the frozen Stage 2 checkpoints (no retraining).
 11. **Budget.** 18 GPU-hours for Stages 0–2, nothing cut. Stop and ask before exceeding 18.
+12. **Budget raised (2026-10-15, after the first Stage 2 run).** The first selection run reached the
+    12,000-step cap in 40.6 min (about 0.2 s per step including evaluations), so the 35 Stage 2 runs
+    project to about 25 GPU-hours in total. The investigator chose to raise the budget to
+    **26 GPU-hours** with no change to the protocol (no lower cap, no fewer seeds). Stop and ask
+    before exceeding 26.
