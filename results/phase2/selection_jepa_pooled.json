@@ -1,0 +1,29 @@
+{
+  "model": "jepa_pooled",
+  "candidates": [
+    {
+      "run": "jepa_pooled_lr0.0003_s0",
+      "lr": 0.0003,
+      "metric": 0.7915221480905728,
+      "collapsed": false,
+      "effective_rank": 81.58505249023438,
+      "latent_std_median": 1.0452781915664673
+    },
+    {
+      "run": "jepa_pooled_lr0.001_s0",
+      "lr": 0.001,
+      "metric": 0.5260161804621621,
+      "collapsed": false,
+      "effective_rank": 98.73934173583984,
+      "latent_std_median": 1.0594512224197388
+    }
+  ],
+  "selected": {
+    "run": "jepa_pooled_lr0.001_s0",
+    "lr": 0.001,
+    "metric": 0.5260161804621621,
+    "collapsed": false,
+    "effective_rank": 98.73934173583984,
+    "latent_std_median": 1.0594512224197388
+  }
+}

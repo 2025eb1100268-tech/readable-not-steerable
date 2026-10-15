@@ -1,0 +1,29 @@
+{
+  "model": "nonphys_jepa_spatial",
+  "candidates": [
+    {
+      "run": "nonphys_jepa_spatial_lr0.0003_s0",
+      "lr": 0.0003,
+      "metric": 1.2230687844525505,
+      "collapsed": false,
+      "effective_rank": 41.284873962402344,
+      "latent_std_median": 1.0073102712631226
+    },
+    {
+      "run": "nonphys_jepa_spatial_lr0.001_s0",
+      "lr": 0.001,
+      "metric": 0.511600691908044,
+      "collapsed": false,
+      "effective_rank": 55.62357711791992,
+      "latent_std_median": 1.0107043981552124
+    }
+  ],
+  "selected": {
+    "run": "nonphys_jepa_spatial_lr0.001_s0",
+    "lr": 0.001,
+    "metric": 0.511600691908044,
+    "collapsed": false,
+    "effective_rank": 55.62357711791992,
+    "latent_std_median": 1.0107043981552124
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "model": "static_vicreg",
+  "candidates": [
+    {
+      "run": "static_vicreg_lr0.0003_s0",
+      "lr": 0.0003,
+      "metric": 0.0037961520715936196,
+      "collapsed": false,
+      "effective_rank": 58.73037338256836,
+      "latent_std_median": 1.0326910018920898
+    },
+    {
+      "run": "static_vicreg_lr0.001_s0",
+      "lr": 0.001,
+      "metric": 0.002029773235658572,
+      "collapsed": false,
+      "effective_rank": 70.67277526855469,
+      "latent_std_median": 1.0265300273895264
+    }
+  ],
+  "selected": {
+    "run": "static_vicreg_lr0.001_s0",
+    "lr": 0.001,
+    "metric": 0.002029773235658572,
+    "collapsed": false,
+    "effective_rank": 70.67277526855469,
+    "latent_std_median": 1.0265300273895264
+  }
+}

@@ -315,3 +315,183 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - steps: 9760
   - peak GPU memory GB: 4.51
   - results: results/phase2/pixel_lr0.001_s2.json
+
+## 2026-10-15 01:51 — Phase 2 training: jepa_pooled_lr0.0003_s0
+- config: `configs/phase2/jepa_pooled_lr0.0003_s0.yaml`
+- command: `python -m train.train --config configs/phase2/jepa_pooled_lr0.0003_s0.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1357.1 s
+- outcome: ok
+  - final val loss / copy baseline: 0.7915
+  - effective rank / latent std median: 81.6 / 1.045
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/jepa_pooled_lr0.0003_s0.json
+
+## 2026-10-15 02:14 — Phase 2 training: jepa_pooled_lr0.001_s0
+- config: `configs/phase2/jepa_pooled_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/phase2/jepa_pooled_lr0.001_s0.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1346.5 s
+- outcome: ok
+  - final val loss / copy baseline: 0.5260
+  - effective rank / latent std median: 98.7 / 1.059
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/jepa_pooled_lr0.001_s0.json
+
+## 2026-10-15 02:14 — Phase 2 selection: jepa_pooled
+- config: `-`
+- command: `python -m train.select --model jepa_pooled --runs jepa_pooled_lr0.0003_s0 jepa_pooled_lr0.001_s0`
+- git: `f0fc5cb+dirty`
+- outcome: selected jepa_pooled_lr0.001_s0 (lr 0.001)
+  - candidates (run: metric, collapsed): jepa_pooled_lr0.0003_s0: 0.7915, False; jepa_pooled_lr0.001_s0: 0.5260, False
+  - configs written: jepa_pooled_lr0.001_s1.yaml, jepa_pooled_lr0.001_s2.yaml
+
+## 2026-10-15 02:36 — Phase 2 training: jepa_pooled_lr0.001_s1
+- config: `configs/phase2/jepa_pooled_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/phase2/jepa_pooled_lr0.001_s1.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1364.8 s
+- outcome: ok
+  - final val loss / copy baseline: 0.5345
+  - effective rank / latent std median: 97.2 / 1.062
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/jepa_pooled_lr0.001_s1.json
+
+## 2026-10-15 02:59 — Phase 2 training: jepa_pooled_lr0.001_s2
+- config: `configs/phase2/jepa_pooled_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/phase2/jepa_pooled_lr0.001_s2.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1340.2 s
+- outcome: ok
+  - final val loss / copy baseline: 0.5288
+  - effective rank / latent std median: 98.2 / 1.057
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/jepa_pooled_lr0.001_s2.json
+
+## 2026-10-15 03:19 — Phase 2 training: static_vicreg_lr0.0003_s0
+- config: `configs/phase2/static_vicreg_lr0.0003_s0.yaml`
+- command: `python -m train.train --config configs/phase2/static_vicreg_lr0.0003_s0.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1227.9 s
+- outcome: ok
+  - final val invariance loss: 0.0038
+  - effective rank / latent std median: 58.7 / 1.033
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/static_vicreg_lr0.0003_s0.json
+
+## 2026-10-15 03:40 — Phase 2 training: static_vicreg_lr0.001_s0
+- config: `configs/phase2/static_vicreg_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/phase2/static_vicreg_lr0.001_s0.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1236.2 s
+- outcome: ok
+  - final val invariance loss: 0.0020
+  - effective rank / latent std median: 70.7 / 1.027
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/static_vicreg_lr0.001_s0.json
+
+## 2026-10-15 03:40 — Phase 2 selection: static_vicreg
+- config: `-`
+- command: `python -m train.select --model static_vicreg --runs static_vicreg_lr0.0003_s0 static_vicreg_lr0.001_s0`
+- git: `f0fc5cb+dirty`
+- outcome: selected static_vicreg_lr0.001_s0 (lr 0.001)
+  - candidates (run: metric, collapsed): static_vicreg_lr0.0003_s0: 0.0038, False; static_vicreg_lr0.001_s0: 0.0020, False
+  - configs written: static_vicreg_lr0.001_s1.yaml, static_vicreg_lr0.001_s2.yaml
+
+## 2026-10-15 04:01 — Phase 2 training: static_vicreg_lr0.001_s1
+- config: `configs/phase2/static_vicreg_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/phase2/static_vicreg_lr0.001_s1.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1238.3 s
+- outcome: ok
+  - final val invariance loss: 0.0024
+  - effective rank / latent std median: 68.2 / 1.038
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/static_vicreg_lr0.001_s1.json
+
+## 2026-10-15 04:22 — Phase 2 training: static_vicreg_lr0.001_s2
+- config: `configs/phase2/static_vicreg_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/phase2/static_vicreg_lr0.001_s2.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1246.2 s
+- outcome: ok
+  - final val invariance loss: 0.0021
+  - effective rank / latent std median: 67.6 / 1.042
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/static_vicreg_lr0.001_s2.json
+
+## 2026-10-15 04:48 — Phase 2 training: nonphys_jepa_spatial_lr0.0003_s0
+- config: `configs/phase2/nonphys_jepa_spatial_lr0.0003_s0.yaml`
+- command: `python -m train.train --config configs/phase2/nonphys_jepa_spatial_lr0.0003_s0.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1549.8 s
+- outcome: ok
+  - final val loss / copy baseline: 1.2231
+  - effective rank / latent std median: 41.3 / 1.007
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/nonphys_jepa_spatial_lr0.0003_s0.json
+
+## 2026-10-15 05:13 — Phase 2 training: nonphys_jepa_spatial_lr0.001_s0
+- config: `configs/phase2/nonphys_jepa_spatial_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/phase2/nonphys_jepa_spatial_lr0.001_s0.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1550.1 s
+- outcome: ok
+  - final val loss / copy baseline: 0.5116
+  - effective rank / latent std median: 55.6 / 1.011
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/nonphys_jepa_spatial_lr0.001_s0.json
+
+## 2026-10-15 05:14 — Phase 2 selection: nonphys_jepa_spatial
+- config: `-`
+- command: `python -m train.select --model nonphys_jepa_spatial --runs nonphys_jepa_spatial_lr0.0003_s0 nonphys_jepa_spatial_lr0.001_s0`
+- git: `f0fc5cb+dirty`
+- outcome: selected nonphys_jepa_spatial_lr0.001_s0 (lr 0.001)
+  - candidates (run: metric, collapsed): nonphys_jepa_spatial_lr0.0003_s0: 1.2231, False; nonphys_jepa_spatial_lr0.001_s0: 0.5116, False
+  - configs written: nonphys_jepa_spatial_lr0.001_s1.yaml, nonphys_jepa_spatial_lr0.001_s2.yaml
+
+## 2026-10-15 05:39 — Phase 2 training: nonphys_jepa_spatial_lr0.001_s1
+- config: `configs/phase2/nonphys_jepa_spatial_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/phase2/nonphys_jepa_spatial_lr0.001_s1.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1549.1 s
+- outcome: ok
+  - final val loss / copy baseline: 0.6227
+  - effective rank / latent std median: 56.8 / 1.017
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/nonphys_jepa_spatial_lr0.001_s1.json
+
+## 2026-10-15 06:04 — Phase 2 training: nonphys_jepa_spatial_lr0.001_s2
+- config: `configs/phase2/nonphys_jepa_spatial_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/phase2/nonphys_jepa_spatial_lr0.001_s2.yaml`
+- git: `f0fc5cb+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1482.3 s
+- outcome: ok
+  - final val loss / copy baseline: 0.6644
+  - effective rank / latent std median: 56.5 / 1.006
+  - steps: 9760
+  - peak GPU memory GB: 4.51
+  - results: results/phase2/nonphys_jepa_spatial_lr0.001_s2.json
