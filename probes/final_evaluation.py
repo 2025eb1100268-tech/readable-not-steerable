@@ -12,6 +12,7 @@ the shift-averaged readout (attribution rule §2.6) and for every other model.
 from __future__ import annotations
 
 import argparse
+import sys
 import time
 
 import numpy as np
@@ -25,6 +26,7 @@ from probes.mlp import mlp_probe
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8")  # the tables contain → and ν; a redirected Windows console defaults to cp1252
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True)
     cfg = load_config(ap.parse_args().config)

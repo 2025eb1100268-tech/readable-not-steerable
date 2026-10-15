@@ -1,0 +1,17 @@
+# Phase 3 probes on val only, preview; decides nothing (python -m probes.phase3_val --config configs/phase3_val.yaml)
+# Both readouts (PREREGISTRATION.md §5.1). Test-ID / test-OOD are not touched.
+seed: 0
+data_dir: data/generated/v1
+readouts: [raw, shift_avg]
+control_group: untrained
+models:
+  untrained: [untrained_s0, untrained_s1, untrained_s2]
+  jepa_spatial: [jepa_spatial_lr0.001_s0, jepa_spatial_lr0.001_s1, jepa_spatial_lr0.001_s2]
+  pixel: [pixel_lr0.001_s0, pixel_lr0.001_s1, pixel_lr0.001_s2]
+  jepa_pooled: [jepa_pooled_lr0.001_s0, jepa_pooled_lr0.001_s1, jepa_pooled_lr0.001_s2]
+  static_vicreg: [static_vicreg_lr0.001_s0, static_vicreg_lr0.001_s1, static_vicreg_lr0.001_s2]
+  nonphys_jepa_spatial: [nonphys_jepa_spatial_lr0.001_s0, nonphys_jepa_spatial_lr0.001_s1, nonphys_jepa_spatial_lr0.001_s2]
+n_pca: 32
+mlp: true
+output_json: results/phase3/val_preview.json
+output_md: results/phase3/val_preview.md

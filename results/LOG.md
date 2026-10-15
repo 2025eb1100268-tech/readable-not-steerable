@@ -495,3 +495,28 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - steps: 9760
   - peak GPU memory GB: 4.51
   - results: results/phase2/nonphys_jepa_spatial_lr0.001_s2.json
+
+## 2026-10-15 15:46 — Phase 3 probes, val preview, raw readout only (CRASHED after writing outputs)
+- config: `configs/phase3_val_raw.yaml`
+- command: `python -m probes.phase3_val --config configs/phase3_val_raw.yaml`
+- git: `e35cf1f+dirty`
+- outcome: crashed at the final console print (UnicodeEncodeError: stdout redirected to a file used cp1252, which cannot encode the arrow in the table); results JSON and MD were already written and are complete, but this log entry was not written by the script (added by hand)
+  - started / crashed: 15:36:50 / ~15:44
+  - results: results/phase3/val_preview_raw.json, results/phase3/val_preview_raw.md
+  - fix: sys.stdout.reconfigure(encoding="utf-8") at the start of main() in probes/phase3_val.py and probes/final_evaluation.py (output only; no computation changed)
+
+## 2026-10-15 15:46 — Phase 3 probes, val preview, full (STOPPED by hand)
+- config: `configs/phase3_val.yaml`
+- command: `python -m probes.phase3_val --config configs/phase3_val.yaml`
+- git: `e35cf1f+dirty`
+- outcome: stopped ~2 min after starting (15:44:48), before any output, because it would have hit the same encoding crash; relaunched after the fix
+
+## 2026-10-15 17:55 — Phase 3 probes, val preview
+- config: `configs/phase3_val.yaml`
+- command: `python -m probes.phase3_val --config configs/phase3_val.yaml`
+- git: `e35cf1f+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 7758.5 s
+- outcome: ok
+  - preview verdicts (raw readout): {'jepa_spatial': 'not supported', 'pixel': 'not supported', 'jepa_pooled': 'not supported', 'static_vicreg': 'not supported', 'nonphys_jepa_spatial': 'not supported'}
+  - results: results/phase3/val_preview.json
