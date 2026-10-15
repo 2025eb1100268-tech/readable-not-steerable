@@ -87,3 +87,24 @@ contrast is not a readout artefact.
 - **P1.5 (specificity)** For that direction, |r| with trajectory-mean log palinstrophy is at least
   0.1 lower than |r| with log Z₀.
 - **Overall:** probability that both gate conditions pass and Stage 2 starts: about 45%.
+
+---
+
+## Entry 2 — 2026-10-15 — before Stage 0
+
+Written after the datasets were generated (generation statistics only) and before any model was
+run on them.
+
+- **Correction to entry 1.** The map mean ⊕ std readout is **256** dims (per-channel spatial mean
+  and spatial std of 128 channels), not 384; that was an arithmetic slip. The definition is
+  unchanged.
+- **Data fact (from generation, no model outputs).** The matched-energy set thermalizes more than
+  the others: top-shell enstrophy share at the last frame has median 1.5% and exceeds 5% in 16.7%
+  of runs (v1: 0.9% / 6.2%; explore: 0.8% / 6.1%). E and Z remain exact invariants of the truncated
+  system, so log Z₀ (the gate's target) is unaffected, but trajectory means of the slow-direction
+  projections include some unrealistic late frames.
+- **Added unscored robustness check for gate (b).** The gate (b) statistics recomputed with
+  trajectory means over the first 16 frames only (t ≤ 0.60). Gate (b) as written (all 24 frames)
+  still decides.
+- **Prediction.** For both the pixel model and the control, the 16-frame value differs from the
+  24-frame value by less than 0.05, and the robustness check agrees with gate (b)'s outcome.
