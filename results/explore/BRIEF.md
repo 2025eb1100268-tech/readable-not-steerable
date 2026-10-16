@@ -139,3 +139,11 @@ If Stage 2 shows no pattern, write `results/explore/SUMMARY.md` saying so plainl
     At the selected lr 3e-3, 8 of 15 imaginer-family runs diverged. The investigator chose to rerun
     every imaginer-family run at lr 1e-3 (the summarizer's lr) and raised the budget to
     **28 GPU-hours**. Details and the divergence rule: PREDICTIONS.md entry 5.
+14. **Stage 3 design and budget (2026-10-17, before any Stage 3 training or unsealing).** The
+    investigator adopted fresh training seeds for the verdict and raised the budget to **30
+    GPU-hours**. H1 and H2 are scored on newly trained autoencoders (velocity and vorticity, plain and
+    + VICReg, seeds 3–5, frozen Stage 2 recipe) against untrained controls with the same seeds; the
+    Stage 2 seeds 0–2 are reported. A secondary H4 tests the pixel predictor at k = 4 with VICReg
+    (seeds 0–2, the k = 4 imaginer's recipe plus the VICReg terms) against the plain k = 4 imaginer.
+    The new models are evaluated only on the sealed confirm set (blind). Supersedes the "no
+    retraining" part of change 10.
