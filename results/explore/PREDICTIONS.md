@@ -228,3 +228,57 @@ model.
 - **Budget** raised to 28 GPU-hours (BRIEF agreed change 13).
 - Predictions P2.1–P2.10 stand unchanged and now refer to the lr 1e-3 imaginer runs (P2.9 was about
   the selection itself and is already scored: it held).
+
+---
+
+## Entry 6 — 2026-10-16 — revised exploratory plan (before any Stage 2 evaluation)
+
+Written after more lr 1e-3 imaginer runs diverged (k = 1 seed 1; k = 16 seeds 0 and 1, which leaves
+k = 16 with one good seed) and before any probe or slow-direction analysis of a Stage 2 model. The
+investigator asked for a less conventional exploratory plan; this entry replaces the rest of entry 3's
+schedule. Stage 3 remains the only place a claim can come from.
+
+### What changes
+
+- **Dropped:** replacement seeds for diverged horizon runs; the k\* decision; the fake-physics
+  imaginer and pixel + VICReg runs at k\*. The three queued bridge runs (lr 1e-3) are kept.
+- **Step 1 (no training).** Stage 2 evaluation (`explore/stage2_eval.py`, definitions E1–E5 of
+  entry 3) of every Stage 2 run that trained. The lr 1e-3 runs are the primary groups (k = 1: 2
+  seeds, k = 4: 3, k = 16: 1, k = 32: 3 if seed 2 trains). The seven lr 3e-3 imaginer runs that did not
+  diverge are reported as separate, labelled extra-replicate groups, never pooled into the lr 1e-3
+  means. Predictions P2.1–P2.8 are scored on the lr 1e-3 groups.
+- **Step 2 (no training): imagination probe.** For each lr 1e-3 imaginer at k = 4 (seeds 0–2): slow
+  directions fitted as pre-registered on the pooled latent (v1 train+val inviscid); its
+  enstrophy-tracking and energy-tracking directions (top-3 direction with the largest |r| with log Z₀
+  and with log E₀ on explore); each direction's activation pattern in pooled-latent space (regression
+  of the pooled latent on the slow coordinate over explore inviscid frames). Intervention: add
+  δ · std · pattern to every position of both context maps, δ ∈ {−2, −1, 0, 1, 2}, decode, and measure
+  log Z, log E, log P of the rendered field (512 explore inviscid anchors, t ≤ 19). Effect = slope over
+  δ. Baseline: 20 random directions in pooled space with the same norm as the enstrophy pattern.
+- **Step 3 (training): "render without imagining".** Autoencoders: the shared encoder on the current
+  frame only, a pixel-decoder head (single-frame input) reconstructing the current frame's
+  **streamfunction ψ**, **velocity u** or **vorticity ω** (each normalized to unit variance over v1
+  train frames), with and without the JEPA's VICReg terms on the pooled latent (25·MSE + 25·var +
+  1·cov), seeds 0–2: 18 runs. Recipe for all 18: v1 train frames with t ≥ 1 (inviscid included), batch
+  256, AdamW (weight decay 0.05), bf16, peak lr 1e-3, 5% warmup then cosine decay over 30 epochs (about
+  8,000 steps), gradient-norm clipping at 1.0 (new, for stability; applied to every new run). Selection
+  of nothing: one recipe, no grid. Divergence rule: a final normalized reconstruction MSE ≥ 1 is
+  diverged, reported, excluded. Evaluated with E1–E5 like Stage 2.
+
+### Predictions
+
+- **P6.1 (imagination probe)** For each of the three k = 4 imaginers, moving along its
+  enstrophy-tracking direction changes the rendered log Z at least 1.5 × as much as the rendered log E,
+  and more than 95% of the random directions; moving along its energy-tracking direction changes log E
+  more than log Z. Probability: 60%.
+- **P6.2 (render target, enstrophy)** Explore enstrophy |r| (E1) orders ω-AE > u-AE > ψ-AE (plain
+  variants). Probability: 55%. Reason: the reconstruction norm of ω is 2Z, of u is 2E, and of ψ is a
+  large-scale quantity that is not conserved.
+- **P6.3 (render target, energy)** Explore energy |r| (best of top 3 with log E₀) is highest for
+  u-AE or ψ-AE and lowest for ω-AE. Probability: 55%.
+- **P6.4 (rendering without the future)** The plain u-AE's E1 is within 0.15 of the k = 4 imaginer's
+  E1 (rendering the present already suffices). Probability: 55%.
+- **P6.5 (regularization)** For each render target, the VICReg variant's E1 is at least 0.2 below the
+  plain variant's. Probability: 50%.
+- **P6.6 (matched energy)** On matched-energy (E5), ω-AE ≥ 0.8 and ψ-AE is the lowest of the plain
+  autoencoders. Probability: 55%.
