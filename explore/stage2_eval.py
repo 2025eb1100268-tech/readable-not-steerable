@@ -55,6 +55,12 @@ def groups_from_files() -> dict:
         for k in HORIZONS:
             g[f"{fam} k={k}"] = [name(fam, k, lr[fam], s) for s in SEEDS]
     g["bridge k=4"] = [name("bridge", 4, lr["imaginer"], s) for s in SEEDS]
+    if lr["imaginer"] != 0.003:  # entry 6: lr 3e-3 imaginer runs that trained, reported separately, never pooled
+        for k in HORIZONS:
+            g[f"imaginer k={k} (lr 3e-3, extra replicates)"] = [name("imaginer", k, 0.003, s) for s in SEEDS]
+    for target, sym in (("streamfunction", "ψ"), ("velocity", "u"), ("vorticity", "ω")):  # entry 6, step 3
+        for fam, lab in ((f"ae_{target}", f"AE render {sym}"), (f"ae_{target}_vicreg", f"AE render {sym} + VICReg")):
+            g[lab] = [name(fam, 0, 0.001, s) for s in SEEDS]
     if (S2 / "kstar.json").exists():
         with open(S2 / "kstar.json", encoding="utf-8") as f:
             ks = json.load(f)["k_star"]
@@ -67,7 +73,7 @@ def groups_from_files() -> dict:
             return False
         with open(S2 / "runs" / f"{r}.json", encoding="utf-8") as f:
             res = json.load(f)
-        if res["config"]["model"] in ("pixel", "pixel_vicreg") and res["final"]["metric"] >= 1:
+        if res["config"]["model"] in ("pixel", "pixel_vicreg", "autoencoder", "autoencoder_vicreg") and res["final"]["metric"] >= 1:
             EXCLUDED[r] = f"diverged (final val loss / copy {res['final']['metric']:.3g} >= 1; entry 5 rule)"
             return False
         return True

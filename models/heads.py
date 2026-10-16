@@ -56,16 +56,18 @@ class PooledPredictor(nn.Module):
 
 
 class PixelDecoder(nn.Module):
-    """Pixel predictor head: context maps of (t-1, t) -> velocity field (u, v) at t+k."""
+    """Pixel predictor head: context maps of (t-1, t) -> velocity field (u, v) at t+k.
+    [EXPLORE] in_ch / out_ch let the autoencoders decode one map into a 1- or 2-channel field."""
 
-    def __init__(self, d: int = 128, widths=(256, 128, 64, 32), n_horizons: int = len(HORIZONS)):
+    def __init__(self, d: int = 128, widths=(256, 128, 64, 32), n_horizons: int = len(HORIZONS),
+                 in_ch: int | None = None, out_ch: int = 2):
         super().__init__()
-        self.inp = _conv(2 * d, widths[0])
+        self.inp = _conv(in_ch or 2 * d, widths[0])
         self.k = HorizonEmbedding(widths[0], n_horizons)
         layers = []
         for c_in, c_out in zip(widths[:-1], widths[1:]):
             layers += [nn.GELU(), _conv(c_in, 4 * c_out), nn.PixelShuffle(2)]
-        layers += [nn.GELU(), nn.Conv2d(widths[-1], 2, 1)]
+        layers += [nn.GELU(), nn.Conv2d(widths[-1], out_ch, 1)]
         self.body = nn.Sequential(*layers)
         kaiming_init(self)
 

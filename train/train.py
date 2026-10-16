@@ -36,6 +36,20 @@ from solver.diagnostics import energy_spectrum  # noqa: E402
 from solver.ns2d import SpectralGrid  # noqa: E402
 
 PIXEL_KINDS = ("pixel", "pixel_vicreg")
+AE_KINDS = ("autoencoder", "autoencoder_vicreg")  # [EXPLORE] entry 6: render the current frame's psi, u or omega
+
+
+def ae_field(x: torch.Tensor, target: str, grid: SpectralGrid) -> torch.Tensor:
+    """The field an autoencoder reconstructs from scaled velocity x (B, 2, n, n): velocity (2 channels),
+    vorticity or streamfunction (1 channel), in float32."""
+    if target == "velocity":
+        return x.float()
+    w_hat = grid.vorticity_hat_from_velocity(x[:, 0].float(), x[:, 1].float())
+    if target == "streamfunction":
+        w_hat = grid.streamfunction_hat(w_hat)
+    elif target != "vorticity":
+        raise ValueError(target)
+    return grid.ifft(w_hat)[:, None].float()
 
 
 class SplitData:
@@ -94,11 +108,24 @@ class Model(torch.nn.Module):
             self.head = PooledPredictor(d, cfg["predictor_width"], n_horizons=nh)
         elif self.kind in PIXEL_KINDS:
             self.head = PixelDecoder(d, n_horizons=nh)
+        elif self.kind in AE_KINDS:
+            self.ae_target = cfg["ae_target"]
+            self.ae_scale = float(cfg.get("ae_target_scale", 1.0))
+            self.head = PixelDecoder(d, n_horizons=nh, in_ch=d, out_ch=2 if self.ae_target == "velocity" else 1)
+            self._grid = None
         elif self.kind == "static_vicreg":
             self.head = None
         else:
             raise ValueError(self.kind)
         self.target = copy.deepcopy(self.enc).requires_grad_(False) if self.kind.startswith("jepa") else None
+
+    def grid(self, device) -> SpectralGrid:
+        if self._grid is None or self._grid.device != torch.device(device):
+            self._grid = SpectralGrid(64, device, dtype=torch.float32)
+        return self._grid
+
+    def ae_target_field(self, x_t: torch.Tensor) -> torch.Tensor:
+        return ae_field(x_t, self.ae_target, self.grid(x_t.device)) / self.ae_scale
 
     def probed_encoder(self):
         """The encoder whose pooled latent is probed: EMA target for JEPA variants."""
@@ -115,6 +142,14 @@ class Model(torch.nn.Module):
             var2, cov2 = vicreg_var_cov(z2)
             var, cov = (var1 + var2) / 2, (cov1 + cov2) / 2
             return w["pred"] * inv + w["var"] * var + w["cov"] * cov, {"pred": inv, "var": var, "cov": cov}
+        if self.kind in AE_KINDS:  # [EXPLORE] entry 6: reconstruct a field of the current frame only
+            m_t = self.enc(x_t)
+            pred = self.head(m_t, k_idx)
+            mse = F.mse_loss(pred.float(), self.ae_target_field(x_t))
+            if self.kind == "autoencoder":
+                return mse, {"pred": mse}
+            var, cov = vicreg_var_cov(m_t.mean(dim=(2, 3)))
+            return w["pred"] * mse + w["var"] * var + w["cov"] * cov, {"pred": mse, "var": var, "cov": cov}
         maps = self.enc(torch.cat([x_prev, x_t]))
         m_prev, m_t = maps[:b], maps[b:]
         if self.kind in PIXEL_KINDS:
@@ -156,7 +191,12 @@ def evaluate(model: Model, val: SplitData, k_val: torch.Tensor, batch: int, amp:
         k = torch.tensor(model.horizons, device=a.device)[ki]
         x_prev, x_t, x_tk = val.x[a - 1], val.x[a], val.x[a + k]
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
-            if model.kind in PIXEL_KINDS:
+            if model.kind in AE_KINDS:  # normalized reconstruction MSE: >= 1 is no better than predicting zero
+                tgt = model.ae_target_field(x_t)
+                pred = model.head(model.enc(x_t), ki).float()
+                num += F.mse_loss(pred, tgt, reduction="sum").item()
+                den += float((tgt**2).sum())
+            elif model.kind in PIXEL_KINDS:
                 maps = model.enc(torch.cat([x_prev, x_t]))
                 pred = model.head(torch.cat([maps[:len(a)], maps[len(a):]], 1), ki).float()
                 num += F.mse_loss(pred, x_tk, reduction="sum").item()
@@ -189,7 +229,9 @@ def evaluate(model: Model, val: SplitData, k_val: torch.Tensor, batch: int, amp:
         return float(torch.exp(-(p[p > 0] * p[p > 0].log()).sum()))
 
     model.train()
-    return {"metric": metric, "metric_name": "loss / copy baseline" if model.kind != "static_vicreg" else "invariance loss",
+    name = ("invariance loss" if model.kind == "static_vicreg" else "normalized reconstruction MSE" if model.kind in AE_KINDS
+            else "loss / copy baseline")
+    return {"metric": metric, "metric_name": name,
             "latent_std_median": float(std.median()), "latent_std_min": float(std.min()),
             "effective_rank": eff_rank(torch.cov(z.T)), "effective_rank_corr": eff_rank(torch.corrcoef(z.T))}
 
@@ -230,6 +272,8 @@ def prediction_diagnostics(model: Model, val: SplitData, k_val: torch.Tensor, am
     Pixel models: mean energy spectra of predicted, true and copied (frame t) fields at t + k.
     Spatial JEPA: variance of the predicted map relative to the target map (per channel, averaged)."""
     pixel = model.kind in PIXEL_KINDS
+    if model.kind in AE_KINDS:
+        return ae_diagnostics(model, val, amp, n, chunk)
     if not (pixel or model.kind == "jepa_spatial"):
         return {}
     model.eval()
@@ -266,6 +310,32 @@ def prediction_diagnostics(model: Model, val: SplitData, k_val: torch.Tensor, am
     return {"n_anchors": count, "pred_over_target_map_variance": float((var["pred"] / var["tgt"]).mean())}
 
 
+@torch.no_grad()
+def ae_diagnostics(model: Model, val: SplitData, amp: bool, n: int = 1024, chunk: int = 256) -> dict:
+    """[EXPLORE] entry 6: shell power spectra of the reconstructed and true target fields."""
+    model.eval()
+    g = model.grid(val.x.device)
+    shells = torch.round(g.kmag).long().reshape(-1)
+    nk = int(shells.max()) + 1
+    acc = {"pred": torch.zeros(nk, device=val.x.device, dtype=torch.float64), "true": torch.zeros(nk, device=val.x.device, dtype=torch.float64)}
+    count = 0
+    for i in range(0, min(n, len(val.anchors)), chunk):
+        a = val.anchors[i:min(i + chunk, n)]
+        x_t = val.x[a]
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
+            pred = model.head(model.enc(x_t), torch.zeros(len(a), dtype=torch.long, device=x_t.device)).float()
+        for name, f in (("pred", pred), ("true", model.ae_target_field(x_t))):
+            p = (g.fft(f).abs() ** 2 * g.parseval_w).sum(1).reshape(len(a), -1).sum(0).double()
+            acc[name].scatter_add_(0, shells, p)
+        count += len(a)
+    model.train()
+    spec = {k_: (v / count).cpu().numpy() for k_, v in acc.items()}
+    out = {"n_anchors": count, "k": list(range(nk)), "P_pred": spec["pred"].tolist(), "P_true": spec["true"].tolist()}
+    for k0 in (5, 10):
+        out[f"pred_over_true_power_k_ge_{k0}"] = float(spec["pred"][k0:].sum() / spec["true"][k0:].sum())
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True)
@@ -280,6 +350,9 @@ def main():
     anchor = {"horizons": hz_list, "rule": cfg.get("anchor_rule", "original"), "max_t": cfg.get("anchor_max_t"),
               "min_frames": cfg.get("anchor_min_frames", 64)}
     train, val = SplitData(ds, "train", device, **anchor), SplitData(ds, "val", device, **anchor)
+    if cfg["model"] in AE_KINDS and "ae_target_scale" not in cfg:  # unit variance over v1 train frames, stored with the run
+        sample = train.x[torch.arange(0, train.n, max(1, train.n // 4096), device=device)]
+        cfg["ae_target_scale"] = float(ae_field(sample, cfg["ae_target"], SpectralGrid(64, device, dtype=torch.float32)).std())
     model = Model(cfg).to(device)
     params = [p for p in model.parameters() if p.requires_grad]
     opt = torch.optim.AdamW(params, lr=cfg["lr"], weight_decay=cfg["weight_decay"])
@@ -327,6 +400,8 @@ def main():
                 loss, parts = model.loss(train.x[a - 1], train.x[a], train.x[a + k], k_idx, w, gen_cpu)
             opt.zero_grad(set_to_none=True)
             loss.backward()
+            if cfg.get("grad_clip"):  # [EXPLORE] entry 6 recipe
+                torch.nn.utils.clip_grad_norm_(params, cfg["grad_clip"])
             opt.step()
             sched.step()
             if plateau:
@@ -363,7 +438,7 @@ def main():
     wall = time.perf_counter() - t0
     final = evals[-1]
     # Amendment A1: the no-collapse rule applies only to objectives that can collapse (variance target)
-    collapsed = cfg["model"] != "pixel" and (final["effective_rank"] < cfg["collapse"]["min_effective_rank"]
+    collapsed = cfg["model"] not in ("pixel", "autoencoder") and (final["effective_rank"] < cfg["collapse"]["min_effective_rank"]
                                              or final["latent_std_median"] < cfg["collapse"]["min_std_median"])
     diagnostics = prediction_diagnostics(model, val, k_val, cfg["amp_bf16"]) if cfg.get("diagnostics") else None
     ckpt = REPO / "results" / "checkpoints" / f"{cfg['run_name']}.pt"
@@ -384,6 +459,8 @@ def main():
         details["stop reason / lr reductions"] = f"{stop_reason} / {ctl.reductions}"
     if diagnostics:
         details["diagnostics"] = ", ".join(f"{key}: {v:.3f}" for key, v in diagnostics.items() if key.startswith(("pred_over", "copy_over")))
+    if cfg["model"] in AE_KINDS:
+        details["target / scale"] = f"{cfg['ae_target']} / {cfg['ae_target_scale']:.4f}"
     append_log(f"{cfg.get('log_title', 'Phase 2 training')}: {cfg['run_name']}", cfg["_config_path"], command_line(),
                "collapsed (fails the pre-registered no-collapse rule)" if collapsed else "ok", details, wall, environment().get("gpu"))
 

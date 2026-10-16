@@ -1,0 +1,10 @@
+{
+  "imaginer": {
+    "lr": 0.001,
+    "source": "override (PREDICTIONS entry 5): 8 of 15 imaginer-family runs diverged at the selected lr 3e-3"
+  },
+  "summarizer": {
+    "lr": 0.001,
+    "source": "label-free selection (entry 3)"
+  }
+}

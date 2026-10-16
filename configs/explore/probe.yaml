@@ -1,0 +1,16 @@
+# [EXPLORE] Imagination probe (python -m explore.imagination_probe --config configs/explore/probe.yaml)
+# PREDICTIONS entry 6, step 2: the three lr 1e-3 imaginers at k = 4.
+seed: 0
+data_parts:
+  - [data/generated/v1, [train, val]]
+  - [data/generated/explore_v2, [explore]]
+  - [data/generated/matched_energy_v2, [matched]]
+cache_tag: v1tv_explore_matched
+runs: [s2_imaginer_k4_lr0.001_s0, s2_imaginer_k4_lr0.001_s1, s2_imaginer_k4_lr0.001_s2]
+n_pca: 32
+deltas: [-2, -1, 0, 1, 2]
+n_anchors: 512
+n_random: 20
+output_md: results/explore/probe.md
+output_json: results/explore/probe.json
+figure: results/explore/probe.png

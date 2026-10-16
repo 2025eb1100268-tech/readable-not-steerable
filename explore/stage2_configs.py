@@ -5,6 +5,7 @@ entries 3-4). Every step writes YAML files under configs/explore/stage2/ and log
     python -m explore.stage2_configs select               # pick lr per family; write horizon x seed and bridge configs
     python -m explore.stage2_configs kstar --k K          # fake-physics imaginer and pixel + VICReg configs at k*
     python -m explore.stage2_configs override --family imaginer --lr 0.001   # PREDICTIONS entry 5
+    python -m explore.stage2_configs ae                   # entry 6, step 3: 18 render-target autoencoders
 """
 from __future__ import annotations
 
@@ -41,6 +42,15 @@ def effective_lr() -> dict:
             return {fam: v["lr"] for fam, v in json.load(f).items()}
     with open(s2 / "lr_selection.json", encoding="utf-8") as f:
         return {fam: v["selected_lr"] for fam, v in json.load(f).items()}
+
+
+AE_BASE = {  # entry 6, step 3: one recipe for all 18 autoencoders (cosine schedule, gradient clipping)
+    "data_dir": "data/generated/v1", "weight_decay": 0.05, "batch": 256, "amp_bf16": True, "ema_start": 0.996,
+    "loss_weights": {"pred": 25.0, "var": 25.0, "cov": 1.0}, "predictor_width": 256, "log_every": 100,
+    "collapse": {"min_effective_rank": 8, "min_std_median": 0.1}, "horizons": [0], "epochs": 30, "warmup_frac": 0.05,
+    "eval_every_epochs": 5, "grad_clip": 1.0, "lr": 0.001, "diagnostics": True, "results_dir": RUNS,
+    "log_title": "[EXPLORE] Step 3 autoencoder training",
+}
 
 
 def name(family: str, k: int, lr: float, seed: int) -> str:
@@ -108,6 +118,23 @@ def override(family: str, lr: float):
     print("\n".join(todo))
 
 
+def ae():
+    """Seed-major order, so that a partial batch is still a balanced factorial."""
+    runs = []
+    for s in SEEDS:
+        for target in ("streamfunction", "velocity", "vorticity"):
+            for vic in (False, True):
+                fam = f"ae_{target}" + ("_vicreg" if vic else "")
+                run = name(fam, 0, AE_BASE["lr"], s)
+                cfg = {**AE_BASE, "model": "autoencoder_vicreg" if vic else "autoencoder", "ae_target": target, "seed": s, "run_name": run}
+                CFG_DIR.mkdir(parents=True, exist_ok=True)
+                (CFG_DIR / f"{run}.yaml").write_text(
+                    f"# [EXPLORE] entry 6 step 3 (python -m train.train --config configs/explore/stage2/{run}.yaml)\n"
+                    + yaml.safe_dump(cfg, sort_keys=False), encoding="utf-8")
+                runs.append(run)
+    print("\n".join(runs))
+
+
 def kstar(k: int):
     lr = effective_lr()["imaginer"]
     runs = [write("fake_imaginer", "pixel", k, lr, s, data_dir="data/generated/nonphys_v1") for s in SEEDS]
@@ -117,12 +144,12 @@ def kstar(k: int):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["selection", "select", "kstar", "override"])
+    ap.add_argument("step", choices=["selection", "select", "kstar", "override", "ae"])
     ap.add_argument("--k", type=int)
     ap.add_argument("--family")
     ap.add_argument("--lr", type=float)
     a = ap.parse_args()
-    {"selection": selection, "select": select, "kstar": lambda: kstar(a.k), "override": lambda: override(a.family, a.lr)}[a.step]()
+    {"selection": selection, "select": select, "kstar": lambda: kstar(a.k), "override": lambda: override(a.family, a.lr), "ae": ae}[a.step]()
 
 
 if __name__ == "__main__":
