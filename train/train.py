@@ -394,6 +394,8 @@ def main():
         perm = train.anchors[torch.randperm(len(train.anchors), generator=gen, device=device)]
         for i in range(0, len(perm), cfg["batch"]):
             a = perm[i:i + cfg["batch"]]
+            if len(a) < 2 and cfg["model"] not in ("pixel", "autoencoder"):
+                continue  # VICReg variance / covariance are undefined for one sample (never occurred before entry 6)
             k_idx = torch.randint(0, len(hz_list), (len(a),), generator=gen, device=device)
             k = horizons[k_idx]
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=cfg["amp_bf16"]):

@@ -1365,3 +1365,59 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - results: results/explore/stage2/runs/s2_bridge_k4_lr0.001_s1.json
   - stop reason / lr reductions: step cap / 2
   - diagnostics: pred_over_true_energy_k_ge_5: 0.978, copy_over_true_energy_k_ge_5: 1.077, pred_over_true_energy_k_ge_10: 0.663, copy_over_true_energy_k_ge_10: 0.931
+
+## 2026-10-16 18:33 — [EXPLORE] Stage 2 training: s2_bridge_k4_lr0.001_s2
+- config: `configs/explore/stage2/s2_bridge_k4_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_bridge_k4_lr0.001_s2.yaml`
+- git: `4e52bad+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2117.8 s
+- outcome: ok
+  - final val loss / copy baseline: 0.0124
+  - effective rank / latent std median: 2.8 / 0.011
+  - steps: 12000
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_bridge_k4_lr0.001_s2.json
+  - stop reason / lr reductions: step cap / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.998, copy_over_true_energy_k_ge_5: 1.077, pred_over_true_energy_k_ge_10: 0.736, copy_over_true_energy_k_ge_10: 0.931
+
+## 2026-10-16 18:34 — [EXPLORE] regression check: Phase 2 cosine path unchanged: regress_smoke_pixel
+- config: `C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/regress_smoke_pixel.yaml`
+- command: `python -m train.train --config C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/regress_smoke_pixel.yaml`
+- git: `4e52bad+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 45.6 s
+- outcome: ok
+  - final val loss / copy baseline: 1.1566
+  - effective rank / latent std median: 5.3 / 0.010
+  - steps: 244
+  - peak GPU memory GB: 4.51
+  - results: C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/runs/regress_smoke_pixel.json
+
+## 2026-10-16 18:35 — [EXPLORE] regression check: Phase 2 cosine path unchanged: regress_smoke_pixel
+- config: `C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/regress_smoke_pixel.yaml`
+- command: `python -m train.train --config C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/regress_smoke_pixel.yaml`
+- git: `4e52bad+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 45.0 s
+- outcome: ok
+  - final val loss / copy baseline: 1.1566
+  - effective rank / latent std median: 5.3 / 0.010
+  - steps: 244
+  - peak GPU memory GB: 4.51
+  - results: C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/runs/regress_smoke_pixel.json
+
+## 2026-10-16 18:37 — [EXPLORE] smoke (code check, 1 epoch): smoke_ae_vorticity_vicreg
+- config: `C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/smoke_ae.yaml`
+- command: `python -m train.train --config C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/smoke_ae.yaml`
+- git: `4e52bad+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 32.4 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0600
+  - effective rank / latent std median: 13.9 / 0.817
+  - steps: 264
+  - peak GPU memory GB: 4.51
+  - results: C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/runs/smoke_ae_vorticity_vicreg.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.780, pred_over_true_power_k_ge_10: 0.344
+  - target / scale: vorticity / 2.6306
