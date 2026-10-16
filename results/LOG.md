@@ -1421,3 +1421,43 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - results: C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/runs/smoke_ae_vorticity_vicreg.json
   - diagnostics: pred_over_true_power_k_ge_5: 0.780, pred_over_true_power_k_ge_10: 0.344
   - target / scale: vorticity / 2.6306
+
+## 2026-10-16 18:38 — [EXPLORE] regression check: Phase 2 cosine path unchanged: regress_smoke_pixel
+- config: `C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/regress_smoke_pixel.yaml`
+- command: `python -m train.train --config C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/regress_smoke_pixel.yaml`
+- git: `ddb00f1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 45.0 s
+- outcome: ok
+  - final val loss / copy baseline: 1.1566
+  - effective rank / latent std median: 5.3 / 0.010
+  - steps: 244
+  - peak GPU memory GB: 4.51
+  - results: C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/runs/regress_smoke_pixel.json
+
+## 2026-10-16 18:39 — [EXPLORE] smoke (code check, 1 epoch): smoke_ae_vorticity_vicreg
+- config: `C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/smoke_ae.yaml`
+- command: `python -m train.train --config C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/smoke_ae.yaml`
+- git: `ddb00f1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 32.5 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0600
+  - effective rank / latent std median: 13.9 / 0.817
+  - steps: 264
+  - peak GPU memory GB: 4.51
+  - results: C:/Users/Manav/AppData/Local/Temp/claude/c--Users-Manav-geometric-scout/e52bf240-1420-472a-8838-5dba35b0a4a9/scratchpad/runs/smoke_ae_vorticity_vicreg.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.780, pred_over_true_power_k_ge_10: 0.344
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-16 19:05 — [EXPLORE] Stage 2 evaluation
+- config: `configs/explore/stage2_eval_step1.yaml`
+- command: `python -m explore.stage2_eval --config configs/explore/stage2_eval_step1.yaml`
+- git: `ddb00f1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1559.6 s
+- outcome: ok
+  - groups (runs): untrained (3), imaginer k=1 (2), imaginer k=4 (3), imaginer k=16 (1), imaginer k=32 (3), summarizer k=1 (3), summarizer k=4 (3), summarizer k=16 (3), summarizer k=32 (3), bridge k=4 (3), imaginer k=1 (lr 3e-3, extra replicates) (1), imaginer k=4 (lr 3e-3, extra replicates) (2), imaginer k=16 (lr 3e-3, extra replicates) (1), imaginer k=32 (lr 3e-3, extra replicates) (3)
+  - E1 imaginer by k: 1: 0.678, 4: 0.795, 16: 0.694, 32: 0.759
+  - E1 summarizer by k: 1: 0.310, 4: 0.372, 16: 0.380, 32: 0.457
+  - results: results/explore/stage2/eval_step1.md, results/explore/stage2/primary_step1.png, results/explore/stage2/spectra_step1.png, results/explore/stage2/eval_step1.json.gz
