@@ -198,3 +198,33 @@ early "best" that the later metric never beats. Therefore, for every Stage 2 mod
   initializes the best value.
 - Everything else in entry 3's schedule is unchanged (warmup 575 steps, evaluation every 230 steps,
   0.5% improvement threshold, patience 4, lr × 0.3, at most 2 reductions, cap 12,000 steps).
+
+---
+
+## Entry 5 — 2026-10-16 — imaginer learning rate after divergence (before any Stage 2 evaluation)
+
+Written after Stage 2 phase A finished and before any probe or slow-direction analysis of a Stage 2
+model.
+
+- **What happened.** The label-free rule (entry 3) chose lr 3e-3 for the imaginer from seed 0 at
+  k = 4. At that lr, 8 of the 15 imaginer-family runs diverged: a sudden loss spike (e.g. to 6,640 at
+  step ~500), latent std blowing up to ~10⁵, and no recovery, ending far worse than copying the
+  current frame (`s2_imaginer_k1_lr0.003_s0`, `_s1`; `s2_imaginer_k4_lr0.003_s1`;
+  `s2_imaginer_k16_lr0.003_s1`, `_s2`; `s2_bridge_k4_lr0.003_s0`, `_s1`, `_s2`). All 12 summarizer
+  runs (lr 1e-3) trained normally.
+- **Decision (investigator, option A).** Every imaginer-family run (imaginer at all horizons, bridge,
+  fake-physics imaginer, pixel + VICReg) uses **lr 1e-3**, the other grid value, which trained
+  stably for seed 0 at k = 4. This also gives imaginer and summarizer the same lr. The selection
+  record (`results/explore/stage2/lr_selection.json`) is kept as it was; the effective lrs and the
+  reason go in `results/explore/stage2/lr_final.json`. All lr 3e-3 imaginer-family runs are listed
+  as failed in the full run table and are not analysed.
+- **Divergence rule (for every imaginer-family run from now on).** A pixel-family run whose final
+  val loss / copy baseline is ≥ 1 (worse than copying the current frame) is *diverged*: reported,
+  excluded from the analysis, not rerun. (Not applied to the summarizer: in latent space, copying
+  frame t is nearly exact at k = 1, and its ratio sits near 1 without anything having failed; the
+  summarizer keeps the amendment A1 collapse rule.)
+- **k\*** is decided by entry 3's rule on the lr 1e-3 imaginer runs, using the seeds that did not
+  diverge (at least 2 per horizon required; otherwise stop and report).
+- **Budget** raised to 28 GPU-hours (BRIEF agreed change 13).
+- Predictions P2.1–P2.10 stand unchanged and now refer to the lr 1e-3 imaginer runs (P2.9 was about
+  the selection itself and is already scored: it held).

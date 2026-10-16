@@ -135,3 +135,7 @@ If Stage 2 shows no pattern, write `results/explore/SUMMARY.md` saying so plainl
     project to about 25 GPU-hours in total. The investigator chose to raise the budget to
     **26 GPU-hours** with no change to the protocol (no lower cap, no fewer seeds). Stop and ask
     before exceeding 26.
+13. **Imaginer lr and budget (2026-10-16, after Stage 2 phase A, before any Stage 2 evaluation).**
+    At the selected lr 3e-3, 8 of 15 imaginer-family runs diverged. The investigator chose to rerun
+    every imaginer-family run at lr 1e-3 (the summarizer's lr) and raised the budget to
+    **28 GPU-hours**. Details and the divergence rule: PREDICTIONS.md entry 5.
