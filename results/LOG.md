@@ -1501,3 +1501,11 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - results: results/explore/stage2/runs/s2_ae_streamfunction_vicreg_k0_lr0.001_s0.json
   - diagnostics: pred_over_true_power_k_ge_5: 0.708, pred_over_true_power_k_ge_10: 9.988
   - target / scale: streamfunction / 1.1693
+
+## 2026-10-16 19:48 — [EXPLORE] Contrast probe DRY RUN (code check, 64 anchors; outputs in the scratchpad, not results)
+- config: `configs/explore/contrast_probe.yaml (modified copy)`
+- command: `scratchpad dry_contrast.yaml`
+- git: `9114f97+dirty`
+- outcome: ok
+  - imaginer k4 s0 slopes (logZ, logE, logP): contrast +2.02/+2.01/+2.09, mean +0.30/+0.22/+0.44, global +2.33/+2.24/+2.54
+  - AE streamfunction s0 slopes: contrast +2.06/+1.98/+2.56, mean -0.00/+0.01/-0.03, global +2.07/+1.99/+2.64

@@ -1,0 +1,23 @@
+# [EXPLORE] Contrast probe, post hoc (python -m explore.contrast_probe --config configs/explore/contrast_probe.yaml)
+# PREDICTIONS entry 7.
+seed: 0
+data_parts:
+  - [data/generated/v1, [train, val]]
+  - [data/generated/explore_v2, [explore]]
+  - [data/generated/matched_energy_v2, [matched]]
+cache_tag: v1tv_explore_matched
+runs:
+  - s2_imaginer_k4_lr0.001_s0
+  - s2_imaginer_k4_lr0.001_s1
+  - s2_imaginer_k4_lr0.001_s2
+  - s2_ae_velocity_k0_lr0.001_s0
+  - s2_ae_velocity_k0_lr0.001_s1
+  - s2_ae_velocity_k0_lr0.001_s2
+  - s2_ae_vorticity_k0_lr0.001_s0
+  - s2_ae_vorticity_k0_lr0.001_s1
+  - s2_ae_vorticity_k0_lr0.001_s2
+eps: [-0.5, -0.25, 0, 0.25, 0.5]
+n_anchors: 512
+output_md: results/explore/contrast_probe.md
+output_json: results/explore/contrast_probe.json
+figure: results/explore/contrast_probe.png
