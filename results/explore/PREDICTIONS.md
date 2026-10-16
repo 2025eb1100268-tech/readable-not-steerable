@@ -282,3 +282,29 @@ schedule. Stage 3 remains the only place a claim can come from.
   plain variant's. Probability: 50%.
 - **P6.6 (matched energy)** On matched-energy (E5), ω-AE ≥ 0.8 and ψ-AE is the lowest of the plain
   autoencoders. Probability: 55%.
+
+---
+
+## Entry 7 — 2026-10-16 — contrast probe (POST HOC: designed after seeing the imagination probe)
+
+The imagination probe (entry 6, step 2) failed P6.1 for all three k = 4 imaginers: shifting the
+spatial mean of the context maps along the enstrophy direction barely changed the rendered field.
+Stage 0 had shown that, for the pixel model, information beyond the pooled latent sits in the map's
+spatial variation. This probe asks whether that variation ("contrast") is what the decoder uses.
+It was designed after seeing the result, so it is weaker evidence than entries 1–6.
+
+- **Models.** The three lr 1e-3 imaginers at k = 4, and the plain velocity and vorticity
+  autoencoders (seeds 0–2) once they exist.
+- **Interventions** on every context map (per channel, μ = spatial mean over the 8 × 8 positions),
+  ε ∈ {−0.5, −0.25, 0, 0.25, 0.5}:
+  - contrast: m → μ + (1 + ε)(m − μ)
+  - mean: m → (1 + ε) μ + (m − μ)
+  - global: m → (1 + ε) m
+- **Readout.** log Z, log E, log P of the rendered field (512 explore inviscid anchors, as in the
+  imagination probe); effect = least-squares slope over ε.
+- **P7.1** For each of the three imaginers, the contrast intervention changes the rendered log Z at
+  least 1.5 × as much as the rendered log E. Probability: 55%.
+- **P7.2** For each imaginer, the mean intervention changes the rendered log E more than the
+  rendered log Z. Probability: 50%.
+- **P7.3** The same two patterns hold for the plain vorticity autoencoder (all 3 seeds). Probability:
+  50%.
