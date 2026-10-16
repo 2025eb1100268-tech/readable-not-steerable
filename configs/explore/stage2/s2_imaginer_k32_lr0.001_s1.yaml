@@ -1,0 +1,37 @@
+# [EXPLORE] Stage 2 run (python -m train.train --config configs/explore/stage2/s2_imaginer_k32_lr0.001_s1.yaml)
+data_dir: data/generated/v1
+weight_decay: 0.05
+batch: 256
+amp_bf16: true
+ema_start: 0.996
+loss_weights:
+  pred: 25.0
+  var: 25.0
+  cov: 1.0
+predictor_width: 256
+log_every: 100
+collapse:
+  min_effective_rank: 8
+  min_std_median: 0.1
+anchor_rule: long_windows
+anchor_max_t: 31
+anchor_min_frames: 64
+schedule: plateau
+warmup_steps: 575
+eval_every_steps: 230
+max_steps: 12000
+plateau:
+  min_rel_improve: 0.005
+  patience: 4
+  factor: 0.3
+  max_reductions: 2
+  start_step: 2300
+diagnostics: true
+results_dir: results/explore/stage2/runs
+log_title: '[EXPLORE] Stage 2 training'
+model: pixel
+horizons:
+- 32
+lr: 0.001
+seed: 1
+run_name: s2_imaginer_k32_lr0.001_s1

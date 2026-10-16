@@ -1509,3 +1509,265 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - outcome: ok
   - imaginer k4 s0 slopes (logZ, logE, logP): contrast +2.02/+2.01/+2.09, mean +0.30/+0.22/+0.44, global +2.33/+2.24/+2.54
   - AE streamfunction s0 slopes: contrast +2.06/+1.98/+2.56, mean -0.00/+0.01/-0.03, global +2.07/+1.99/+2.64
+
+## 2026-10-16 19:54 — [EXPLORE] Step 3 autoencoder training: s2_ae_velocity_k0_lr0.001_s0
+- config: `configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s0.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 940.5 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0001
+  - effective rank / latent std median: 3.5 / 0.004
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_velocity_k0_lr0.001_s0.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.992, pred_over_true_power_k_ge_10: 0.755
+  - target / scale: velocity / 1.0064
+
+## 2026-10-16 20:09 — [EXPLORE] Step 3 autoencoder training: s2_ae_velocity_vicreg_k0_lr0.001_s0
+- config: `configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s0.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 933.0 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0035
+  - effective rank / latent std median: 100.0 / 1.029
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_velocity_vicreg_k0_lr0.001_s0.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.930, pred_over_true_power_k_ge_10: 0.512
+  - target / scale: velocity / 1.0064
+
+## 2026-10-16 20:25 — [EXPLORE] Step 3 autoencoder training: s2_ae_vorticity_k0_lr0.001_s0
+- config: `configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s0.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 939.1 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0012
+  - effective rank / latent std median: 11.7 / 0.003
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_vorticity_k0_lr0.001_s0.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.993, pred_over_true_power_k_ge_10: 0.930
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-16 20:40 — [EXPLORE] Step 3 autoencoder training: s2_ae_vorticity_vicreg_k0_lr0.001_s0
+- config: `configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s0.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 905.8 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0105
+  - effective rank / latent std median: 98.2 / 1.030
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_vorticity_vicreg_k0_lr0.001_s0.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.944, pred_over_true_power_k_ge_10: 0.647
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-16 20:55 — [EXPLORE] Step 3 autoencoder training: s2_ae_streamfunction_k0_lr0.001_s1
+- config: `configs/explore/stage2/s2_ae_streamfunction_k0_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_streamfunction_k0_lr0.001_s1.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 898.0 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0000
+  - effective rank / latent std median: 2.0 / 0.007
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_streamfunction_k0_lr0.001_s1.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.990, pred_over_true_power_k_ge_10: 1.629
+  - target / scale: streamfunction / 1.1693
+
+## 2026-10-16 21:11 — [EXPLORE] Step 3 autoencoder training: s2_ae_streamfunction_vicreg_k0_lr0.001_s1
+- config: `configs/explore/stage2/s2_ae_streamfunction_vicreg_k0_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_streamfunction_vicreg_k0_lr0.001_s1.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 952.9 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0037
+  - effective rank / latent std median: 103.9 / 1.031
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_streamfunction_vicreg_k0_lr0.001_s1.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.687, pred_over_true_power_k_ge_10: 9.865
+  - target / scale: streamfunction / 1.1693
+
+## 2026-10-16 21:26 — [EXPLORE] Step 3 autoencoder training: s2_ae_velocity_k0_lr0.001_s1
+- config: `configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s1.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 907.6 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0001
+  - effective rank / latent std median: 4.7 / 0.003
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_velocity_k0_lr0.001_s1.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.992, pred_over_true_power_k_ge_10: 0.770
+  - target / scale: velocity / 1.0064
+
+## 2026-10-16 21:42 — [EXPLORE] Step 3 autoencoder training: s2_ae_velocity_vicreg_k0_lr0.001_s1
+- config: `configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s1.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 934.7 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0031
+  - effective rank / latent std median: 99.5 / 1.029
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_velocity_vicreg_k0_lr0.001_s1.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.933, pred_over_true_power_k_ge_10: 0.472
+  - target / scale: velocity / 1.0064
+
+## 2026-10-16 21:58 — [EXPLORE] Step 3 autoencoder training: s2_ae_vorticity_k0_lr0.001_s1
+- config: `configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s1.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 948.3 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0011
+  - effective rank / latent std median: 11.7 / 0.002
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_vorticity_k0_lr0.001_s1.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.992, pred_over_true_power_k_ge_10: 0.934
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-16 22:14 — [EXPLORE] Step 3 autoencoder training: s2_ae_vorticity_vicreg_k0_lr0.001_s1
+- config: `configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s1.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 937.5 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0105
+  - effective rank / latent std median: 99.4 / 1.025
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_vorticity_vicreg_k0_lr0.001_s1.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.951, pred_over_true_power_k_ge_10: 0.636
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-16 22:29 — [EXPLORE] Step 3 autoencoder training: s2_ae_streamfunction_k0_lr0.001_s2
+- config: `configs/explore/stage2/s2_ae_streamfunction_k0_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_streamfunction_k0_lr0.001_s2.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 932.2 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0000
+  - effective rank / latent std median: 2.0 / 0.007
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_streamfunction_k0_lr0.001_s2.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.991, pred_over_true_power_k_ge_10: 1.477
+  - target / scale: streamfunction / 1.1693
+
+## 2026-10-16 22:45 — [EXPLORE] Step 3 autoencoder training: s2_ae_streamfunction_vicreg_k0_lr0.001_s2
+- config: `configs/explore/stage2/s2_ae_streamfunction_vicreg_k0_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_streamfunction_vicreg_k0_lr0.001_s2.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 936.7 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0035
+  - effective rank / latent std median: 104.1 / 1.027
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_streamfunction_vicreg_k0_lr0.001_s2.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.664, pred_over_true_power_k_ge_10: 9.642
+  - target / scale: streamfunction / 1.1693
+
+## 2026-10-16 23:01 — [EXPLORE] Step 3 autoencoder training: s2_ae_velocity_k0_lr0.001_s2
+- config: `configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s2.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 940.3 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0001
+  - effective rank / latent std median: 3.8 / 0.003
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_velocity_k0_lr0.001_s2.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.991, pred_over_true_power_k_ge_10: 0.752
+  - target / scale: velocity / 1.0064
+
+## 2026-10-16 23:16 — [EXPLORE] Step 3 autoencoder training: s2_ae_velocity_vicreg_k0_lr0.001_s2
+- config: `configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s2.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 939.1 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0032
+  - effective rank / latent std median: 100.2 / 1.020
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_velocity_vicreg_k0_lr0.001_s2.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.933, pred_over_true_power_k_ge_10: 0.505
+  - target / scale: velocity / 1.0064
+
+## 2026-10-16 23:32 — [EXPLORE] Step 3 autoencoder training: s2_ae_vorticity_k0_lr0.001_s2
+- config: `configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s2.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 942.7 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0012
+  - effective rank / latent std median: 11.7 / 0.002
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_vorticity_k0_lr0.001_s2.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.993, pred_over_true_power_k_ge_10: 0.934
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-16 23:48 — [EXPLORE] Step 3 autoencoder training: s2_ae_vorticity_vicreg_k0_lr0.001_s2
+- config: `configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s2.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 947.3 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0104
+  - effective rank / latent std median: 100.5 / 1.033
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_vorticity_vicreg_k0_lr0.001_s2.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.960, pred_over_true_power_k_ge_10: 0.668
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-17 00:20 — [EXPLORE] Stage 2 evaluation
+- config: `configs/explore/stage2_eval.yaml`
+- command: `python -m explore.stage2_eval --config configs/explore/stage2_eval.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1908.6 s
+- outcome: ok
+  - groups (runs): untrained (3), imaginer k=1 (2), imaginer k=4 (3), imaginer k=16 (1), imaginer k=32 (3), summarizer k=1 (3), summarizer k=4 (3), summarizer k=16 (3), summarizer k=32 (3), bridge k=4 (3), imaginer k=1 (lr 3e-3, extra replicates) (1), imaginer k=4 (lr 3e-3, extra replicates) (2), imaginer k=16 (lr 3e-3, extra replicates) (1), imaginer k=32 (lr 3e-3, extra replicates) (3), AE render ψ (3), AE render ψ + VICReg (3), AE render u (3), AE render u + VICReg (3), AE render ω (3), AE render ω + VICReg (3)
+  - E1 imaginer by k: 1: 0.678, 4: 0.795, 16: 0.694, 32: 0.759
+  - E1 summarizer by k: 1: 0.310, 4: 0.372, 16: 0.380, 32: 0.457
+  - results: results/explore/stage2/eval.md, results/explore/stage2/primary.png, results/explore/stage2/spectra.png, results/explore/stage2/eval.json.gz
+
+## 2026-10-17 00:21 — [EXPLORE] Contrast probe (entry 7, post hoc)
+- config: `configs/explore/contrast_probe.yaml`
+- command: `python -m explore.contrast_probe --config configs/explore/contrast_probe.yaml`
+- git: `079d903+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 13.8 s
+- outcome: ok
+  - checks per run: s2_imaginer_k4_lr0.001_s0: False; s2_imaginer_k4_lr0.001_s1: False; s2_imaginer_k4_lr0.001_s2: False; s2_ae_velocity_k0_lr0.001_s0: False; s2_ae_velocity_k0_lr0.001_s1: False; s2_ae_velocity_k0_lr0.001_s2: False; s2_ae_vorticity_k0_lr0.001_s0: False; s2_ae_vorticity_k0_lr0.001_s1: False; s2_ae_vorticity_k0_lr0.001_s2: False
+  - results: results/explore/contrast_probe.md, results/explore/contrast_probe.png, results/explore/contrast_probe.json
