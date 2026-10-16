@@ -35,19 +35,21 @@ from data.combined import CombinedDataset  # noqa: E402
 from data.dataset import S1_TARGETS  # noqa: E402
 from explore.readouts import _paths, gpu_inputs, readouts_for  # noqa: E402
 from explore.stage0 import slow_extra  # noqa: E402
-from explore.stage2_configs import HORIZONS, SEEDS, name  # noqa: E402
+from explore.stage2_configs import HORIZONS, SEEDS, effective_lr, name  # noqa: E402
 from probes import criteria  # noqa: E402
 from probes.evaluate import probe_nu, probe_targets, slow_directions  # noqa: E402
 from solver.validate import INK, INK2, SERIES, _style  # noqa: E402
 
 S2 = REPO / "results" / "explore" / "stage2"
 CONTROL = "untrained"
+EXCLUDED: dict = {}  # run -> reason (divergence rule, entry 5)
 
 
 def groups_from_files() -> dict:
-    """{group label: [run names]} for every Stage 2 run whose checkpoint and results exist."""
-    with open(S2 / "lr_selection.json", encoding="utf-8") as f:
-        lr = {fam: v["selected_lr"] for fam, v in json.load(f).items()}
+    """{group label: [run names]} for every Stage 2 run whose checkpoint and results exist, with the
+    effective lrs (entry 5). Pixel-family runs that diverged (final val loss / copy >= 1) are excluded
+    and recorded in EXCLUDED."""
+    lr = effective_lr()
     g = {CONTROL: [f"untrained_s{s}" for s in SEEDS]}
     for fam in ("imaginer", "summarizer"):
         for k in HORIZONS:
@@ -58,8 +60,17 @@ def groups_from_files() -> dict:
             ks = json.load(f)["k_star"]
         g[f"fake-physics imaginer k={ks}"] = [name("fake_imaginer", ks, lr["imaginer"], s) for s in SEEDS]
         g[f"pixel + VICReg k={ks}"] = [name("pixel_vicreg", ks, lr["imaginer"], s) for s in SEEDS]
-    done = lambda r: r.startswith("untrained_s") or ((REPO / "results" / "checkpoints" / f"{r}.pt").exists()  # noqa: E731
-                                                       and (S2 / "runs" / f"{r}.json").exists())
+    def done(r):
+        if r.startswith("untrained_s"):
+            return True
+        if not ((REPO / "results" / "checkpoints" / f"{r}.pt").exists() and (S2 / "runs" / f"{r}.json").exists()):
+            return False
+        with open(S2 / "runs" / f"{r}.json", encoding="utf-8") as f:
+            res = json.load(f)
+        if res["config"]["model"] in ("pixel", "pixel_vicreg") and res["final"]["metric"] >= 1:
+            EXCLUDED[r] = f"diverged (final val loss / copy {res['final']['metric']:.3g} >= 1; entry 5 rule)"
+            return False
+        return True
     return {k: [r for r in v if done(r)] for k, v in g.items() if any(done(r) for r in v)}
 
 
@@ -159,6 +170,28 @@ def training_table(groups) -> list:
             fmt = lambda k: f"{d[k]:.3f}" if k in d else "—"  # noqa: E731
             L.append(f"| {g} | {run} | {r['final']['metric']:.4f} | {r['steps']} | {r['stop_reason']} | {r['collapsed']} | "
                      f"{fmt('pred_over_true_energy_k_ge_10')} | {fmt('copy_over_true_energy_k_ge_10')} | {fmt('pred_over_target_map_variance')} |")
+    analysed = {r for runs in groups.values() for r in runs}
+    lr = effective_lr()
+    L += ["", "Runs that are not analysed (every Stage 2 run is listed):", "",
+          "| run | val loss / copy (at k) | steps | stop | reason |", "|---|---|---|---|---|"]
+    for p in sorted((S2 / "runs").glob("*.json")):
+        run = p.stem
+        if run in analysed:
+            continue
+        with open(p, encoding="utf-8") as f:
+            r = json.load(f)
+        fam = run.split("_")[1]
+        lr_run = r["config"]["lr"]
+        if run in EXCLUDED:
+            why = EXCLUDED[run]
+        elif fam in ("imaginer", "bridge") and lr_run != lr["imaginer"]:
+            why = (f"lr {lr_run:g} not used for the imaginer family (entry 5)"
+                   + (f"; diverged (final {r['final']['metric']:.3g} >= 1)" if r["final"]["metric"] >= 1 else ""))
+        elif fam == "summarizer" and lr_run != lr["summarizer"]:
+            why = f"lr-selection run, lr {lr_run:g} not selected"
+        else:
+            why = "not part of a reported group"
+        L.append(f"| {run} | {r['final']['metric']:.4g} | {r['steps']} | {r['stop_reason']} | {why} |")
     return L
 
 
@@ -287,12 +320,14 @@ def decide_kstar(summ_primary) -> dict:
         raise SystemExit("k* was already decided (results/explore/stage2/kstar.json); not re-deciding")
     e1 = {k: float(np.mean(summ_primary[f"imaginer k={k}"]["E1"])) for k in HORIZONS}
     e2 = {k: float(np.mean(summ_primary[f"imaginer k={k}"]["E2"])) for k in HORIZONS}
-    assert all(summ_primary[f"imaginer k={k}"]["n_seeds"] == 3 for k in HORIZONS), "k* needs all 12 imaginer runs"
+    seeds = {k: summ_primary[f"imaginer k={k}"]["n_seeds"] for k in HORIZONS}
+    if not all(summ_primary.get(f"imaginer k={k}", {}).get("n_seeds", 0) >= 2 for k in HORIZONS):
+        raise SystemExit("k* needs at least 2 non-diverged imaginer seeds per horizon (entry 5): stop and report")
     order = sorted(HORIZONS, key=lambda k: -e1[k])
     top, second = order[0], order[1]
     k_star = top if e1[top] - e1[second] > 0.02 else max((top, second), key=lambda k: e2[k])
     out = {"k_star": k_star, "rule": "argmax imaginer E1 (explore, pooled); top two within 0.02 -> larger E2 (PREDICTIONS entry 3)",
-           "E1_by_k": e1, "E2_by_k": e2}
+           "E1_by_k": e1, "E2_by_k": e2, "seeds_by_k": seeds}
     save_json(out, path)
     append_log("[EXPLORE] Stage 2 k* decision (before the fake-physics and pixel + VICReg runs)", "-", command_line(), f"k* = {k_star}",
                {"imaginer E1 by k": ", ".join(f"{k}: {v:.3f}" for k, v in e1.items()),

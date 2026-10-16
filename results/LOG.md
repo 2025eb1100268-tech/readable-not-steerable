@@ -787,3 +787,378 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - outcome: imaginer: lr 0.003, summarizer: lr 0.001
   - candidates (run: metric, collapsed): s2_imaginer_k4_lr0.001_s0: 0.0117, False; s2_imaginer_k4_lr0.003_s0: 0.0107, False; s2_summarizer_k4_lr0.001_s0: 0.4319, False; s2_summarizer_k4_lr0.003_s0: 0.4762, False
   - configs written: 25
+
+## 2026-10-15 23:49 — [EXPLORE] Stage 2 training: s2_imaginer_k1_lr0.003_s0
+- config: `configs/explore/stage2/s2_imaginer_k1_lr0.003_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k1_lr0.003_s0.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 922.1 s
+- outcome: ok
+  - final val loss / copy baseline: 657.8304
+  - effective rank / latent std median: 1.0 / 24.169
+  - steps: 5060
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k1_lr0.003_s0.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.000, copy_over_true_energy_k_ge_5: 1.025, pred_over_true_energy_k_ge_10: 0.000, copy_over_true_energy_k_ge_10: 0.966
+
+## 2026-10-16 00:05 — [EXPLORE] Stage 2 training: s2_imaginer_k1_lr0.003_s1
+- config: `configs/explore/stage2/s2_imaginer_k1_lr0.003_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k1_lr0.003_s1.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 949.1 s
+- outcome: ok
+  - final val loss / copy baseline: 657.8298
+  - effective rank / latent std median: 1.3 / 6.221
+  - steps: 5060
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k1_lr0.003_s1.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.000, copy_over_true_energy_k_ge_5: 1.025, pred_over_true_energy_k_ge_10: 0.000, copy_over_true_energy_k_ge_10: 0.966
+
+## 2026-10-16 00:32 — [EXPLORE] Stage 2 training: s2_imaginer_k1_lr0.003_s2
+- config: `configs/explore/stage2/s2_imaginer_k1_lr0.003_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k1_lr0.003_s2.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1656.6 s
+- outcome: ok
+  - final val loss / copy baseline: 0.0673
+  - effective rank / latent std median: 2.6 / 0.005
+  - steps: 8970
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k1_lr0.003_s2.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.994, copy_over_true_energy_k_ge_5: 1.025, pred_over_true_energy_k_ge_10: 0.835, copy_over_true_energy_k_ge_10: 0.966
+
+## 2026-10-16 00:51 — [EXPLORE] Stage 2 training: s2_imaginer_k4_lr0.003_s1
+- config: `configs/explore/stage2/s2_imaginer_k4_lr0.003_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k4_lr0.003_s1.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1090.4 s
+- outcome: ok
+  - final val loss / copy baseline: 44.5253
+  - effective rank / latent std median: 1.0 / 5139.298
+  - steps: 5980
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k4_lr0.003_s1.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.000, copy_over_true_energy_k_ge_5: 1.098, pred_over_true_energy_k_ge_10: 0.000, copy_over_true_energy_k_ge_10: 0.876
+
+## 2026-10-16 01:16 — [EXPLORE] Stage 2 training: s2_imaginer_k4_lr0.003_s2
+- config: `configs/explore/stage2/s2_imaginer_k4_lr0.003_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k4_lr0.003_s2.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1505.9 s
+- outcome: ok
+  - final val loss / copy baseline: 0.0091
+  - effective rank / latent std median: 2.3 / 0.016
+  - steps: 8280
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k4_lr0.003_s2.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.981, copy_over_true_energy_k_ge_5: 1.098, pred_over_true_energy_k_ge_10: 0.760, copy_over_true_energy_k_ge_10: 0.876
+
+## 2026-10-16 01:44 — [EXPLORE] Stage 2 training: s2_imaginer_k16_lr0.003_s0
+- config: `configs/explore/stage2/s2_imaginer_k16_lr0.003_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k16_lr0.003_s0.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1682.6 s
+- outcome: ok
+  - final val loss / copy baseline: 0.0114
+  - effective rank / latent std median: 2.3 / 0.041
+  - steps: 9200
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k16_lr0.003_s0.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.939, copy_over_true_energy_k_ge_5: 1.382, pred_over_true_energy_k_ge_10: 0.615, copy_over_true_energy_k_ge_10: 0.705
+
+## 2026-10-16 02:00 — [EXPLORE] Stage 2 training: s2_imaginer_k16_lr0.003_s1
+- config: `configs/explore/stage2/s2_imaginer_k16_lr0.003_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k16_lr0.003_s1.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 959.3 s
+- outcome: ok
+  - final val loss / copy baseline: 4.6030
+  - effective rank / latent std median: 1.0 / 98592.633
+  - steps: 5290
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k16_lr0.003_s1.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.000, copy_over_true_energy_k_ge_5: 1.382, pred_over_true_energy_k_ge_10: 0.000, copy_over_true_energy_k_ge_10: 0.705
+
+## 2026-10-16 02:15 — [EXPLORE] Stage 2 training: s2_imaginer_k16_lr0.003_s2
+- config: `configs/explore/stage2/s2_imaginer_k16_lr0.003_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k16_lr0.003_s2.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 909.0 s
+- outcome: ok
+  - final val loss / copy baseline: 4.5820
+  - effective rank / latent std median: 1.0 / 240.805
+  - steps: 5060
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k16_lr0.003_s2.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.000, copy_over_true_energy_k_ge_5: 1.382, pred_over_true_energy_k_ge_10: 0.000, copy_over_true_energy_k_ge_10: 0.705
+
+## 2026-10-16 02:40 — [EXPLORE] Stage 2 training: s2_imaginer_k32_lr0.003_s0
+- config: `configs/explore/stage2/s2_imaginer_k32_lr0.003_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k32_lr0.003_s0.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1515.7 s
+- outcome: ok
+  - final val loss / copy baseline: 0.0763
+  - effective rank / latent std median: 5.0 / 0.067
+  - steps: 7590
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k32_lr0.003_s0.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.711, copy_over_true_energy_k_ge_5: 1.844, pred_over_true_energy_k_ge_10: 0.303, copy_over_true_energy_k_ge_10: 0.702
+
+## 2026-10-16 03:09 — [EXPLORE] Stage 2 training: s2_imaginer_k32_lr0.003_s1
+- config: `configs/explore/stage2/s2_imaginer_k32_lr0.003_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k32_lr0.003_s1.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1696.6 s
+- outcome: ok
+  - final val loss / copy baseline: 0.0741
+  - effective rank / latent std median: 5.2 / 0.061
+  - steps: 8740
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k32_lr0.003_s1.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.732, copy_over_true_energy_k_ge_5: 1.844, pred_over_true_energy_k_ge_10: 0.298, copy_over_true_energy_k_ge_10: 0.702
+
+## 2026-10-16 03:32 — [EXPLORE] Stage 2 training: s2_imaginer_k32_lr0.003_s2
+- config: `configs/explore/stage2/s2_imaginer_k32_lr0.003_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_imaginer_k32_lr0.003_s2.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1382.3 s
+- outcome: ok
+  - final val loss / copy baseline: 0.0713
+  - effective rank / latent std median: 4.5 / 0.067
+  - steps: 7130
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_imaginer_k32_lr0.003_s2.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.724, copy_over_true_energy_k_ge_5: 1.844, pred_over_true_energy_k_ge_10: 0.263, copy_over_true_energy_k_ge_10: 0.702
+
+## 2026-10-16 04:05 — [EXPLORE] Stage 2 training: s2_summarizer_k1_lr0.001_s0
+- config: `configs/explore/stage2/s2_summarizer_k1_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k1_lr0.001_s0.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1966.4 s
+- outcome: ok
+  - final val loss / copy baseline: 1.0577
+  - effective rank / latent std median: 60.9 / 1.012
+  - steps: 12000
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k1_lr0.001_s0.json
+  - stop reason / lr reductions: step cap / 2
+  - diagnostics: pred_over_target_map_variance: 0.990
+
+## 2026-10-16 04:41 — [EXPLORE] Stage 2 training: s2_summarizer_k1_lr0.001_s1
+- config: `configs/explore/stage2/s2_summarizer_k1_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k1_lr0.001_s1.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2137.0 s
+- outcome: ok
+  - final val loss / copy baseline: 1.0650
+  - effective rank / latent std median: 61.7 / 1.030
+  - steps: 12000
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k1_lr0.001_s1.json
+  - stop reason / lr reductions: step cap / 2
+  - diagnostics: pred_over_target_map_variance: 0.984
+
+## 2026-10-16 05:14 — [EXPLORE] Stage 2 training: s2_summarizer_k1_lr0.001_s2
+- config: `configs/explore/stage2/s2_summarizer_k1_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k1_lr0.001_s2.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2021.6 s
+- outcome: ok
+  - final val loss / copy baseline: 0.8039
+  - effective rank / latent std median: 64.9 / 1.008
+  - steps: 12000
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k1_lr0.001_s2.json
+  - stop reason / lr reductions: step cap / 2
+  - diagnostics: pred_over_target_map_variance: 0.997
+
+## 2026-10-16 05:47 — [EXPLORE] Stage 2 training: s2_summarizer_k4_lr0.001_s1
+- config: `configs/explore/stage2/s2_summarizer_k4_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k4_lr0.001_s1.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1942.9 s
+- outcome: ok
+  - final val loss / copy baseline: 0.4920
+  - effective rank / latent std median: 60.8 / 1.033
+  - steps: 12000
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k4_lr0.001_s1.json
+  - stop reason / lr reductions: step cap / 2
+  - diagnostics: pred_over_target_map_variance: 0.958
+
+## 2026-10-16 06:19 — [EXPLORE] Stage 2 training: s2_summarizer_k4_lr0.001_s2
+- config: `configs/explore/stage2/s2_summarizer_k4_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k4_lr0.001_s2.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1909.3 s
+- outcome: ok
+  - final val loss / copy baseline: 0.4813
+  - effective rank / latent std median: 62.6 / 1.027
+  - steps: 12000
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k4_lr0.001_s2.json
+  - stop reason / lr reductions: step cap / 2
+  - diagnostics: pred_over_target_map_variance: 0.974
+
+## 2026-10-16 06:33 — [EXPLORE] Stage 2 training: s2_summarizer_k16_lr0.001_s0
+- config: `configs/explore/stage2/s2_summarizer_k16_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k16_lr0.001_s0.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 842.7 s
+- outcome: ok
+  - final val loss / copy baseline: 0.3716
+  - effective rank / latent std median: 52.7 / 1.018
+  - steps: 5290
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k16_lr0.001_s0.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_target_map_variance: 0.891
+
+## 2026-10-16 06:48 — [EXPLORE] Stage 2 training: s2_summarizer_k16_lr0.001_s1
+- config: `configs/explore/stage2/s2_summarizer_k16_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k16_lr0.001_s1.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 880.6 s
+- outcome: ok
+  - final val loss / copy baseline: 0.3672
+  - effective rank / latent std median: 52.3 / 1.008
+  - steps: 5520
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k16_lr0.001_s1.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_target_map_variance: 0.881
+
+## 2026-10-16 07:02 — [EXPLORE] Stage 2 training: s2_summarizer_k16_lr0.001_s2
+- config: `configs/explore/stage2/s2_summarizer_k16_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k16_lr0.001_s2.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 841.9 s
+- outcome: ok
+  - final val loss / copy baseline: 0.3644
+  - effective rank / latent std median: 53.3 / 1.008
+  - steps: 5290
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k16_lr0.001_s2.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_target_map_variance: 0.872
+
+## 2026-10-16 07:15 — [EXPLORE] Stage 2 training: s2_summarizer_k32_lr0.001_s0
+- config: `configs/explore/stage2/s2_summarizer_k32_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k32_lr0.001_s0.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 807.1 s
+- outcome: ok
+  - final val loss / copy baseline: 0.3863
+  - effective rank / latent std median: 54.5 / 1.008
+  - steps: 5060
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k32_lr0.001_s0.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_target_map_variance: 0.767
+
+## 2026-10-16 07:29 — [EXPLORE] Stage 2 training: s2_summarizer_k32_lr0.001_s1
+- config: `configs/explore/stage2/s2_summarizer_k32_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k32_lr0.001_s1.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 802.1 s
+- outcome: ok
+  - final val loss / copy baseline: 0.3660
+  - effective rank / latent std median: 52.4 / 1.020
+  - steps: 5060
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k32_lr0.001_s1.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_target_map_variance: 0.775
+
+## 2026-10-16 07:42 — [EXPLORE] Stage 2 training: s2_summarizer_k32_lr0.001_s2
+- config: `configs/explore/stage2/s2_summarizer_k32_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_summarizer_k32_lr0.001_s2.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 780.3 s
+- outcome: ok
+  - final val loss / copy baseline: 0.3771
+  - effective rank / latent std median: 53.2 / 1.006
+  - steps: 5060
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_summarizer_k32_lr0.001_s2.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_target_map_variance: 0.757
+
+## 2026-10-16 07:57 — [EXPLORE] Stage 2 training: s2_bridge_k4_lr0.003_s0
+- config: `configs/explore/stage2/s2_bridge_k4_lr0.003_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_bridge_k4_lr0.003_s0.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 878.6 s
+- outcome: ok
+  - final val loss / copy baseline: 51.5153
+  - effective rank / latent std median: 1.0 / 208228.125
+  - steps: 5060
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_bridge_k4_lr0.003_s0.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.000, copy_over_true_energy_k_ge_5: 1.077, pred_over_true_energy_k_ge_10: 0.000, copy_over_true_energy_k_ge_10: 0.931
+
+## 2026-10-16 08:14 — [EXPLORE] Stage 2 training: s2_bridge_k4_lr0.003_s1
+- config: `configs/explore/stage2/s2_bridge_k4_lr0.003_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_bridge_k4_lr0.003_s1.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1037.9 s
+- outcome: ok
+  - final val loss / copy baseline: 51.5421
+  - effective rank / latent std median: 1.0 / 15578.899
+  - steps: 5980
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_bridge_k4_lr0.003_s1.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.000, copy_over_true_energy_k_ge_5: 1.077, pred_over_true_energy_k_ge_10: 0.000, copy_over_true_energy_k_ge_10: 0.931
+
+## 2026-10-16 08:29 — [EXPLORE] Stage 2 training: s2_bridge_k4_lr0.003_s2
+- config: `configs/explore/stage2/s2_bridge_k4_lr0.003_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_bridge_k4_lr0.003_s2.yaml`
+- git: `4f1fc3e+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 878.7 s
+- outcome: ok
+  - final val loss / copy baseline: 51.4704
+  - effective rank / latent std median: 1.2 / 943.931
+  - steps: 5060
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_bridge_k4_lr0.003_s2.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.000, copy_over_true_energy_k_ge_5: 1.077, pred_over_true_energy_k_ge_10: 0.000, copy_over_true_energy_k_ge_10: 0.931

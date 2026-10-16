@@ -4,6 +4,7 @@ entries 3-4). Every step writes YAML files under configs/explore/stage2/ and log
     python -m explore.stage2_configs selection            # 4 configs: imaginer / summarizer, k = 4, lr grid, seed 0
     python -m explore.stage2_configs select               # pick lr per family; write horizon x seed and bridge configs
     python -m explore.stage2_configs kstar --k K          # fake-physics imaginer and pixel + VICReg configs at k*
+    python -m explore.stage2_configs override --family imaginer --lr 0.001   # PREDICTIONS entry 5
 """
 from __future__ import annotations
 
@@ -30,6 +31,16 @@ BASE = {
     "plateau": {"min_rel_improve": 0.005, "patience": 4, "factor": 0.3, "max_reductions": 2, "start_step": 2300},
     "diagnostics": True, "results_dir": RUNS, "log_title": "[EXPLORE] Stage 2 training",
 }
+
+
+def effective_lr() -> dict:
+    """lr per family: results/explore/stage2/lr_final.json if present (entry 5), else the label-free selection."""
+    s2 = REPO / "results" / "explore" / "stage2"
+    if (s2 / "lr_final.json").exists():
+        with open(s2 / "lr_final.json", encoding="utf-8") as f:
+            return {fam: v["lr"] for fam, v in json.load(f).items()}
+    with open(s2 / "lr_selection.json", encoding="utf-8") as f:
+        return {fam: v["selected_lr"] for fam, v in json.load(f).items()}
 
 
 def name(family: str, k: int, lr: float, seed: int) -> str:
@@ -80,9 +91,25 @@ def select():
     print("\n".join(written))
 
 
-def kstar(k: int):
+def override(family: str, lr: float):
+    """[EXPLORE] entry 5: set the imaginer family's lr; write its horizon x seed and bridge configs and
+    print the runs that have not been trained yet."""
+    assert family == "imaginer", "entry 5 overrides the imaginer family only"
     with open(REPO / "results" / "explore" / "stage2" / "lr_selection.json", encoding="utf-8") as f:
-        lr = json.load(f)["imaginer"]["selected_lr"]
+        sel = json.load(f)
+    final = {"imaginer": {"lr": lr, "source": "override (PREDICTIONS entry 5): 8 of 15 imaginer-family runs diverged at the selected lr 3e-3"},
+             "summarizer": {"lr": sel["summarizer"]["selected_lr"], "source": "label-free selection (entry 3)"}}
+    save_json(final, REPO / "results" / "explore" / "stage2" / "lr_final.json")
+    runs = [write("imaginer", "pixel", k, lr, s) for k in HORIZONS for s in SEEDS]
+    runs += [write("bridge", "pixel", 4, lr, s, anchor_rule="original") for s in SEEDS]
+    todo = [r for r in runs if not (REPO / RUNS / f"{r}.json").exists()]
+    append_log("[EXPLORE] Stage 2 imaginer lr override (PREDICTIONS entry 5)", "-", command_line(), f"imaginer family lr {lr:g}",
+               {"configs written": len(runs), "runs to train": len(todo)})
+    print("\n".join(todo))
+
+
+def kstar(k: int):
+    lr = effective_lr()["imaginer"]
     runs = [write("fake_imaginer", "pixel", k, lr, s, data_dir="data/generated/nonphys_v1") for s in SEEDS]
     runs += [write("pixel_vicreg", "pixel_vicreg", k, lr, s) for s in SEEDS]
     print("\n".join(runs))
@@ -90,10 +117,12 @@ def kstar(k: int):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["selection", "select", "kstar"])
+    ap.add_argument("step", choices=["selection", "select", "kstar", "override"])
     ap.add_argument("--k", type=int)
+    ap.add_argument("--family")
+    ap.add_argument("--lr", type=float)
     a = ap.parse_args()
-    {"selection": selection, "select": select, "kstar": lambda: kstar(a.k)}[a.step]()
+    {"selection": selection, "select": select, "kstar": lambda: kstar(a.k), "override": lambda: override(a.family, a.lr)}[a.step]()
 
 
 if __name__ == "__main__":
