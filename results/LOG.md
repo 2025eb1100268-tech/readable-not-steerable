@@ -1461,3 +1461,43 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - E1 imaginer by k: 1: 0.678, 4: 0.795, 16: 0.694, 32: 0.759
   - E1 summarizer by k: 1: 0.310, 4: 0.372, 16: 0.380, 32: 0.457
   - results: results/explore/stage2/eval_step1.md, results/explore/stage2/primary_step1.png, results/explore/stage2/spectra_step1.png, results/explore/stage2/eval_step1.json.gz
+
+## 2026-10-16 19:06 — [EXPLORE] Imagination probe (entry 6, step 2)
+- config: `configs/explore/probe.yaml`
+- command: `python -m explore.imagination_probe --config configs/explore/probe.yaml`
+- git: `c9c165c+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 45.8 s
+- outcome: ok
+  - P6.1 holds per run: s2_imaginer_k4_lr0.001_s0: False, s2_imaginer_k4_lr0.001_s1: False, s2_imaginer_k4_lr0.001_s2: False
+  - results: results/explore/probe.md, results/explore/probe.png, results/explore/probe.json
+
+## 2026-10-16 19:22 — [EXPLORE] Step 3 autoencoder training: s2_ae_streamfunction_k0_lr0.001_s0
+- config: `configs/explore/stage2/s2_ae_streamfunction_k0_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_streamfunction_k0_lr0.001_s0.yaml`
+- git: `c9c165c+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 971.0 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0000
+  - effective rank / latent std median: 1.9 / 0.007
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_streamfunction_k0_lr0.001_s0.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.992, pred_over_true_power_k_ge_10: 1.609
+  - target / scale: streamfunction / 1.1693
+
+## 2026-10-16 19:38 — [EXPLORE] Step 3 autoencoder training: s2_ae_streamfunction_vicreg_k0_lr0.001_s0
+- config: `configs/explore/stage2/s2_ae_streamfunction_vicreg_k0_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_streamfunction_vicreg_k0_lr0.001_s0.yaml`
+- git: `c9c165c+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 931.8 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0037
+  - effective rank / latent std median: 102.5 / 1.027
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage2/runs/s2_ae_streamfunction_vicreg_k0_lr0.001_s0.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.708, pred_over_true_power_k_ge_10: 9.988
+  - target / scale: streamfunction / 1.1693
