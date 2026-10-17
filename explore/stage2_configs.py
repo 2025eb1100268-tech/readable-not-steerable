@@ -6,6 +6,7 @@ entries 3-4). Every step writes YAML files under configs/explore/stage2/ and log
     python -m explore.stage2_configs kstar --k K          # fake-physics imaginer and pixel + VICReg configs at k*
     python -m explore.stage2_configs override --family imaginer --lr 0.001   # PREDICTIONS entry 5
     python -m explore.stage2_configs ae                   # entry 6, step 3: 18 render-target autoencoders
+    python -m explore.stage2_configs stage3               # agreed change 14: blind Stage 3 training runs
 """
 from __future__ import annotations
 
@@ -135,6 +136,28 @@ def ae():
     print("\n".join(runs))
 
 
+def stage3():
+    """Agreed change 14 (blind; evaluated only on the sealed confirm set): the four H1/H2 autoencoders
+    with fresh seeds 3-5 (frozen autoencoder recipe), and the pixel predictor + VICReg at k = 4 with
+    seeds 0-2 (the k = 4 imaginer's recipe plus the VICReg terms)."""
+    runs3 = "results/explore/stage3/runs"
+    title = "[STAGE 3] blind training"
+    runs = []
+    for s in (3, 4, 5):
+        for target in ("velocity", "vorticity"):
+            for vic in (False, True):
+                run = name(f"ae_{target}" + ("_vicreg" if vic else ""), 0, AE_BASE["lr"], s)
+                cfg = {**AE_BASE, "model": "autoencoder_vicreg" if vic else "autoencoder", "ae_target": target, "seed": s,
+                       "run_name": run, "results_dir": runs3, "log_title": title}
+                (CFG_DIR / f"{run}.yaml").write_text(f"# [STAGE 3] blind (python -m train.train --config configs/explore/stage2/{run}.yaml)\n"
+                                                     + yaml.safe_dump(cfg, sort_keys=False), encoding="utf-8")
+                runs.append(run)
+    lr = effective_lr()["imaginer"]
+    for s in SEEDS:
+        runs.append(write("pixel_vicreg", "pixel_vicreg", 4, lr, s, results_dir=runs3, log_title=title))
+    print("\n".join(runs))
+
+
 def kstar(k: int):
     lr = effective_lr()["imaginer"]
     runs = [write("fake_imaginer", "pixel", k, lr, s, data_dir="data/generated/nonphys_v1") for s in SEEDS]
@@ -144,12 +167,12 @@ def kstar(k: int):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["selection", "select", "kstar", "override", "ae"])
+    ap.add_argument("step", choices=["selection", "select", "kstar", "override", "ae", "stage3"])
     ap.add_argument("--k", type=int)
     ap.add_argument("--family")
     ap.add_argument("--lr", type=float)
     a = ap.parse_args()
-    {"selection": selection, "select": select, "kstar": lambda: kstar(a.k), "override": lambda: override(a.family, a.lr), "ae": ae}[a.step]()
+    {"selection": selection, "select": select, "kstar": lambda: kstar(a.k), "override": lambda: override(a.family, a.lr), "ae": ae, "stage3": stage3}[a.step]()
 
 
 if __name__ == "__main__":

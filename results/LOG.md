@@ -1771,3 +1771,200 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - outcome: ok
   - checks per run: s2_imaginer_k4_lr0.001_s0: False; s2_imaginer_k4_lr0.001_s1: False; s2_imaginer_k4_lr0.001_s2: False; s2_ae_velocity_k0_lr0.001_s0: False; s2_ae_velocity_k0_lr0.001_s1: False; s2_ae_velocity_k0_lr0.001_s2: False; s2_ae_vorticity_k0_lr0.001_s0: False; s2_ae_vorticity_k0_lr0.001_s1: False; s2_ae_vorticity_k0_lr0.001_s2: False
   - results: results/explore/contrast_probe.md, results/explore/contrast_probe.png, results/explore/contrast_probe.json
+
+## 2026-10-17 03:16 — [EXPLORE] Stage 3 script DRY RUN on explore (code check; confirm still sealed)
+- config: `configs/explore/stage3_confirm.yaml`
+- command: `python -m explore.stage3_confirm --config configs/explore/stage3_confirm.yaml --dry-run-on explore`
+- git: `244f625+dirty`
+- outcome: ok: reproduces the Stage 2 explore values exactly
+  - E1 (velocity AE / vorticity AE / untrained): 0.819 / 0.808 / 0.418
+  - outputs: scratchpad (not results)
+
+## 2026-10-17 03:35 — [STAGE 3] blind training: s2_ae_velocity_k0_lr0.001_s3
+- config: `configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s3.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s3.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 909.9 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0001
+  - effective rank / latent std median: 4.0 / 0.003
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_velocity_k0_lr0.001_s3.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.992, pred_over_true_power_k_ge_10: 0.757
+  - target / scale: velocity / 1.0064
+
+## 2026-10-17 03:50 — [STAGE 3] blind training: s2_ae_velocity_vicreg_k0_lr0.001_s3
+- config: `configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s3.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s3.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 914.2 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0032
+  - effective rank / latent std median: 98.5 / 1.029
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_velocity_vicreg_k0_lr0.001_s3.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.932, pred_over_true_power_k_ge_10: 0.466
+  - target / scale: velocity / 1.0064
+
+## 2026-10-17 04:06 — [STAGE 3] blind training: s2_ae_vorticity_k0_lr0.001_s3
+- config: `configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s3.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s3.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 961.1 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0013
+  - effective rank / latent std median: 11.5 / 0.003
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_vorticity_k0_lr0.001_s3.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.993, pred_over_true_power_k_ge_10: 0.928
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-17 04:21 — [STAGE 3] blind training: s2_ae_vorticity_vicreg_k0_lr0.001_s3
+- config: `configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s3.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s3.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 901.3 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0097
+  - effective rank / latent std median: 98.2 / 1.034
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_vorticity_vicreg_k0_lr0.001_s3.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.959, pred_over_true_power_k_ge_10: 0.692
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-17 04:38 — [STAGE 3] blind training: s2_ae_velocity_k0_lr0.001_s4
+- config: `configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s4.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s4.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1012.8 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0001
+  - effective rank / latent std median: 4.1 / 0.004
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_velocity_k0_lr0.001_s4.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.992, pred_over_true_power_k_ge_10: 0.754
+  - target / scale: velocity / 1.0064
+
+## 2026-10-17 04:55 — [STAGE 3] blind training: s2_ae_velocity_vicreg_k0_lr0.001_s4
+- config: `configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s4.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s4.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1016.6 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0035
+  - effective rank / latent std median: 99.9 / 1.027
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_velocity_vicreg_k0_lr0.001_s4.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.932, pred_over_true_power_k_ge_10: 0.488
+  - target / scale: velocity / 1.0064
+
+## 2026-10-17 05:12 — [STAGE 3] blind training: s2_ae_vorticity_k0_lr0.001_s4
+- config: `configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s4.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s4.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 968.7 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0013
+  - effective rank / latent std median: 10.9 / 0.003
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_vorticity_k0_lr0.001_s4.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.993, pred_over_true_power_k_ge_10: 0.930
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-17 05:28 — [STAGE 3] blind training: s2_ae_vorticity_vicreg_k0_lr0.001_s4
+- config: `configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s4.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s4.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1009.9 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0098
+  - effective rank / latent std median: 98.6 / 1.030
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_vorticity_vicreg_k0_lr0.001_s4.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.961, pred_over_true_power_k_ge_10: 0.678
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-17 05:45 — [STAGE 3] blind training: s2_ae_velocity_k0_lr0.001_s5
+- config: `configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s5.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_k0_lr0.001_s5.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 973.2 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0001
+  - effective rank / latent std median: 3.7 / 0.003
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_velocity_k0_lr0.001_s5.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.990, pred_over_true_power_k_ge_10: 0.749
+  - target / scale: velocity / 1.0064
+
+## 2026-10-17 06:00 — [STAGE 3] blind training: s2_ae_velocity_vicreg_k0_lr0.001_s5
+- config: `configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s5.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_velocity_vicreg_k0_lr0.001_s5.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 921.3 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0036
+  - effective rank / latent std median: 100.3 / 1.026
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_velocity_vicreg_k0_lr0.001_s5.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.922, pred_over_true_power_k_ge_10: 0.490
+  - target / scale: velocity / 1.0064
+
+## 2026-10-17 06:15 — [STAGE 3] blind training: s2_ae_vorticity_k0_lr0.001_s5
+- config: `configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s5.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_k0_lr0.001_s5.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 878.7 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0013
+  - effective rank / latent std median: 11.5 / 0.003
+  - steps: 7950
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_vorticity_k0_lr0.001_s5.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.992, pred_over_true_power_k_ge_10: 0.925
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-17 06:31 — [STAGE 3] blind training: s2_ae_vorticity_vicreg_k0_lr0.001_s5
+- config: `configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s5.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_ae_vorticity_vicreg_k0_lr0.001_s5.yaml`
+- git: `63e0ad2+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 929.1 s
+- outcome: ok
+  - final val normalized reconstruction MSE: 0.0108
+  - effective rank / latent std median: 100.2 / 1.031
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_ae_vorticity_vicreg_k0_lr0.001_s5.json
+  - diagnostics: pred_over_true_power_k_ge_5: 0.956, pred_over_true_power_k_ge_10: 0.643
+  - target / scale: vorticity / 2.6306
+
+## 2026-10-17 06:31 — [STAGE 3] blind training paused (investigator: pixel + VICReg runs tomorrow)
+- config: `configs/explore/stage2/ (stage3 runs)`
+- command: `scratchpad stage3_train.sh (stopped by watcher)`
+- git: `63e0ad2+dirty`
+- outcome: paused as planned
+  - finished: 12 fresh-seed autoencoders (velocity, vorticity; plain and + VICReg; seeds 3-5), none diverged
+  - stopped: s2_pixel_vicreg_k4_lr0.001_s0 seconds after start (no checkpoint, no results); all 3 pixel + VICReg runs to be trained 2026-10-18
+  - blind: no evaluation of any Stage 3 model has been run
