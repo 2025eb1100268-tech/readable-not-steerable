@@ -2050,3 +2050,38 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - inviscid trajectories: 378
   - input scale (copied from data/generated/v1): 0.9548
   - sha256 velocity.npy: 2ae4993f6cbe86a4…
+
+## 2026-10-17 18:32 — [BUILD] Stage 0: steering harness on existing models
+- config: `configs/build/stage0.yaml`
+- command: `python -m dials.stage0 --config configs/build/stage0.yaml`
+- git: `8e8bd1b+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 164.7 s
+- outcome: ok
+  - candidate dials / dials / loudness / shape: 84 / 0 / 0 / 0
+  - results: results/build/stage0.md, results/build/stage0.png, results/build/stage0.json.gz
+
+## 2026-10-17 18:37 — [BUILD] Stage 0: steering harness on existing models
+- config: `configs/build/stage0.yaml`
+- command: `python -m dials.stage0 --config configs/build/stage0.yaml`
+- git: `8e8bd1b+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 161.2 s
+- outcome: ok
+  - candidate dials / dials / loudness / shape: 84 / 0 / 0 / 0
+  - results: results/build/stage0.md, results/build/stage0.png, results/build/stage0.json.gz
+
+## 2026-10-17 18:40 — [BUILD] Stage 0: steering harness on existing models
+- config: `configs/build/stage0.yaml`
+- command: `python -m dials.stage0 --config configs/build/stage0.yaml`
+- git: `8e8bd1b+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 161.8 s
+- outcome: ok
+  - candidate dials / dials / loudness / shape: 84 / 0 / 0 / 0
+  - results: results/build/stage0.md, results/build/stage0.png, results/build/stage0.json.gz
+## 2026-10-17 18:45 — [BUILD] Stage 0: note on the three runs above
+- Same config, frames and models each time; classification identical (84 candidate dials / 0 / 0 / 0; supervised s-direction 0 of 21).
+- 18:32: harness as committed in the definitions. 18:37: adds two diagnostics after inspecting the decoded changes (cycle gain; watermark test = fraction of the α = ±2 change that is one pattern shared by all frames, and the change's alignment with the unsteered field). 18:40: table formatting fix only (shared-pattern column). The 18:40 outputs are the current ones.
+- Watermark diagnostic (explore, PC1–4): 34 of 84 directions change the field mostly by a frame-independent pattern (shared fraction > 0.5); 32 of those 34 pass the cycle check (corr ≥ 0.9), so cycle consistency alone does not rule out watermarks.
+

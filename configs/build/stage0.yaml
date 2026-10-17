@@ -1,0 +1,29 @@
+# [BUILD] Stage 0 (python -m dials.stage0 --config configs/build/stage0.yaml). PREDICTIONS entry 1.
+seed: 0
+data_parts:
+  - [data/generated/v1, [train, val]]
+  - [data/generated/explore_v2, [explore]]
+  - [data/generated/matched_energy_v2, [matched]]
+cache_tag: v1tv_explore_matched
+n_frames: 256
+n_envelope: 4096
+groups:
+  vorticity AE: [s2_ae_vorticity_k0_lr0.001_s0, s2_ae_vorticity_k0_lr0.001_s1, s2_ae_vorticity_k0_lr0.001_s2]
+  velocity AE: [s2_ae_velocity_k0_lr0.001_s0, s2_ae_velocity_k0_lr0.001_s1, s2_ae_velocity_k0_lr0.001_s2]
+  streamfunction AE: [s2_ae_streamfunction_k0_lr0.001_s0, s2_ae_streamfunction_k0_lr0.001_s1, s2_ae_streamfunction_k0_lr0.001_s2]
+  vorticity AE + VICReg: [s2_ae_vorticity_vicreg_k0_lr0.001_s0, s2_ae_vorticity_vicreg_k0_lr0.001_s1, s2_ae_vorticity_vicreg_k0_lr0.001_s2]
+  velocity AE + VICReg: [s2_ae_velocity_vicreg_k0_lr0.001_s0, s2_ae_velocity_vicreg_k0_lr0.001_s1, s2_ae_velocity_vicreg_k0_lr0.001_s2]
+  streamfunction AE + VICReg: [s2_ae_streamfunction_vicreg_k0_lr0.001_s0, s2_ae_streamfunction_vicreg_k0_lr0.001_s1, s2_ae_streamfunction_vicreg_k0_lr0.001_s2]
+  imaginer k=4: [s2_imaginer_k4_lr0.001_s0, s2_imaginer_k4_lr0.001_s1, s2_imaginer_k4_lr0.001_s2]
+  untrained (no decoder; readability only): [untrained_s0, untrained_s1, untrained_s2]
+criteria:
+  min_effect: 0.1
+  min_monotonicity: 0.9
+  min_cycle_corr: 0.9
+  min_envelope: 0.9
+  max_sigma_loudness: 0.2
+  min_sigma_shape: 0.7
+  max_head_inconsistency: null   # single-head models in Stage 0
+output_md: results/build/stage0.md
+output_json_gz: results/build/stage0.json.gz
+figure: results/build/stage0.png
