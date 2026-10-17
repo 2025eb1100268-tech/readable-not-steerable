@@ -1,0 +1,160 @@
+# STAGE 3 confirmation config (python -m explore.stage3_confirm --config configs/explore/stage3_confirm.yaml)
+# Frozen with PREREGISTRATION_v2.md: groups, thresholds, checkpoint and data checksums. Run once.
+seed: 0
+data_parts:
+- - data/generated/v1
+  - - train
+    - val
+- - data/generated/confirm_v2
+  - - confirm
+confirm_dir: data/generated/confirm_v2
+eval_split: confirm
+cache_tag: v1tv_confirm
+confirm_sha256:
+  velocity.npy: ab1e009e41f14f1530bf7ae3786ee090c3757ce525d3dce29ce3ca5a77aad958
+  frames.npz: 9d1f9d0b48396c7a0e10ee90eb1ca7ad59530404e0ec9c9bbfbec2caf31748e5
+  trajectories.json: 3b58eb6cb0ebe514a09c95f7931c35d9d8448706e2956c63420d139502cb9a74
+  ic_index.json: 77e06452793aaa4b072943766bc530e718b2fbde71235d1f34d3739997348d0c
+n_pca: 32
+n_boot: 1000
+groups:
+  untrained (seeds 3-5):
+  - untrained_s3
+  - untrained_s4
+  - untrained_s5
+  AE velocity (fresh):
+  - s2_ae_velocity_k0_lr0.001_s3
+  - s2_ae_velocity_k0_lr0.001_s4
+  - s2_ae_velocity_k0_lr0.001_s5
+  AE velocity + VICReg (fresh):
+  - s2_ae_velocity_vicreg_k0_lr0.001_s3
+  - s2_ae_velocity_vicreg_k0_lr0.001_s4
+  - s2_ae_velocity_vicreg_k0_lr0.001_s5
+  AE vorticity (fresh):
+  - s2_ae_vorticity_k0_lr0.001_s3
+  - s2_ae_vorticity_k0_lr0.001_s4
+  - s2_ae_vorticity_k0_lr0.001_s5
+  AE vorticity + VICReg (fresh):
+  - s2_ae_vorticity_vicreg_k0_lr0.001_s3
+  - s2_ae_vorticity_vicreg_k0_lr0.001_s4
+  - s2_ae_vorticity_vicreg_k0_lr0.001_s5
+  untrained:
+  - untrained_s0
+  - untrained_s1
+  - untrained_s2
+  AE velocity:
+  - s2_ae_velocity_k0_lr0.001_s0
+  - s2_ae_velocity_k0_lr0.001_s1
+  - s2_ae_velocity_k0_lr0.001_s2
+  AE velocity + VICReg:
+  - s2_ae_velocity_vicreg_k0_lr0.001_s0
+  - s2_ae_velocity_vicreg_k0_lr0.001_s1
+  - s2_ae_velocity_vicreg_k0_lr0.001_s2
+  AE vorticity:
+  - s2_ae_vorticity_k0_lr0.001_s0
+  - s2_ae_vorticity_k0_lr0.001_s1
+  - s2_ae_vorticity_k0_lr0.001_s2
+  AE vorticity + VICReg:
+  - s2_ae_vorticity_vicreg_k0_lr0.001_s0
+  - s2_ae_vorticity_vicreg_k0_lr0.001_s1
+  - s2_ae_vorticity_vicreg_k0_lr0.001_s2
+  AE streamfunction:
+  - s2_ae_streamfunction_k0_lr0.001_s0
+  - s2_ae_streamfunction_k0_lr0.001_s1
+  - s2_ae_streamfunction_k0_lr0.001_s2
+  AE streamfunction + VICReg:
+  - s2_ae_streamfunction_vicreg_k0_lr0.001_s0
+  - s2_ae_streamfunction_vicreg_k0_lr0.001_s1
+  - s2_ae_streamfunction_vicreg_k0_lr0.001_s2
+  imaginer k=4:
+  - s2_imaginer_k4_lr0.001_s0
+  - s2_imaginer_k4_lr0.001_s1
+  - s2_imaginer_k4_lr0.001_s2
+  imaginer k=4 + VICReg:
+  - s2_pixel_vicreg_k4_lr0.001_s0
+  - s2_pixel_vicreg_k4_lr0.001_s1
+  - s2_pixel_vicreg_k4_lr0.001_s2
+  summarizer k=4:
+  - s2_summarizer_k4_lr0.001_s0
+  - s2_summarizer_k4_lr0.001_s1
+  - s2_summarizer_k4_lr0.001_s2
+hypotheses:
+  H1:
+    groups:
+    - AE velocity (fresh)
+    - AE vorticity (fresh)
+    control: untrained (seeds 3-5)
+    min_e1: 0.7
+    min_gap: 0.25
+  H2:
+    pairs:
+    - - AE velocity (fresh)
+      - AE velocity + VICReg (fresh)
+    - - AE vorticity (fresh)
+      - AE vorticity + VICReg (fresh)
+    min_drop: 0.2
+  H3:
+    closer_to_one: AE vorticity
+    farther: AE streamfunction
+    min_ratio_farther: 2.0
+  H4:
+    pair:
+    - imaginer k=4
+    - imaginer k=4 + VICReg
+    min_drop: 0.2
+  replication:
+    H1_groups:
+    - AE velocity
+    - AE vorticity
+    control: untrained
+    H2_pairs:
+    - - AE velocity
+      - AE velocity + VICReg
+    - - AE vorticity
+      - AE vorticity + VICReg
+checkpoint_sha256:
+  s2_ae_velocity_k0_lr0.001_s3: f42403cbc0d104561c70738204c7f306039b106d147b9d646dad10bcea03e804
+  s2_ae_velocity_k0_lr0.001_s4: 933e5e3d0d9ee6b454f5ccfede4963139dc115d1ae325f079ccf7321d96e0eb9
+  s2_ae_velocity_k0_lr0.001_s5: 5bec5f7f511f19f05da9e32d1ab5d251fcc59797500a22afab34b7a8093e01ef
+  s2_ae_velocity_vicreg_k0_lr0.001_s3: 129f49759471e2ecd884cb97ac362bfed43a45f554fd8ea13a97924246785ea2
+  s2_ae_velocity_vicreg_k0_lr0.001_s4: 7ef650afc8c7ca808014523ccf4255e4ed363d44ded8dcc1c149f938d74f8942
+  s2_ae_velocity_vicreg_k0_lr0.001_s5: d799cc3dab98f40c2ed9e7757d5a4bad4cfc5688c795febc1b8b5dfffc583893
+  s2_ae_vorticity_k0_lr0.001_s3: 03b3367ae67ac4d08847f6dff72d58a06fa263856418da666ca3a805972b73ad
+  s2_ae_vorticity_k0_lr0.001_s4: 46d6b438df38c50098e0da518073d37ed2a7553606a2cfdf40d878946be69093
+  s2_ae_vorticity_k0_lr0.001_s5: 82c0e3885ee00a3e9818cbf8f964d4730a7aac540ec26e1b5b03c5b92a1cd48b
+  s2_ae_vorticity_vicreg_k0_lr0.001_s3: 9e080b3f399885bb1bf808b9777cca584a86fc1109652454713080150220d46d
+  s2_ae_vorticity_vicreg_k0_lr0.001_s4: 1f8cbcf1346a75be96572626fbd1686933870ed1742e8e5591ee0ad4d76cc4fe
+  s2_ae_vorticity_vicreg_k0_lr0.001_s5: 6302c64aa09555b249765e78c848e83cac72986fe0729e56350db92b32790b44
+  s2_ae_velocity_k0_lr0.001_s0: 1f5156a5915b1ada93b90daae8a4f72b899ce28603fa9e5ee592bcf40451b9ba
+  s2_ae_velocity_k0_lr0.001_s1: 38d5a27e9077e7390420835f4f2134a76622451192644615670e27784ff2fc89
+  s2_ae_velocity_k0_lr0.001_s2: 6393e9dbd163cdea4cb0cdf8bf6bba11347f7dbe52d7f1720135f12ec6fb32f2
+  s2_ae_velocity_vicreg_k0_lr0.001_s0: 77b4e29a7f7e14981d8c1cee4140e4d30245b88cf01f88746296f1fcdfc7958e
+  s2_ae_velocity_vicreg_k0_lr0.001_s1: 6d092dcfa846ad60bbbd3cacad01760735fcda04bd4a232bd41e11485756bcb7
+  s2_ae_velocity_vicreg_k0_lr0.001_s2: 3f53eb9a0d0edf5ef1a48662eb076c5a46d14cca5f5a2975dc02fed0e76c339f
+  s2_ae_vorticity_k0_lr0.001_s0: 4d484579b44724a8d75f7e994838c534a4db999b191d442b050cb96fc02ff340
+  s2_ae_vorticity_k0_lr0.001_s1: 422eff0f92b183974fb06ef37fdea083a143029a8e89464d865a29c86b939b1d
+  s2_ae_vorticity_k0_lr0.001_s2: 6b8b3e814fb75f130fb3ced6911c194eb4fd9b6c05eff8013746d599122ec88d
+  s2_ae_vorticity_vicreg_k0_lr0.001_s0: 1e9f77bc889eb6c2fe94c8df249ea4b377d76134793ea5158bd2d1e10758d16a
+  s2_ae_vorticity_vicreg_k0_lr0.001_s1: 22da68e5d22d72e1c33dc9ebd2573a6499542a3777e0f733f1468484a38513cc
+  s2_ae_vorticity_vicreg_k0_lr0.001_s2: 722dbcdbb53a8355fb2495519e92bf7853d6b8472ffcda443e0b3475ded8376c
+  s2_ae_streamfunction_k0_lr0.001_s0: 383769629ef8750e8ec3241cc47697648940ad35f4606d83c5337714441dd409
+  s2_ae_streamfunction_k0_lr0.001_s1: 6865af2ac9caa85fd36774919a4c899607db666ef23761b169b996002394ef0d
+  s2_ae_streamfunction_k0_lr0.001_s2: 75028c410ea9d0fefb97f8c62091a005157f43a88fb830a902eb2434dbb08c8f
+  s2_ae_streamfunction_vicreg_k0_lr0.001_s0: 5a9c1238c93767fd4dc2ca5e029d728f3780b799939598b29650c2e94d1e355a
+  s2_ae_streamfunction_vicreg_k0_lr0.001_s1: 34216ebd13953616fb8c3211e71e9f0e957ec58761a861b131a4d8b3628d6a7b
+  s2_ae_streamfunction_vicreg_k0_lr0.001_s2: 5d468825821e9568c386f90178e55d5eccb57349ad1e86ec95f8ac58a67de9cb
+  s2_imaginer_k4_lr0.001_s0: f505a0ffb9d7e25e18c5068e081f35a8c3f1ffcb97069b32cb7e37b46b93f640
+  s2_imaginer_k4_lr0.001_s1: bd1031bbf26e40087b637a08e975139d4b64321fc63d4ded4e6caabf20df4197
+  s2_imaginer_k4_lr0.001_s2: 9c1fd90838e26c354f4a05bbf3f231c156414cbcebbc214d0c50b0a1d19b81b9
+  s2_pixel_vicreg_k4_lr0.001_s0: b89dd84032d6b4e3163b4772e6da371610edba6f7dc59b6160ce0555513178dd
+  s2_pixel_vicreg_k4_lr0.001_s1: 4ef45f089652625e65d8fc8a034d07e98a4f0ddb54c03cb1f2be390610494343
+  s2_pixel_vicreg_k4_lr0.001_s2: 5b3358ca0bfb6bd953cd58a9b3d5ff356be5d33e9c88827a2fc6ad011d3fdf7f
+  s2_summarizer_k4_lr0.001_s0: 3ab7bf712f0cee9d2393e50f0c66362f689022c3cfd5f985d3ddfbe0d005c46e
+  s2_summarizer_k4_lr0.001_s1: a77369cc1d7ca3557ccd77bf9c3aabcb5aa5c668a8e3fd7bcc5211374eb0325e
+  s2_summarizer_k4_lr0.001_s2: c169889255863413a6e0db8b6c3bff90efe1a1fa39a57d60ffb294929c83de98
+outputs:
+  md: results/explore/stage3/confirm.md
+  json: results/explore/stage3/confirm.json
+dry_run_dir: data/generated/explore_v2
+dry_run_cache_tag: v1tv_explore_s3dry
+dry_run_outputs: null

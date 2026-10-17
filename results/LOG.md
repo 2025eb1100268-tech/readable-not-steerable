@@ -2013,3 +2013,11 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - results: results/explore/stage3/runs/s2_pixel_vicreg_k4_lr0.001_s2.json
   - stop reason / lr reductions: plateau / 2
   - diagnostics: pred_over_true_energy_k_ge_5: 0.874, copy_over_true_energy_k_ge_5: 1.098, pred_over_true_energy_k_ge_10: 0.414, copy_over_true_energy_k_ge_10: 0.876
+
+## 2026-10-17 17:31 — [STAGE 3] confirmation script DRY RUN (stand-in config: Stage 2 models only; confirm still sealed)
+- config: `scratchpad stage3_dry_cfg.yaml`
+- command: `python -m explore.stage3_confirm --config <stand-in> --dry-run-on explore`
+- git: `cbfe138+dirty`
+- outcome: ok: every path exercised; Stage 2 values reproduced; no fresh model evaluated
+  - final config: configs/explore/stage3_confirm.yaml, 39 checkpoint SHA-256 + confirm_v2 checksums
+  - outputs: scratchpad (not results)
