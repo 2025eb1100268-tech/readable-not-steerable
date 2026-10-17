@@ -157,7 +157,7 @@ def main():
             dial = lat[:, :8]
             entry = {"run": run, "rendering": rendering(run, cfg, refs)}
             if model.head.norm == "rms":
-                entry["content_gain"] = float(model.head.log_gain.exp())
+                entry["content_gain"] = float(model.head.log_gain.detach().exp())
             sd = lat[tr].std(0)
             entry["dial_std"] = sd[:8].tolist()
             entry["dial_std_over_content_median"] = float(sd[:8].max() / np.median(sd[8:]))
@@ -359,9 +359,11 @@ def figure(cfg, res):
         ax.set_xscale("log")
         ax.set_xlabel("effect |Δa| + |Δs| per unit α (log-units)")
         ax.set_ylabel("shape selectivity σ_shape")
-        ax.set_title(f"{s}: dots PC1–8, diamonds ω−ψ contrast, stars supervised s; outlined = passes all criteria", fontsize=9)
+        ax.set_title(s)
     axes[0].legend(fontsize=8, loc="upper left")
-    fig.suptitle("[BUILD] Stage 1: candidate dials of the split models (exploratory)", fontweight="bold", color=INK)
+    fig.suptitle("[BUILD] Stage 1: candidate dials of the split models (exploratory)\n"
+                 "dots PC1–8 · diamonds ω−ψ contrast · stars supervised s · outlined = passes every criterion on this set",
+                 fontweight="bold", color=INK)
     fig.savefig(REPO / cfg["figure"], dpi=125)
     plt.close(fig)
 
