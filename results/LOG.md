@@ -2037,3 +2037,16 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - wall-clock: 887.4 s
 - outcome: verdict: partially supported
   - results: results/explore/stage3/confirm.md, results/explore/stage3/confirm.json
+
+## 2026-10-17 18:26 — [BUILD] data generation: confirm3 (sealed for PREREGISTRATION_v3.md; counts and checksums only)
+- config: `configs/build/data_confirm3.yaml`
+- command: `python -m data.generate --config configs/build/data_confirm3.yaml`
+- git: `08c1511+dirty`
+- device: cuda
+- wall-clock: 59.4 s
+- outcome: ok
+  - frames: 54000
+  - split counts (trajectories): {'confirm3': 1007, 'excluded_re_band': 73}
+  - inviscid trajectories: 378
+  - input scale (copied from data/generated/v1): 0.9548
+  - sha256 velocity.npy: 2ae4993f6cbe86a4…

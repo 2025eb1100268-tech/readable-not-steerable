@@ -17,6 +17,7 @@ from solver.ns2d import SpectralGrid
 
 GEN = Path(__file__).resolve().parents[1] / "data" / "generated"
 V1, EXPLORE, CONFIRM, MATCHED = (GEN / d for d in ("v1", "explore_v2", "confirm_v2", "matched_energy_v2"))
+CONFIRM3 = GEN / "confirm3"  # [BUILD]
 need = lambda *ds: pytest.mark.skipif(not all((d / "manifest.json").exists() for d in ds), reason="dataset not generated")  # noqa: E731
 
 
@@ -75,8 +76,11 @@ def test_new_datasets_share_no_seeds_or_initial_fields():
     first = {int(t): int(r) for r, t in zip(np.flatnonzero(frames["frame"] == 0), frames["traj"][frames["frame"] == 0])}
     sets = {"v1 train/val": ({p["ic_seed"] for p in v1},
                              {hashlib.sha256(np.ascontiguousarray(vel[first[p["traj"]]]).tobytes()).hexdigest() for p in v1})}
-    for name, d in (("explore", EXPLORE), ("confirm", CONFIRM), ("matched", MATCHED)):
-        idx = _json(d / "ic_index.json")  # seeds and hashes only; the sealed set is not loaded
+    new_sets = [("explore", EXPLORE), ("confirm", CONFIRM), ("matched", MATCHED)]
+    if (CONFIRM3 / "ic_index.json").exists():  # [BUILD] confirm3, disjoint from everything before it
+        new_sets.append(("confirm3", CONFIRM3))
+    for name, d in new_sets:
+        idx = _json(d / "ic_index.json")  # seeds and hashes only; the sealed sets are not loaded
         sets[name] = ({e["ic_seed"] for e in idx}, {e["ic_sha256"] for e in idx})
         assert len(sets[name][0]) == len(idx) and len(sets[name][1]) == len(idx)
     names = list(sets)
@@ -120,6 +124,26 @@ def test_combined_dataset_maps_rows_and_excludes_v1_test_splits():
         np.testing.assert_array_equal(g, v1.velocity[r1[i]] if i < len(r1) else ex.velocity[r2[i - len(r1)]])
     assert len(np.unique(ds.traj)) == len(ds.trajectories)
     np.testing.assert_array_equal(ds.target("log_Z")[: len(r1)], v1.target("log_Z")[r1])
+
+
+@need(CONFIRM, CONFIRM3)
+def test_each_sealed_set_opens_only_under_its_own_preregistration(monkeypatch):
+    """[BUILD] confirm3 names PREREGISTRATION_v3.md; unsealing v2 must not open it (manifests only)."""
+    from data import seal
+
+    m2, m3 = _json(CONFIRM / "manifest.json"), _json(CONFIRM3 / "manifest.json")
+    assert m3["sealed"] and m3["sealed_for"] == "PREREGISTRATION_v3.md" and "sealed_for" not in m2
+    monkeypatch.setattr(seal, "_UNSEALED", {"PREREGISTRATION_v2.md"})
+    seal.check(CONFIRM, m2)
+    with pytest.raises(seal.SealedDatasetError):
+        seal.check(CONFIRM3, m3)
+    monkeypatch.setattr(seal, "_UNSEALED", set())
+    with pytest.raises(seal.SealedDatasetError):
+        seal.check(CONFIRM, m2)
+    with pytest.raises(seal.SealedDatasetError):
+        seal.check(CONFIRM3, m3)
+    monkeypatch.setattr(seal, "_UNSEALED", {"PREREGISTRATION_v3.md"})
+    seal.check(CONFIRM3, m3)
 
 
 @need(CONFIRM)

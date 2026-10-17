@@ -253,6 +253,8 @@ def main():
                 "sha256": {name: sha256(out_dir / name) for name in files}, "wall_seconds": wall}
     if cfg.get("sealed"):  # confirmation set: counts and checksums only
         manifest["sealed"] = True
+        if cfg.get("sealed_for"):  # the pre-registration that may unseal it (data/seal.py)
+            manifest["sealed_for"] = cfg["sealed_for"]
         summary = {k: manifest[k] for k in ("split_counts", "n_inviscid", "input_scale")}
     else:
         manifest["inviscid_max_drift"] = {"E": drift("E"), "Z": drift("Z"), "C4": drift("C4")}

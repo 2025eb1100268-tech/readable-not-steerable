@@ -1,0 +1,80 @@
+{
+  "config": {
+    "seed": 20261019,
+    "device": "cuda",
+    "cpu_threads": 8,
+    "n": 64,
+    "cfl": 0.3,
+    "dt_out": 0.04,
+    "n_traj": 1080,
+    "inviscid_fraction": 0.35,
+    "frames_viscous": 64,
+    "frames_inviscid": 24,
+    "nu_range": [
+      0.003,
+      0.05
+    ],
+    "batch": 250,
+    "ic": {
+      "blob_fraction": 0.5,
+      "blob_count": [
+        2,
+        12
+      ],
+      "blob_radius": [
+        0.25,
+        0.6
+      ],
+      "spectral_k0": [
+        2.0,
+        5.0
+      ],
+      "omega_rms": [
+        2.0,
+        4.0
+      ]
+    },
+    "split": {
+      "mode": "single",
+      "label": "confirm3",
+      "exclude_re_band_from": "data/generated/v1"
+    },
+    "input_scale_from": "data/generated/v1",
+    "sealed": true,
+    "sealed_for": "PREREGISTRATION_v3.md",
+    "log_title": "[BUILD] data generation: confirm3 (sealed for PREREGISTRATION_v3.md; counts and checksums only)",
+    "out_dir": "data/generated/confirm3",
+    "_config_path": "configs/build/data_confirm3.yaml"
+  },
+  "environment": {
+    "python": "3.13.5",
+    "platform": "Windows-11-10.0.22621-SP0",
+    "torch": "2.11.0+cu128",
+    "torch_cuda": "12.8",
+    "cuda_available": true,
+    "cpu_threads_torch": 8,
+    "git": "08c1511+dirty",
+    "gpu": "NVIDIA GeForce RTX 3060"
+  },
+  "n_frames_total": 54000,
+  "input_scale": 0.9548348293066171,
+  "split_counts": {
+    "confirm3": 1007,
+    "excluded_re_band": 73
+  },
+  "split_mode": "single",
+  "excluded_re_band": [
+    286.07814401885264,
+    389.3973797160809
+  ],
+  "n_inviscid": 378,
+  "sha256": {
+    "velocity.npy": "2ae4993f6cbe86a4c005fb48c3e8c7d25aebe80e2b4e10ea143dc5286518435f",
+    "frames.npz": "62403f1373f41dd409d51435344edfcd8816762dbee5a8e259a47996097dc6fe",
+    "trajectories.json": "35b2081cea6059de786f226dc32f11948b0254172e7b309e526191cf02d5a5f1",
+    "ic_index.json": "c0ce7515bda00025eb0fdf4fa108f20246b1ef37357d333567a6335282f3221d"
+  },
+  "wall_seconds": 59.36388309999893,
+  "sealed": true,
+  "sealed_for": "PREREGISTRATION_v3.md"
+}
