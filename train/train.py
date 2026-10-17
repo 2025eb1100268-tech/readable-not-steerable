@@ -12,6 +12,10 @@ results/checkpoints/<run>.pt (gitignored).
 schedule plateau (warmup, constant lr, lr x factor on val plateaus, stop rule, step cap; JEPA EMA
 momentum tied to the plateau lr), diagnostics (prediction spectra / map variance at the end),
 results_dir and log_title.
+
+[BUILD] Stage 1 (results/build/PREDICTIONS.md entry 3): split_ae, the two-head split model of
+dials/split.py (dial_mode spatial = M1-spec, film = M1-G); per-head loss weights
+loss_weights.head, VICReg on the pooled content only.
 """
 from __future__ import annotations
 
@@ -30,6 +34,8 @@ import torch.nn.functional as F  # noqa: E402
 
 from common.run import REPO, append_log, command_line, environment, load_config, save_json, seed_everything  # noqa: E402
 from data.dataset import Dataset  # noqa: E402
+from dials.split import TARGETS as SPLIT_TARGETS  # noqa: E402
+from dials.split import SplitHeads  # noqa: E402
 from models.encoder import build_encoder  # noqa: E402
 from models.heads import HORIZONS, PixelDecoder, PooledPredictor, SpatialPredictor, vicreg_var_cov  # noqa: E402
 from solver.diagnostics import energy_spectrum  # noqa: E402
@@ -37,6 +43,7 @@ from solver.ns2d import SpectralGrid  # noqa: E402
 
 PIXEL_KINDS = ("pixel", "pixel_vicreg")
 AE_KINDS = ("autoencoder", "autoencoder_vicreg")  # [EXPLORE] entry 6: render the current frame's psi, u or omega
+SPLIT_KINDS = ("split_ae",)  # [BUILD] Stage 1: two heads (omega, psi) on a channel-split latent
 
 
 def ae_field(x: torch.Tensor, target: str, grid: SpectralGrid) -> torch.Tensor:
@@ -113,6 +120,10 @@ class Model(torch.nn.Module):
             self.ae_scale = float(cfg.get("ae_target_scale", 1.0))
             self.head = PixelDecoder(d, n_horizons=nh, in_ch=d, out_ch=2 if self.ae_target == "velocity" else 1)
             self._grid = None
+        elif self.kind in SPLIT_KINDS:
+            self.ae_scales = {t: float(v) for t, v in cfg["ae_target_scales"].items()}
+            self.head = SplitHeads(cfg, d)
+            self._grid = None
         elif self.kind == "static_vicreg":
             self.head = None
         else:
@@ -126,6 +137,9 @@ class Model(torch.nn.Module):
 
     def ae_target_field(self, x_t: torch.Tensor) -> torch.Tensor:
         return ae_field(x_t, self.ae_target, self.grid(x_t.device)) / self.ae_scale
+
+    def split_targets(self, x_t: torch.Tensor) -> dict:
+        return {t: ae_field(x_t, t, self.grid(x_t.device)) / self.ae_scales[t] for t in SPLIT_TARGETS}
 
     def probed_encoder(self):
         """The encoder whose pooled latent is probed: EMA target for JEPA variants."""
@@ -142,6 +156,14 @@ class Model(torch.nn.Module):
             var2, cov2 = vicreg_var_cov(z2)
             var, cov = (var1 + var2) / 2, (cov1 + cov2) / 2
             return w["pred"] * inv + w["var"] * var + w["cov"] * cov, {"pred": inv, "var": var, "cov": cov}
+        if self.kind in SPLIT_KINDS:  # [BUILD] Stage 1
+            preds, content = self.head(self.enc(x_t))
+            tgt = self.split_targets(x_t)
+            mse = {t: F.mse_loss(preds[t].float(), tgt[t]) for t in SPLIT_TARGETS}
+            pred = sum(float(w["head"][t]) * mse[t] for t in SPLIT_TARGETS)
+            var, cov = vicreg_var_cov(content)
+            return pred + w["var"] * var + w["cov"] * cov, {"pred": pred, **{f"mse_{t}": v for t, v in mse.items()},
+                                                            "var": var, "cov": cov}
         if self.kind in AE_KINDS:  # [EXPLORE] entry 6: reconstruct a field of the current frame only
             m_t = self.enc(x_t)
             pred = self.head(m_t, k_idx)
@@ -184,6 +206,7 @@ def evaluate(model: Model, val: SplitData, k_val: torch.Tensor, batch: int, amp:
     """Label-free validation metric (prediction loss / copy baseline) and collapse diagnostics."""
     model.eval()
     num = den = 0.0
+    heads: dict = {}
     gen = torch.Generator(device="cpu").manual_seed(12345)
     for i in range(0, len(val.anchors), batch):
         a = val.anchors[i:i + batch]
@@ -191,7 +214,14 @@ def evaluate(model: Model, val: SplitData, k_val: torch.Tensor, batch: int, amp:
         k = torch.tensor(model.horizons, device=a.device)[ki]
         x_prev, x_t, x_tk = val.x[a - 1], val.x[a], val.x[a + k]
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
-            if model.kind in AE_KINDS:  # normalized reconstruction MSE: >= 1 is no better than predicting zero
+            if model.kind in SPLIT_KINDS:  # [BUILD] normalized reconstruction MSE per head
+                tgt = model.split_targets(x_t)
+                preds, _ = model.head(model.enc(x_t))
+                for t in SPLIT_TARGETS:
+                    h = heads.setdefault(t, [0.0, 0.0])
+                    h[0] += F.mse_loss(preds[t].float(), tgt[t], reduction="sum").item()
+                    h[1] += float((tgt[t] ** 2).sum())
+            elif model.kind in AE_KINDS:  # normalized reconstruction MSE: >= 1 is no better than predicting zero
                 tgt = model.ae_target_field(x_t)
                 pred = model.head(model.enc(x_t), ki).float()
                 num += F.mse_loss(pred, tgt, reduction="sum").item()
@@ -217,7 +247,7 @@ def evaluate(model: Model, val: SplitData, k_val: torch.Tensor, batch: int, amp:
                     pred = model.head(maps[:len(a)].mean(dim=(2, 3)), maps[len(a):].mean(dim=(2, 3)), ki).float()
                     num += F.mse_loss(pred, tgt_tk.mean(dim=(2, 3)), reduction="sum").item()
                     den += F.mse_loss(tgt_t.mean(dim=(2, 3)), tgt_tk.mean(dim=(2, 3)), reduction="sum").item()
-    metric = num / den
+    metric = heads["vorticity"][0] / heads["vorticity"][1] if heads else num / den
     enc = model.probed_encoder()
     sub = torch.arange(0, val.n, 4, device=val.x.device)
     z = torch.cat([enc.pooled(val.x[sub[i:i + batch]]).float() for i in range(0, len(sub), batch)])
@@ -230,10 +260,13 @@ def evaluate(model: Model, val: SplitData, k_val: torch.Tensor, batch: int, amp:
 
     model.train()
     name = ("invariance loss" if model.kind == "static_vicreg" else "normalized reconstruction MSE" if model.kind in AE_KINDS
-            else "loss / copy baseline")
-    return {"metric": metric, "metric_name": name,
-            "latent_std_median": float(std.median()), "latent_std_min": float(std.min()),
-            "effective_rank": eff_rank(torch.cov(z.T)), "effective_rank_corr": eff_rank(torch.corrcoef(z.T))}
+            else "normalized reconstruction MSE (vorticity head)" if model.kind in SPLIT_KINDS else "loss / copy baseline")
+    out = {"metric": metric, "metric_name": name,
+           "latent_std_median": float(std.median()), "latent_std_min": float(std.min()),
+           "effective_rank": eff_rank(torch.cov(z.T)), "effective_rank_corr": eff_rank(torch.corrcoef(z.T))}
+    for t, (a, b) in heads.items():
+        out[f"metric_{t}"] = a / b
+    return out
 
 
 class Plateau:
@@ -272,7 +305,7 @@ def prediction_diagnostics(model: Model, val: SplitData, k_val: torch.Tensor, am
     Pixel models: mean energy spectra of predicted, true and copied (frame t) fields at t + k.
     Spatial JEPA: variance of the predicted map relative to the target map (per channel, averaged)."""
     pixel = model.kind in PIXEL_KINDS
-    if model.kind in AE_KINDS:
+    if model.kind in AE_KINDS + SPLIT_KINDS:
         return ae_diagnostics(model, val, amp, n, chunk)
     if not (pixel or model.kind == "jepa_spatial"):
         return {}
@@ -312,27 +345,39 @@ def prediction_diagnostics(model: Model, val: SplitData, k_val: torch.Tensor, am
 
 @torch.no_grad()
 def ae_diagnostics(model: Model, val: SplitData, amp: bool, n: int = 1024, chunk: int = 256) -> dict:
-    """[EXPLORE] entry 6: shell power spectra of the reconstructed and true target fields."""
+    """[EXPLORE] entry 6: shell power spectra of the reconstructed and true target fields.
+    [BUILD] split models: the same per head, keys prefixed with the head's target."""
     model.eval()
     g = model.grid(val.x.device)
     shells = torch.round(g.kmag).long().reshape(-1)
     nk = int(shells.max()) + 1
-    acc = {"pred": torch.zeros(nk, device=val.x.device, dtype=torch.float64), "true": torch.zeros(nk, device=val.x.device, dtype=torch.float64)}
+    split = model.kind in SPLIT_KINDS
+    prefixes = [f"{t}_" for t in SPLIT_TARGETS] if split else [""]
+    acc = {p_ + name: torch.zeros(nk, device=val.x.device, dtype=torch.float64) for p_ in prefixes for name in ("pred", "true")}
     count = 0
     for i in range(0, min(n, len(val.anchors)), chunk):
         a = val.anchors[i:min(i + chunk, n)]
         x_t = val.x[a]
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
-            pred = model.head(model.enc(x_t), torch.zeros(len(a), dtype=torch.long, device=x_t.device)).float()
-        for name, f in (("pred", pred), ("true", model.ae_target_field(x_t))):
-            p = (g.fft(f).abs() ** 2 * g.parseval_w).sum(1).reshape(len(a), -1).sum(0).double()
-            acc[name].scatter_add_(0, shells, p)
+            if split:
+                preds, _ = model.head(model.enc(x_t))
+                tgt = model.split_targets(x_t)
+                pairs = [(f"{t}_", preds[t].float(), tgt[t]) for t in SPLIT_TARGETS]
+            else:
+                pred = model.head(model.enc(x_t), torch.zeros(len(a), dtype=torch.long, device=x_t.device)).float()
+                pairs = [("", pred, model.ae_target_field(x_t))]
+        for p_, pred, true in pairs:
+            for name, f in (("pred", pred), ("true", true)):
+                p = (g.fft(f).abs() ** 2 * g.parseval_w).sum(1).reshape(len(a), -1).sum(0).double()
+                acc[p_ + name].scatter_add_(0, shells, p)
         count += len(a)
     model.train()
     spec = {k_: (v / count).cpu().numpy() for k_, v in acc.items()}
-    out = {"n_anchors": count, "k": list(range(nk)), "P_pred": spec["pred"].tolist(), "P_true": spec["true"].tolist()}
-    for k0 in (5, 10):
-        out[f"pred_over_true_power_k_ge_{k0}"] = float(spec["pred"][k0:].sum() / spec["true"][k0:].sum())
+    out = {"n_anchors": count, "k": list(range(nk))}
+    for p_ in prefixes:
+        out[f"{p_}P_pred"], out[f"{p_}P_true"] = spec[p_ + "pred"].tolist(), spec[p_ + "true"].tolist()
+        for k0 in (5, 10):
+            out[f"{p_}pred_over_true_power_k_ge_{k0}"] = float(spec[p_ + "pred"][k0:].sum() / spec[p_ + "true"][k0:].sum())
     return out
 
 
@@ -353,6 +398,10 @@ def main():
     if cfg["model"] in AE_KINDS and "ae_target_scale" not in cfg:  # unit variance over v1 train frames, stored with the run
         sample = train.x[torch.arange(0, train.n, max(1, train.n // 4096), device=device)]
         cfg["ae_target_scale"] = float(ae_field(sample, cfg["ae_target"], SpectralGrid(64, device, dtype=torch.float32)).std())
+    if cfg["model"] in SPLIT_KINDS and "ae_target_scales" not in cfg:  # [BUILD] the same rule, per head
+        sample = train.x[torch.arange(0, train.n, max(1, train.n // 4096), device=device)]
+        cfg["ae_target_scales"] = {t: float(ae_field(sample, t, SpectralGrid(64, device, dtype=torch.float32)).std())
+                                   for t in SPLIT_TARGETS}
     model = Model(cfg).to(device)
     params = [p for p in model.parameters() if p.requires_grad]
     opt = torch.optim.AdamW(params, lr=cfg["lr"], weight_decay=cfg["weight_decay"])
@@ -463,6 +512,9 @@ def main():
         details["diagnostics"] = ", ".join(f"{key}: {v:.3f}" for key, v in diagnostics.items() if key.startswith(("pred_over", "copy_over")))
     if cfg["model"] in AE_KINDS:
         details["target / scale"] = f"{cfg['ae_target']} / {cfg['ae_target_scale']:.4f}"
+    if cfg["model"] in SPLIT_KINDS:
+        details["val normalized MSE vorticity / streamfunction head"] = (f"{final['metric_vorticity']:.5f} / "
+                                                                          f"{final['metric_streamfunction']:.5f}")
     append_log(f"{cfg.get('log_title', 'Phase 2 training')}: {cfg['run_name']}", cfg["_config_path"], command_line(),
                "collapsed (fails the pre-registered no-collapse rule)" if collapsed else "ok", details, wall, environment().get("gpu"))
 

@@ -1,0 +1,36 @@
+# [BUILD] Stage 1 readouts (python -m dials.stage1 --config configs/build/stage1_eval.yaml). PREDICTIONS entries 2-3.
+seed: 0
+data_parts:
+  - [data/generated/v1, [train, val]]
+  - [data/generated/explore_v2, [explore]]
+  - [data/generated/matched_energy_v2, [matched]]
+cache_tag: v1tv_explore_matched
+n_frames: 256
+n_envelope: 4096
+groups:
+  M1-spec: [b1_m1spec_s0, b1_m1spec_s1, b1_m1spec_s2]
+  M1-G: [b1_m1g_s0, b1_m1g_s1, b1_m1g_s2]
+references:
+  vorticity AE: [s2_ae_vorticity_k0_lr0.001_s0, s2_ae_vorticity_k0_lr0.001_s1, s2_ae_vorticity_k0_lr0.001_s2]
+  streamfunction AE: [s2_ae_streamfunction_k0_lr0.001_s0, s2_ae_streamfunction_k0_lr0.001_s1, s2_ae_streamfunction_k0_lr0.001_s2]
+  vorticity AE + VICReg: [s2_ae_vorticity_vicreg_k0_lr0.001_s0, s2_ae_vorticity_vicreg_k0_lr0.001_s1, s2_ae_vorticity_vicreg_k0_lr0.001_s2]
+  streamfunction AE + VICReg: [s2_ae_streamfunction_vicreg_k0_lr0.001_s0, s2_ae_streamfunction_vicreg_k0_lr0.001_s1, s2_ae_streamfunction_vicreg_k0_lr0.001_s2]
+reference_json: results/explore/stage2/runs/{run}.json
+runs_json: results/build/stage1/runs/{run}.json
+criteria:                      # PREDICTIONS entry 2
+  min_effect: 0.2
+  min_monotonicity: 0.9
+  min_cycle_corr: 0.9
+  cycle_gain: [0.5, 2.0]
+  max_shared_pattern: 0.5
+  envelope_rel_margin: 0.05
+  max_head_ratio: 1.5
+  max_sigma_loudness: 0.2
+  min_sigma_shape: 0.7
+  min_seeds: 2
+contrast_min_cos2: 0.5         # PREDICTIONS entry 3 (investigator's prediction)
+collapse_max_ratio: 0.01       # dial collapse: max dial-dim std < 1% of the median content-dim std
+output_md: results/build/stage1.md
+output_json_gz: results/build/stage1.json.gz
+figure: results/build/stage1.png
+figure_strips: results/build/stage1_strips.png

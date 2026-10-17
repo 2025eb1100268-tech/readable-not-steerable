@@ -64,3 +64,109 @@ Written before the steering harness exists.
   and the imaginer, while its steering effect is below the floor in most of them (readable but not
   steerable). Probability 55%.
 - **P0.6** At least 80% of the directions that clear the floor also pass realism. Probability 60%.
+
+---
+
+## Entry 2 — 2026-10-18 — Final dial thresholds (approved by the investigator, before any Stage 1 training)
+
+Set from Stage 0 (`results/build/stage0.md`, `results/build/stage0_ideal_dials.txt`) and a check of
+head consistency on existing ω/ψ autoencoder pairs. They apply from Stage 1 on; Stage 0's numbers
+stay under entry 1's definitions. Every criterion is measured on `explore` and on `matched-energy`
+separately and must pass on both; it is scored on the vorticity (primary) head, and every other
+head is reported.
+
+- **Effect:** |Δa| + |Δs| ≥ **0.2** log-units per unit α (median over frames). Raised from 0.1: the
+  best of Stage 0's 84 candidates was 0.086.
+- **Monotonicity:** Spearman ≥ 0.9 on the dominant coordinate. (At Stage 0 it was 1.000 even at the
+  10th percentile, so on its own it separates nothing.)
+- **Loudness dial:** σ_shape ≤ 0.2. **Shape dial:** σ_shape ≥ 0.7.
+- **Realism:**
+  - *Cycle:* correlation ≥ 0.9 **and gain in [0.5, 2]** (decoded vorticity → velocity through the
+    inverse Laplacian → re-encoded; the change of its projection on d against the commanded α·σ_d).
+  - *Watermark:* shared-pattern fraction ≤ 0.5 (the fraction of the α = ±2 change, relative to α = 0,
+    that is one pattern common to all frames; the larger of the two ends).
+  - *Envelope relative to an ideal dial:* at every α, the envelope fraction (shells k = 1…21 inside the
+    1st–99th percentiles of 4,096 v1 train spectra, mean over frames) ≥ the ideal reference's − 0.05.
+    Ideal reference: per frame and α, the unsteered decoded field (α = 0) tilted by k^τ (τ by
+    bisection) to the steered field's s, then rescaled to its a; same a and s, so a shortfall comes
+    from how the spectrum is shaped beyond (a, s). The absolute envelope is reported, not scored.
+  - *Two-head models:* head inconsistency (‖ω_head − (−∇²ψ_head)‖ / ‖ω_head‖, median over frames) ≤
+    **1.5× its α = 0 value** at every α. The absolute value is reported, not scored. (The proposed
+    absolute bar of 0.3 was dropped by the investigator: existing ω/ψ autoencoder pairs give 0.17–0.21
+    plain and 0.83–0.93 with VICReg at α = 0, so it would reject every model before any steering.)
+  - *Velocity outputs:* relative divergence, reported.
+- **Model level:** a variant *produces* a shape (loudness) dial if at least 2 of its 3 seeds have one
+  among PC1–8 of its dial subspace. Every seed and every direction is reported, and the PC1–4 subset
+  too.
+
+---
+
+## Entry 3 — 2026-10-18 — Stage 1 (M1-spec and M1-G, 3 seeds each)
+
+Written before any Stage 1 training.
+
+### Fixed definitions
+
+- **Models** (`dials/split.py`; configs from `dials/stage1_configs.py`). The shared encoder, initialized
+  as the Stage 2 autoencoders with the same seed; map channels [0:4] dial-ω, [4:8] dial-ψ, [8:128]
+  content.
+  - **M1-spec:** vorticity head = the autoencoders' decoder on the [dial-ω, content] channels;
+    streamfunction head = the same design on [dial-ψ, content].
+  - **M1-G:** the dial channels are pooled to an 8-dim vector; each head decodes the content map alone,
+    with FiLM after its input stage and after each upsampling stage (h ← h·(1 + γ) + β; γ, β linear in
+    that head's 4 dial dims, zero-initialized). The content map is divided by its per-sample RMS and
+    multiplied by one learned scalar gain, the same for every sample. (Implementation fix: with the RMS
+    fixed at 1, VICReg's unit-std target on the pooled content is reachable only by a spatially constant
+    map.)
+- **Training:** the autoencoder recipe (v1 train, batch 256, AdamW lr 1e-3, weight decay 0.05, cosine
+  decay with 5% warmup, gradient clipping 1.0, 30 epochs, bf16). Targets ω and ψ, each scaled to unit
+  std over v1 train (2.6306 and 1.1693, the Stage 2 values). Loss = 14.699·MSE_ω + 42.520·MSE_ψ
+  + 25·VICReg variance + 1·VICReg covariance, the last two on the pooled content (120 dims) only.
+  **Head-loss rule:** weights inversely proportional to each head's VICReg-autoencoder counterpart's
+  final val normalized MSE (0.01047 ω, 0.00362 ψ; mean of 3 seeds), with geometric mean 25 (the Stage 2
+  rendering weight), so both heads contribute equally at their counterparts' quality.
+- **Latents:** dial subspace = the 8 pooled dial dims (M1-spec: spatial mean of the dial channels;
+  M1-G: the FiLM input vector). Content latent = the pooled content as the heads see it (after
+  normalization in M1-G). Full latent = both (128 dims).
+- **Steering:** the shift is added to the dial vector (M1-G) or at every position of the dial channels
+  (M1-spec); for full-latent directions, the content part is added at every position of the content map.
+- **Candidates per run:** PC1–8 (raw centred PCA of the dial latent on v1 train frames; σ_d = train
+  std); the **ω−ψ contrast direction** (label-free: the top raw PC of each group, u_ψ's sign chosen so
+  the two projections correlate positively, c = [u_ω/sd_ω, −u_ψ/sd_ψ], unit norm); the supervised
+  s-direction (ridge) in the dial subspace and in the full latent (upper bound; reported, not part of
+  "produces").
+- **Frames, harness and criteria:** the Stage 0 frames (256 explore, 256 matched-energy) and envelope;
+  entry 2's criteria.
+- **Rendering trigger** (stop and report): a head's val normalized MSE > 2× its VICReg-autoencoder
+  counterpart (ω 0.01047, ψ 0.00362), or > 0.02, or < 50% of the true k ≥ 10 power of its target kept.
+  **Dial collapse:** the largest dial-dim std < 1% of the median content-dim std (train frames).
+- **Readouts:** prominence (E1-style: best of the top-3 slow directions, |r| with log Z₀ and with
+  log E₀ on explore inviscid trajectories, fitted on v1 train + val inviscid; PCA step 8 in the dial
+  subspace, 32 otherwise) in the dial, content and full latents. Ridge probes scored on explore: log E,
+  log Z, log P, s, log(P/Z) (plain and time-partialled R²) and log ν (single frame, frame pair) from
+  each latent. The Stage 2 autoencoders get the same prominence and probes, for reference.
+- **Wording:** M1-G's loudness dial exists by construction and is reported as a design property, not a
+  finding. The finding is whether a label-free shape dial emerges.
+
+### Predictions
+
+- **P1.1** Neither model fires the rendering trigger in any seed, and no dial subspace collapses. 70%.
+- **P1.2** M1-spec produces no shape dial (fewer than 2 of 3 seeds). 85%.
+- **P1.3** M1-spec produces no dial of any kind among PC1–8 (fewer than 2 seeds with a loudness or a
+  shape dial): pooled shifts of spatial channels stay weak, as in Stage 0. 65%.
+- **P1.4** (design check, not a finding) M1-G has a loudness dial among PC1–8 in at least 2 of 3 seeds. 80%.
+- **P1.5** M1-G produces a shape dial. 35%.
+- **P1.6** (investigator's prediction) If a shape dial emerges in M1-G, it is, or loads mainly on, the
+  ω−ψ contrast direction: cos² ≥ 0.5 with c for the largest-effect shape dial in most seeds that have
+  one. Recorded either way; my probability 60%. Also reported: whether c itself qualifies as a shape dial.
+- **P1.7** The two dial groups' top directions correlate at |r| ≥ 0.8 in every seed: in M1-G (both
+  carry loudness for their head) 70%; in M1-spec (the two groups learn the same loudness direction,
+  the M3 trigger) 55%.
+- **P1.8** M1-G's content decodes s (plain R² ≥ 0.8 on explore) but not log E (R² < 0.5), and the full
+  latent decodes log E and log Z with R² ≥ 0.95. 50%.
+- **P1.9** The supervised s-direction in M1-G's dial subspace is a shape dial in at least 2 seeds
+  (shape is steerable through the dials at all). 50%.
+- **P1.10** In M1-G, the dial subspace's E1 with log E₀ is ≥ 0.8 and the content subspace's E1 with
+  log Z₀ is < 0.5 (loudness moved out of content). 55%.
+
+Compute: 6 runs ≈ 2.5 GPU-hours, readouts ≈ 0.2.

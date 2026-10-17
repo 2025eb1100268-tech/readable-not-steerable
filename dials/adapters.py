@@ -13,7 +13,8 @@ from __future__ import annotations
 
 import torch
 
-from train.train import AE_KINDS, PIXEL_KINDS, Model
+from dials.split import TARGETS
+from train.train import AE_KINDS, PIXEL_KINDS, SPLIT_KINDS, Model
 
 
 def _rows(delta: torch.Tensor, b: int) -> torch.Tensor:
@@ -56,3 +57,43 @@ class ExistingModel:
     @torch.no_grad()
     def reencode(self, vel):
         return self.m.enc.pooled(vel.float())
+
+
+class SplitModel:
+    """Stage 1 split models (dials/split.py; PREDICTIONS entry 3). space "dial": the 8 pooled dial
+    dims (dial-omega then dial-psi); space "full": those 8 followed by the 120 pooled content dims as
+    the heads see them (after the RMS normalization of M1-G). A shift is added at every map position
+    (M1-spec dial channels, content) or to the pooled dial vector (M1-G). Heads: vorticity (primary),
+    streamfunction."""
+
+    def __init__(self, model: Model, space: str = "dial"):
+        assert model.kind in SPLIT_KINDS and space in ("dial", "full")
+        self.m, self.h, self.space = model.eval(), model.head, space
+        self.nd2 = 2 * self.h.nd
+        self.d = self.nd2 if space == "dial" else model.enc.d
+
+    @torch.no_grad()
+    def latent(self, x):
+        dial, content = self.h.split(self.m.enc(x.float()))
+        z = dial.mean(dim=(2, 3))
+        return z if self.space == "dial" else torch.cat([z, content.mean(dim=(2, 3))], 1)
+
+    def dial_latent(self, x_prev, x_t):
+        return self.latent(x_t)[:, :self.nd2]
+
+    def full_latent(self, x_prev, x_t):
+        dial, content = self.h.split(self.m.enc(x_t.float()))
+        return torch.cat([dial.mean(dim=(2, 3)), content.mean(dim=(2, 3))], 1)
+
+    @torch.no_grad()
+    def decode(self, x_prev, x_t, delta):
+        dial, content = self.h.split(self.m.enc(x_t.float()))
+        shift = _rows(delta, len(x_t))
+        if self.space == "full":
+            content = content + shift[:, self.nd2:, None, None]
+            shift = shift[:, :self.nd2]
+        dial = dial + shift[:, :, None, None] if self.h.mode == "spatial" else dial.mean(dim=(2, 3)) + shift
+        out = self.h.render(dial, content)
+        return [(t, t, out[t].float() * self.m.ae_scales[t]) for t in TARGETS]
+
+    reencode = latent
