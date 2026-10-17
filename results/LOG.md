@@ -2093,3 +2093,111 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - ideal shape dial, Δs = 0.24/α (explore) / 0.19/α (matched), Δa = 0: min over α 0.791 / 0.685
   - so the absolute envelope ≥ 0.9 at every α rejects ideal dials at the proposed strength; realism threshold to be redefined relative to an ideal dial (proposal to the investigator)
 
+
+## 2026-10-18 00:53 — [BUILD] Stage 1 training: b1_m1g_s0
+- config: `configs/build/stage1/b1_m1g_s0.yaml`
+- command: `python -m train.train --config configs/build/stage1/b1_m1g_s0.yaml`
+- git: `4f08bf3+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1516.9 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0093
+  - effective rank / latent std median: 51.4 / 0.289
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage1/runs/b1_m1g_s0.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.00933 / 0.00070
+
+## 2026-10-18 01:15 — [BUILD] Stage 1 training: b1_m1spec_s0
+- config: `configs/build/stage1/b1_m1spec_s0.yaml`
+- command: `python -m train.train --config configs/build/stage1/b1_m1spec_s0.yaml`
+- git: `4f08bf3+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1274.6 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0159
+  - effective rank / latent std median: 81.7 / 1.030
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage1/runs/b1_m1spec_s0.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01592 / 0.00077
+
+## 2026-10-18 01:38 — [BUILD] Stage 1 training: b1_m1g_s1
+- config: `configs/build/stage1/b1_m1g_s1.yaml`
+- command: `python -m train.train --config configs/build/stage1/b1_m1g_s1.yaml`
+- git: `4f08bf3+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1421.4 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0090
+  - effective rank / latent std median: 57.6 / 0.300
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage1/runs/b1_m1g_s1.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.00898 / 0.00074
+
+## 2026-10-18 02:02 — [BUILD] Stage 1 training: b1_m1spec_s1
+- config: `configs/build/stage1/b1_m1spec_s1.yaml`
+- command: `python -m train.train --config configs/build/stage1/b1_m1spec_s1.yaml`
+- git: `4f08bf3+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1424.3 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0140
+  - effective rank / latent std median: 83.6 / 1.031
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage1/runs/b1_m1spec_s1.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01400 / 0.00082
+
+## 2026-10-18 02:26 — [BUILD] Stage 1 training: b1_m1g_s2
+- config: `configs/build/stage1/b1_m1g_s2.yaml`
+- command: `python -m train.train --config configs/build/stage1/b1_m1g_s2.yaml`
+- git: `4f08bf3+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1446.6 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0096
+  - effective rank / latent std median: 54.1 / 0.292
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage1/runs/b1_m1g_s2.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.00963 / 0.00074
+
+## 2026-10-18 02:50 — [BUILD] Stage 1 training: b1_m1spec_s2
+- config: `configs/build/stage1/b1_m1spec_s2.yaml`
+- command: `python -m train.train --config configs/build/stage1/b1_m1spec_s2.yaml`
+- git: `4f08bf3+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1417.9 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0158
+  - effective rank / latent std median: 77.2 / 1.028
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage1/runs/b1_m1spec_s2.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01578 / 0.00084
+
+## 2026-10-18 02:57 — [BUILD] Stage 1 readouts (M1-spec, M1-G)
+- config: `configs/build/stage1_eval.yaml`
+- command: `python -m dials.stage1 --config configs/build/stage1_eval.yaml`
+- git: `4f08bf3+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 390.7 s
+- outcome: ok
+  - M1-spec: seeds with a shape / loudness dial (PC1–8): 0 / 0 of 3
+  - M1-G: seeds with a shape / loudness dial (PC1–8): 0 / 0 of 3
+  - results: results/build/stage1.md, results/build/stage1.png, results/build/stage1_strips.png, results/build/stage1.json.gz
+## 2026-10-18 03:05 — [BUILD] Stage 1: notes on the readouts above (exploratory)
+- No dial of any kind in either model (0 of 3 seeds each, PC1–8; contrast and supervised directions included). No rendering trigger, no dial collapse.
+- M1-G PC1 (seeds 0–2) is a loudness knob by eye and by numbers: Δa +0.21–0.24 per α, σ_shape 0.02–0.05, monotone, watermark 0.01, envelope matches the ideal dial; it fails the cycle check (gain 0.18–0.34, corr 0.59–0.88) and, in seeds 1–2, head agreement (ratio 1.6–2.1 on explore). Reading: loudness is carried twice. The RMS-normalized content still decodes log E at R² 0.986–0.990 (pattern, not scale), the decoder takes most of the loudness from content, and re-encoding a dial-made loudness change moves the dial latent by only about a quarter of the command.
+- The ω−ψ contrast direction moves the two heads' loudness in opposite directions (ω head Δa +0.08 to +0.15, ψ head −0.05 to −0.07 per α) while s inside each head moves ≤ 0.01: since each dial group reaches only its own head, the contrast can change the heads' relative amplitude, not the spectral shape of one rendered field.
+- Supervised s-direction in M1-G's dial subspace moves loudness, not shape (σ_shape ≤ 0.11, effect ≤ 0.07): shape is not steerable through these dials at all.
+- M1-spec seed 2's supervised direction visibly lifts the k ≥ 8 tail (about 3× at k = 20) but s moves only +0.02 per α (log P +0.05): s is energy-weighted, so fine-scale changes register weakly on it. Reported, definitions unchanged.
+
