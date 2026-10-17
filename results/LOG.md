@@ -2085,3 +2085,11 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - 18:32: harness as committed in the definitions. 18:37: adds two diagnostics after inspecting the decoded changes (cycle gain; watermark test = fraction of the α = ±2 change that is one pattern shared by all frames, and the change's alignment with the unsteered field). 18:40: table formatting fix only (shared-pattern column). The 18:40 outputs are the current ones.
 - Watermark diagnostic (explore, PC1–4): 34 of 84 directions change the field mostly by a frame-independent pattern (shared fraction > 0.5); 32 of those 34 pass the cycle check (corr ≥ 0.9), so cycle consistency alone does not rule out watermarks.
 
+## 2026-10-17 18:55 — [BUILD] Stage 0 diagnostic: envelope scores of ideal dials (no model)
+- command: `python -m dials.ideal_dials > results/build/stage0_ideal_dials.txt`
+- outcome: ok
+  - true frames at α = 0: envelope fraction 0.988 (explore), 0.899 (matched: below the 0.9 bar with no steering)
+  - ideal loudness dial, Δa = 0.2/α: min over α 0.973 (explore), 0.836 (matched)
+  - ideal shape dial, Δs = 0.24/α (explore) / 0.19/α (matched), Δa = 0: min over α 0.791 / 0.685
+  - so the absolute envelope ≥ 0.9 at every α rejects ideal dials at the proposed strength; realism threshold to be redefined relative to an ideal dial (proposal to the investigator)
+
