@@ -1968,3 +1968,48 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - finished: 12 fresh-seed autoencoders (velocity, vorticity; plain and + VICReg; seeds 3-5), none diverged
   - stopped: s2_pixel_vicreg_k4_lr0.001_s0 seconds after start (no checkpoint, no results); all 3 pixel + VICReg runs to be trained 2026-10-18
   - blind: no evaluation of any Stage 3 model has been run
+
+## 2026-10-17 16:13 — [STAGE 3] blind training: s2_pixel_vicreg_k4_lr0.001_s0
+- config: `configs/explore/stage2/s2_pixel_vicreg_k4_lr0.001_s0.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_pixel_vicreg_k4_lr0.001_s0.yaml`
+- git: `f765960+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1990.2 s
+- outcome: ok
+  - final val loss / copy baseline: 0.2102
+  - effective rank / latent std median: 101.2 / 1.034
+  - steps: 10580
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_pixel_vicreg_k4_lr0.001_s0.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.909, copy_over_true_energy_k_ge_5: 1.098, pred_over_true_energy_k_ge_10: 0.424, copy_over_true_energy_k_ge_10: 0.876
+
+## 2026-10-17 16:51 — [STAGE 3] blind training: s2_pixel_vicreg_k4_lr0.001_s1
+- config: `configs/explore/stage2/s2_pixel_vicreg_k4_lr0.001_s1.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_pixel_vicreg_k4_lr0.001_s1.yaml`
+- git: `f765960+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2236.0 s
+- outcome: ok
+  - final val loss / copy baseline: 0.1697
+  - effective rank / latent std median: 102.7 / 1.027
+  - steps: 12000
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_pixel_vicreg_k4_lr0.001_s1.json
+  - stop reason / lr reductions: step cap / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.908, copy_over_true_energy_k_ge_5: 1.098, pred_over_true_energy_k_ge_10: 0.427, copy_over_true_energy_k_ge_10: 0.876
+
+## 2026-10-17 17:21 — [STAGE 3] blind training: s2_pixel_vicreg_k4_lr0.001_s2
+- config: `configs/explore/stage2/s2_pixel_vicreg_k4_lr0.001_s2.yaml`
+- command: `python -m train.train --config configs/explore/stage2/s2_pixel_vicreg_k4_lr0.001_s2.yaml`
+- git: `f765960+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1813.0 s
+- outcome: ok
+  - final val loss / copy baseline: 0.2286
+  - effective rank / latent std median: 98.0 / 1.036
+  - steps: 9890
+  - peak GPU memory GB: 4.51
+  - results: results/explore/stage3/runs/s2_pixel_vicreg_k4_lr0.001_s2.json
+  - stop reason / lr reductions: plateau / 2
+  - diagnostics: pred_over_true_energy_k_ge_5: 0.874, copy_over_true_energy_k_ge_5: 1.098, pred_over_true_energy_k_ge_10: 0.414, copy_over_true_energy_k_ge_10: 0.876
