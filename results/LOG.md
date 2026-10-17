@@ -2021,3 +2021,19 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - outcome: ok: every path exercised; Stage 2 values reproduced; no fresh model evaluated
   - final config: configs/explore/stage3_confirm.yaml, 39 checkpoint SHA-256 + confirm_v2 checksums
   - outputs: scratchpad (not results)
+
+## 2026-10-17 17:33 — [EXPLORE] UNSEAL confirmation dataset
+- config: `-`
+- command: `python -m explore.stage3_confirm --config configs/explore/stage3_confirm.yaml`
+- git: `8797966`
+- outcome: unsealed
+  - reason: Stage 3 confirmation run (PREREGISTRATION_v2.md)
+
+## 2026-10-17 17:47 — STAGE 3 confirmation run (single use of the sealed confirm set)
+- config: `configs/explore/stage3_confirm.yaml`
+- command: `python -m explore.stage3_confirm --config configs/explore/stage3_confirm.yaml`
+- git: `8797966+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 887.4 s
+- outcome: verdict: partially supported
+  - results: results/explore/stage3/confirm.md, results/explore/stage3/confirm.json
