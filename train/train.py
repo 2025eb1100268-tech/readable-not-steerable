@@ -16,6 +16,8 @@ results_dir and log_title.
 [BUILD] Stage 1 (results/build/PREDICTIONS.md entry 3): split_ae, the two-head split model of
 dials/split.py (dial_mode spatial = M1-spec, film = M1-G); per-head loss weights
 loss_weights.head, VICReg on the pooled content only.
+[BUILD] Stage 2 (entry 4): branch_ae, M2-SF of dials/split.py (scale-free content encoder, dial
+encoder on the raw input, one rendered field); same loss as split_ae.
 """
 from __future__ import annotations
 
@@ -35,7 +37,7 @@ import torch.nn.functional as F  # noqa: E402
 from common.run import REPO, append_log, command_line, environment, load_config, save_json, seed_everything  # noqa: E402
 from data.dataset import Dataset  # noqa: E402
 from dials.split import TARGETS as SPLIT_TARGETS  # noqa: E402
-from dials.split import SplitHeads  # noqa: E402
+from dials.split import BranchHeads, ScaleFree, SplitHeads  # noqa: E402
 from models.encoder import build_encoder  # noqa: E402
 from models.heads import HORIZONS, PixelDecoder, PooledPredictor, SpatialPredictor, vicreg_var_cov  # noqa: E402
 from solver.diagnostics import energy_spectrum  # noqa: E402
@@ -44,6 +46,8 @@ from solver.ns2d import SpectralGrid  # noqa: E402
 PIXEL_KINDS = ("pixel", "pixel_vicreg")
 AE_KINDS = ("autoencoder", "autoencoder_vicreg")  # [EXPLORE] entry 6: render the current frame's psi, u or omega
 SPLIT_KINDS = ("split_ae",)  # [BUILD] Stage 1: two heads (omega, psi) on a channel-split latent
+BRANCH_KINDS = ("branch_ae",)  # [BUILD] Stage 2: scale-free content branch + dial branch, one field
+RENDER_KINDS = SPLIT_KINDS + BRANCH_KINDS
 
 
 def ae_field(x: torch.Tensor, target: str, grid: SpectralGrid) -> torch.Tensor:
@@ -124,6 +128,11 @@ class Model(torch.nn.Module):
             self.ae_scales = {t: float(v) for t, v in cfg["ae_target_scales"].items()}
             self.head = SplitHeads(cfg, d)
             self._grid = None
+        elif self.kind in BRANCH_KINDS:
+            self.enc = ScaleFree(build_encoder(cfg["seed"], d=int(cfg.get("content_dim", 120))))
+            self.ae_scales = {t: float(v) for t, v in cfg["ae_target_scales"].items()}
+            self.head = BranchHeads(cfg, self.enc.d)
+            self._grid = None
         elif self.kind == "static_vicreg":
             self.head = None
         else:
@@ -137,6 +146,12 @@ class Model(torch.nn.Module):
 
     def ae_target_field(self, x_t: torch.Tensor) -> torch.Tensor:
         return ae_field(x_t, self.ae_target, self.grid(x_t.device)) / self.ae_scale
+
+    def render(self, x_t: torch.Tensor):
+        """[BUILD] split / branch models: ({target: prediction in target units}, pooled content)."""
+        if self.kind in BRANCH_KINDS:
+            return self.head(self.enc(x_t), x_t)
+        return self.head(self.enc(x_t))
 
     def split_targets(self, x_t: torch.Tensor) -> dict:
         return {t: ae_field(x_t, t, self.grid(x_t.device)) / self.ae_scales[t] for t in SPLIT_TARGETS}
@@ -156,8 +171,8 @@ class Model(torch.nn.Module):
             var2, cov2 = vicreg_var_cov(z2)
             var, cov = (var1 + var2) / 2, (cov1 + cov2) / 2
             return w["pred"] * inv + w["var"] * var + w["cov"] * cov, {"pred": inv, "var": var, "cov": cov}
-        if self.kind in SPLIT_KINDS:  # [BUILD] Stage 1
-            preds, content = self.head(self.enc(x_t))
+        if self.kind in RENDER_KINDS:  # [BUILD] Stages 1-2
+            preds, content = self.render(x_t)
             tgt = self.split_targets(x_t)
             mse = {t: F.mse_loss(preds[t].float(), tgt[t]) for t in SPLIT_TARGETS}
             pred = sum(float(w["head"][t]) * mse[t] for t in SPLIT_TARGETS)
@@ -214,9 +229,9 @@ def evaluate(model: Model, val: SplitData, k_val: torch.Tensor, batch: int, amp:
         k = torch.tensor(model.horizons, device=a.device)[ki]
         x_prev, x_t, x_tk = val.x[a - 1], val.x[a], val.x[a + k]
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
-            if model.kind in SPLIT_KINDS:  # [BUILD] normalized reconstruction MSE per head
+            if model.kind in RENDER_KINDS:  # [BUILD] normalized reconstruction MSE per head
                 tgt = model.split_targets(x_t)
-                preds, _ = model.head(model.enc(x_t))
+                preds, _ = model.render(x_t)
                 for t in SPLIT_TARGETS:
                     h = heads.setdefault(t, [0.0, 0.0])
                     h[0] += F.mse_loss(preds[t].float(), tgt[t], reduction="sum").item()
@@ -260,7 +275,7 @@ def evaluate(model: Model, val: SplitData, k_val: torch.Tensor, batch: int, amp:
 
     model.train()
     name = ("invariance loss" if model.kind == "static_vicreg" else "normalized reconstruction MSE" if model.kind in AE_KINDS
-            else "normalized reconstruction MSE (vorticity head)" if model.kind in SPLIT_KINDS else "loss / copy baseline")
+            else "normalized reconstruction MSE (vorticity head)" if model.kind in RENDER_KINDS else "loss / copy baseline")
     out = {"metric": metric, "metric_name": name,
            "latent_std_median": float(std.median()), "latent_std_min": float(std.min()),
            "effective_rank": eff_rank(torch.cov(z.T)), "effective_rank_corr": eff_rank(torch.corrcoef(z.T))}
@@ -305,7 +320,7 @@ def prediction_diagnostics(model: Model, val: SplitData, k_val: torch.Tensor, am
     Pixel models: mean energy spectra of predicted, true and copied (frame t) fields at t + k.
     Spatial JEPA: variance of the predicted map relative to the target map (per channel, averaged)."""
     pixel = model.kind in PIXEL_KINDS
-    if model.kind in AE_KINDS + SPLIT_KINDS:
+    if model.kind in AE_KINDS + RENDER_KINDS:
         return ae_diagnostics(model, val, amp, n, chunk)
     if not (pixel or model.kind == "jepa_spatial"):
         return {}
@@ -351,7 +366,7 @@ def ae_diagnostics(model: Model, val: SplitData, amp: bool, n: int = 1024, chunk
     g = model.grid(val.x.device)
     shells = torch.round(g.kmag).long().reshape(-1)
     nk = int(shells.max()) + 1
-    split = model.kind in SPLIT_KINDS
+    split = model.kind in RENDER_KINDS
     prefixes = [f"{t}_" for t in SPLIT_TARGETS] if split else [""]
     acc = {p_ + name: torch.zeros(nk, device=val.x.device, dtype=torch.float64) for p_ in prefixes for name in ("pred", "true")}
     count = 0
@@ -360,7 +375,7 @@ def ae_diagnostics(model: Model, val: SplitData, amp: bool, n: int = 1024, chunk
         x_t = val.x[a]
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
             if split:
-                preds, _ = model.head(model.enc(x_t))
+                preds, _ = model.render(x_t)
                 tgt = model.split_targets(x_t)
                 pairs = [(f"{t}_", preds[t].float(), tgt[t]) for t in SPLIT_TARGETS]
             else:
@@ -398,7 +413,7 @@ def main():
     if cfg["model"] in AE_KINDS and "ae_target_scale" not in cfg:  # unit variance over v1 train frames, stored with the run
         sample = train.x[torch.arange(0, train.n, max(1, train.n // 4096), device=device)]
         cfg["ae_target_scale"] = float(ae_field(sample, cfg["ae_target"], SpectralGrid(64, device, dtype=torch.float32)).std())
-    if cfg["model"] in SPLIT_KINDS and "ae_target_scales" not in cfg:  # [BUILD] the same rule, per head
+    if cfg["model"] in RENDER_KINDS and "ae_target_scales" not in cfg:  # [BUILD] the same rule, per head
         sample = train.x[torch.arange(0, train.n, max(1, train.n // 4096), device=device)]
         cfg["ae_target_scales"] = {t: float(ae_field(sample, t, SpectralGrid(64, device, dtype=torch.float32)).std())
                                    for t in SPLIT_TARGETS}
@@ -512,7 +527,7 @@ def main():
         details["diagnostics"] = ", ".join(f"{key}: {v:.3f}" for key, v in diagnostics.items() if key.startswith(("pred_over", "copy_over")))
     if cfg["model"] in AE_KINDS:
         details["target / scale"] = f"{cfg['ae_target']} / {cfg['ae_target_scale']:.4f}"
-    if cfg["model"] in SPLIT_KINDS:
+    if cfg["model"] in RENDER_KINDS:
         details["val normalized MSE vorticity / streamfunction head"] = (f"{final['metric_vorticity']:.5f} / "
                                                                           f"{final['metric_streamfunction']:.5f}")
     append_log(f"{cfg.get('log_title', 'Phase 2 training')}: {cfg['run_name']}", cfg["_config_path"], command_line(),

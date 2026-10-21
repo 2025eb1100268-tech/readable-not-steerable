@@ -170,3 +170,60 @@ Written before any Stage 1 training.
   log Z₀ is < 0.5 (loudness moved out of content). 55%.
 
 Compute: 6 runs ≈ 2.5 GPU-hours, readouts ≈ 0.2.
+
+---
+
+## Entry 4 — 2026-10-21 — Stage 2: M2-SF, 3 seeds (variant approved by the investigator)
+
+Written before any Stage 2 training. Why this variant (Stage 1, `results/build/stage1.md` and the
+LOG notes): M1-G's RMS-normalized content still decoded log E at R² 0.99, so the decoder took most
+of the loudness from content and its loudness knob failed the cycle check (gain 0.18–0.34); and each
+dial group reached only its own head, so the ω−ψ contrast could change only the heads' relative
+loudness, never the spectral shape of one field. M2-SF removes both causes.
+
+### Fixed definitions
+
+- **Model M2-SF** (`dials/split.py`: `ScaleFree`, `BranchHeads`; training kind `branch_ae`).
+  - *Content encoder:* the shared encoder design (initialized as the Stage 2 autoencoders with the same
+    seed; last layer 120 channels) applied to x / RMS(x), the RMS taken per sample over channels and
+    pixels. Its output is exactly invariant to the input's overall scale.
+  - *Dial encoder:* the same design (init seed + 500, 8 output channels) on the raw input, spatially
+    pooled to the 8-dim dial vector.
+  - *One rendered field:* one FiLM decoder (as in M1-G, FiLM zero-initialized) renders ω from the
+    content map, every stage modulated by all 8 dials; ψ is the inverse Laplacian of that ω (dealiasing
+    mask applied), so the two agree by construction.
+  - Parameters 3.00 M (M1-G 4.25 M: one decoder instead of two).
+- **Training:** the Stage 1 recipe and loss: 14.699·MSE_ω + 42.520·MSE_ψ (on the derived ψ)
+  + 25·VICReg variance + 1·VICReg covariance on the pooled content (120 dims); configs from
+  `dials/stage2_configs.py`.
+- **Latents:** dial = the 8-dim dial vector; content = the pooled content map; full = both (128 dims).
+- **Steering:** a dial shift is added to the dial vector; full-latent directions also add their content
+  part at every position of the content map.
+- **Candidates per run:** PC1–8 of the dial vector (raw centred PCA on v1 train frames); the supervised
+  s-direction in the dial subspace and in the full latent (upper bound). No ω−ψ contrast candidate: the
+  dial dims no longer belong to a head, so the investigator's P1.6 has no counterpart here.
+- **Criteria:** entry 2, scored on the single rendered field (ω). The head-consistency criterion does
+  not apply (ψ is derived from ω). Newly reported, not scored: the decoded ω's spatial-mean share of
+  ⟨ω²⟩ (enstrophy counts it, energy does not; at most 1.5×10⁻⁴ in every Stage 1 decode, PC1–8 at
+  α ∈ {−2, 0, 2}, so it cannot move s measurably).
+- **Rendering trigger, dial collapse and readouts:** as entry 3 (the ψ trigger on the derived ψ);
+  readout script `dials/stage1.py` with `configs/build/stage2_eval.yaml`.
+- **Wording:** M2-SF's loudness dial exists by construction and is reported as a design property, not
+  a finding. The finding is whether a label-free shape dial emerges.
+
+### Predictions
+
+- **P2.1** No rendering trigger and no dial collapse in any seed. 75%.
+- **P2.2** (design check, not a finding) A loudness dial among PC1–8 that passes every criterion,
+  including the cycle check, in at least 2 of 3 seeds. 70%.
+- **P2.3** M2-SF produces a shape dial (at least 2 of 3 seeds). **20%.** Reason: the scale-free content
+  still sees the field's spectral shape, so the decoder needs only one number from the dials (the
+  loudness); nothing pushes shape into them.
+- **P2.4** The supervised s-direction in the dial subspace is a shape dial in at least 2 seeds. 25%.
+- **P2.5** The dial subspace decodes log E with R² ≥ 0.95 (explore) and its PC1 is readable as
+  loudness (|r| with a ≥ 0.9), in every seed. 70%.
+- **P2.6** The content latent decodes log E with R² < 0.9 (below M1-G's 0.99: loudness now reaches it
+  only through pattern correlations in the data) while it decodes s with R² ≥ 0.9. 55%.
+- **P2.7** ω rendering within 1.5× of M1-G's (val normalized MSE ≤ 0.014) in every seed. 70%.
+
+Compute: 3 runs ≈ 1.3 GPU-hours, readouts ≈ 0.05 (≈ 2.7 of 15 used before this stage).

@@ -14,7 +14,7 @@ from __future__ import annotations
 import torch
 
 from dials.split import TARGETS
-from train.train import AE_KINDS, PIXEL_KINDS, SPLIT_KINDS, Model
+from train.train import AE_KINDS, BRANCH_KINDS, PIXEL_KINDS, SPLIT_KINDS, Model
 
 
 def _rows(delta: torch.Tensor, b: int) -> torch.Tensor:
@@ -97,3 +97,46 @@ class SplitModel:
         return [(t, t, out[t].float() * self.m.ae_scales[t]) for t in TARGETS]
 
     reencode = latent
+
+
+class BranchModel:
+    """Stage 2 M2-SF (PREDICTIONS entry 4). space "dial": the 8-dim dial vector (dial encoder on the
+    raw input); "full": those 8 followed by the pooled content (scale-free encoder). A dial shift is
+    added to the dial vector; a content shift at every position of the content map. One rendered
+    field: omega (psi is derived from it, so there is no second head to compare)."""
+
+    def __init__(self, model: Model, space: str = "dial"):
+        assert model.kind in BRANCH_KINDS and space in ("dial", "full")
+        self.m, self.h, self.space = model.eval(), model.head, space
+        self.nd = self.h.n_dial
+        self.d = self.nd if space == "dial" else self.nd + model.enc.d
+
+    @torch.no_grad()
+    def latent(self, x):
+        x = x.float()
+        z = self.h.dial(x)
+        return z if self.space == "dial" else torch.cat([z, self.m.enc.pooled(x)], 1)
+
+    def dial_latent(self, x_prev, x_t):
+        return self.h.dial(x_t.float())
+
+    def full_latent(self, x_prev, x_t):
+        return torch.cat([self.h.dial(x_t.float()), self.m.enc.pooled(x_t.float())], 1)
+
+    @torch.no_grad()
+    def decode(self, x_prev, x_t, delta):
+        x_t = x_t.float()
+        dial, content = self.h.dial(x_t), self.m.enc(x_t)
+        shift = _rows(delta, len(x_t))
+        if self.space == "full":
+            content = content + shift[:, self.nd:, None, None]
+            shift = shift[:, :self.nd]
+        w = self.h.dec(content, dial + shift)
+        return [("vorticity", "vorticity", w.float() * self.m.ae_scales["vorticity"])]
+
+    reencode = latent
+
+
+def adapter_for(model: Model, space: str = "dial"):
+    """The steering adapter for a Stage 1 split or Stage 2 branch model."""
+    return BranchModel(model, space) if model.kind in BRANCH_KINDS else SplitModel(model, space)

@@ -14,14 +14,22 @@ and streamfunction (target psi); each dial group reaches one head only.
       one learned scalar gain, the same for every sample: per-frame amplitude cannot pass through
       content, and VICReg's unit-std target on the pooled content stays reachable (with the RMS
       fixed at 1 it would force the map to be spatially constant).
+
+[BUILD] Stage 2, M2-SF (PREDICTIONS entry 4): separate branches, scale-free content, one field.
+  The content encoder sees the input divided by its own RMS (ScaleFree: its output is exactly
+  invariant to the input's overall scale); a second encoder of the same design sees the raw input
+  and is pooled to the 8-dim dial vector. One FiLMDecoder renders omega from the content map, every
+  stage modulated by all 8 dials; psi is derived from that omega by the inverse Laplacian, so the
+  two rendered fields agree by construction.
 """
 from __future__ import annotations
 
 import torch
 import torch.nn as nn
 
-from models.encoder import _conv, kaiming_init
+from models.encoder import _conv, build_encoder, kaiming_init
 from models.heads import HorizonEmbedding, PixelDecoder
+from solver.ns2d import SpectralGrid
 
 TARGETS = ("vorticity", "streamfunction")
 
@@ -92,3 +100,53 @@ class SplitHeads(nn.Module):
         """-> ({target: prediction}, pooled content (B, nc))."""
         dial, content = self.split(m)
         return self.render(dial if self.mode == "spatial" else dial.mean(dim=(2, 3)), content), content.mean(dim=(2, 3))
+
+
+class ScaleFree(nn.Module):
+    """Divides each input by its RMS over channels and pixels before the wrapped encoder, so the
+    output is exactly invariant to the input's overall scale (up to the 1e-12 guard)."""
+
+    def __init__(self, enc: nn.Module):
+        super().__init__()
+        self.inner, self.d = enc, enc.d
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = x.float()
+        return self.inner(x / torch.sqrt(x.pow(2).mean(dim=(1, 2, 3), keepdim=True) + 1e-12))
+
+    def pooled(self, x: torch.Tensor) -> torch.Tensor:
+        return self.forward(x).mean(dim=(2, 3))
+
+
+class BranchHeads(nn.Module):
+    """M2-SF: the dial encoder (raw input -> pooled n_dial vector) and one FiLM decoder rendering omega
+    (in target units) from the content map; psi (in target units) is derived from that omega."""
+
+    def __init__(self, cfg: dict, d_content: int):
+        super().__init__()
+        self.n_dial = int(cfg.get("n_dial", 8))
+        self.dial_enc = build_encoder(cfg["seed"] + 500, d=self.n_dial)
+        self.dec = FiLMDecoder(d_content, self.n_dial)
+        self.scales = {t: float(v) for t, v in cfg["ae_target_scales"].items()}
+        self._grid = None
+
+    def grid(self, device) -> SpectralGrid:
+        if self._grid is None or self._grid.device != torch.device(device):
+            self._grid = SpectralGrid(64, device, dtype=torch.float32)
+        return self._grid
+
+    def dial(self, x: torch.Tensor) -> torch.Tensor:
+        return self.dial_enc.pooled(x)
+
+    def psi_from_omega(self, w: torch.Tensor) -> torch.Tensor:
+        g = self.grid(w.device)
+        w_hat = g.fft(w.float()[:, 0] * self.scales["vorticity"]) * g.mask
+        return (g.ifft(g.streamfunction_hat(w_hat)) / self.scales["streamfunction"])[:, None]
+
+    def render(self, dial: torch.Tensor, content: torch.Tensor) -> dict:
+        w = self.dec(content, dial)
+        return {"vorticity": w, "streamfunction": self.psi_from_omega(w)}
+
+    def forward(self, content_map: torch.Tensor, x: torch.Tensor):
+        """-> ({target: prediction}, pooled content (B, d_content))."""
+        return self.render(self.dial(x), content_map), content_map.mean(dim=(2, 3))

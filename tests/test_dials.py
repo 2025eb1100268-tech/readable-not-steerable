@@ -125,6 +125,48 @@ def test_split_adapter_and_loss():
         assert m.enc.net[0].weight.grad is not None
 
 
+def _branch_model():
+    from train.train import Model
+    cfg = {"model": "branch_ae", "seed": 0, "horizons": [0], "ae_target_scales": {"vorticity": 2.6, "streamfunction": 1.2}}
+    return Model(cfg).eval()
+
+
+def test_branch_model_content_is_scale_free_and_fields_agree():
+    from dials.adapters import BranchModel
+    m = _branch_model()
+    x = torch.randn(3, 2, 64, 64)
+    with torch.no_grad():
+        assert torch.allclose(m.enc(x), m.enc(5.0 * x), atol=1e-5)  # content cannot see the overall scale
+        assert not torch.allclose(m.head.dial(x), m.head.dial(5.0 * x), atol=1e-3)  # the dial branch can
+        preds, content = m.render(x)
+    assert preds["vorticity"].shape == preds["streamfunction"].shape == (3, 1, 64, 64) and content.shape == (3, 120)
+    w = fields.vorticity_hat(preds["vorticity"].double() * 2.6, "vorticity", G)
+    w[:, 0, 0] = 0  # psi cannot carry omega's spatial mean (zero for real flows; the untrained decoder's is not)
+    p = fields.vorticity_hat(preds["streamfunction"].double() * 1.2, "streamfunction", G)
+    assert float(fields.head_consistency(w, p, G).max()) < 1e-4  # psi is derived from omega
+    full = BranchModel(m, "full").reencode(x)
+    assert full.shape == (3, 128) and torch.allclose(full[:, 8:], BranchModel(m, "full").reencode(5.0 * x)[:, 8:], atol=1e-5)
+
+
+def test_branch_adapter_and_loss():
+    from dials.adapters import BranchModel
+    m = _branch_model()
+    x = torch.randn(4, 2, 64, 64)
+    with torch.no_grad():
+        (name, kind, f), = BranchModel(m).decode(None, x, torch.zeros(8))
+        assert name == kind == "vorticity" and torch.allclose(f, m.render(x)[0]["vorticity"] * 2.6, atol=1e-5)
+        delta = torch.zeros(128)
+        delta[:8] = torch.randn(8)
+        a, b = BranchModel(m, "dial").decode(None, x, delta[:8]), BranchModel(m, "full").decode(None, x, delta)
+        assert torch.allclose(a[0][2], b[0][2], atol=1e-5)
+    m.train()
+    w = {"head": {"vorticity": 14.7, "streamfunction": 42.5}, "var": 25.0, "cov": 1.0}
+    loss, parts = m.loss(None, x, None, torch.zeros(4, dtype=torch.long), w)
+    loss.backward()
+    assert torch.isfinite(loss) and {"mse_vorticity", "mse_streamfunction"} <= set(parts)
+    assert m.head.dial_enc.net[0].weight.grad is not None and m.enc.inner.net[0].weight.grad is not None
+
+
 def test_conversions_on_an_analytic_flow():
     """psi = sin(x) cos(y): omega = 2 psi; Biot–Savart round trip; Z/E = k^2 = 2 for this single shell."""
     x, y = G.x.expand(64, 64), G.y.expand(64, 64)

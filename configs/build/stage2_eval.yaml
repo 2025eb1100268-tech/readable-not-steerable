@@ -1,0 +1,43 @@
+# [BUILD] Stage 2 readouts (python -m dials.stage1 --config configs/build/stage2_eval.yaml). PREDICTIONS entries 2 and 4.
+title: "# [BUILD] Stage 2: M2-SF, separate branches, scale-free content, one rendered field (exploratory)"
+intro: >-
+  Definitions and predictions: results/build/PREDICTIONS.md entries 2 and 4. The content encoder sees the input divided by
+  its RMS, so loudness can reach the decoder only through the dials: M2-SF's loudness dial exists by construction and is a
+  design property, not a finding. The finding is whether a label-free shape dial emerges. One rendered field (omega; psi is
+  derived from it): no head-consistency criterion and no omega-psi contrast candidate.
+log_title: "[BUILD] Stage 2 readouts (M2-SF)"
+stage_label: Stage 2
+seed: 0
+data_parts:
+  - [data/generated/v1, [train, val]]
+  - [data/generated/explore_v2, [explore]]
+  - [data/generated/matched_energy_v2, [matched]]
+cache_tag: v1tv_explore_matched
+n_frames: 256
+n_envelope: 4096
+groups:
+  M2-SF: [b2_m2sf_s0, b2_m2sf_s1, b2_m2sf_s2]
+references:
+  vorticity AE: [s2_ae_vorticity_k0_lr0.001_s0, s2_ae_vorticity_k0_lr0.001_s1, s2_ae_vorticity_k0_lr0.001_s2]
+  streamfunction AE: [s2_ae_streamfunction_k0_lr0.001_s0, s2_ae_streamfunction_k0_lr0.001_s1, s2_ae_streamfunction_k0_lr0.001_s2]
+  vorticity AE + VICReg: [s2_ae_vorticity_vicreg_k0_lr0.001_s0, s2_ae_vorticity_vicreg_k0_lr0.001_s1, s2_ae_vorticity_vicreg_k0_lr0.001_s2]
+  streamfunction AE + VICReg: [s2_ae_streamfunction_vicreg_k0_lr0.001_s0, s2_ae_streamfunction_vicreg_k0_lr0.001_s1, s2_ae_streamfunction_vicreg_k0_lr0.001_s2]
+reference_json: results/explore/stage2/runs/{run}.json
+runs_json: results/build/stage2/runs/{run}.json
+criteria:                      # PREDICTIONS entry 2 (head ratio not applicable: one rendered field)
+  min_effect: 0.2
+  min_monotonicity: 0.9
+  min_cycle_corr: 0.9
+  cycle_gain: [0.5, 2.0]
+  max_shared_pattern: 0.5
+  envelope_rel_margin: 0.05
+  max_head_ratio: 1.5
+  max_sigma_loudness: 0.2
+  min_sigma_shape: 0.7
+  min_seeds: 2
+contrast_min_cos2: 0.5
+collapse_max_ratio: 0.01
+output_md: results/build/stage2.md
+output_json_gz: results/build/stage2.json.gz
+figure: results/build/stage2.png
+figure_strips: results/build/stage2_strips.png

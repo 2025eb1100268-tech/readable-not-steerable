@@ -108,7 +108,7 @@ def steer(adapter, x_prev, x_t, d: np.ndarray, sigma: float, g, env) -> dict:
     d_t = torch.as_tensor(d, dtype=torch.float32, device=dev)
     per_head: dict = {}
     z_rec: dict = {}
-    cons, div = [], []
+    cons, div, mean_share = [], [], []
     primary_field, w_at0 = {}, {}
     for alpha in ALPHAS:
         outs = adapter.decode(x_prev, x_t, float(alpha * sigma) * d_t)
@@ -127,6 +127,8 @@ def steer(adapter, x_prev, x_t, d: np.ndarray, sigma: float, g, env) -> dict:
             h["inside"].append(float(_inside(w, g, env).mean()))
             if kind == "velocity" and name == outs[0][0]:
                 div.append(float(fields.relative_divergence(f, g).median()))
+            if kind == "vorticity" and name == outs[0][0]:  # reported (entry 4): enstrophy counts the spatial mean, energy does not
+                mean_share.append(float((f.double().mean(dim=(-2, -1)) ** 2 / f.double().pow(2).mean(dim=(-2, -1))).median()))
             # cycle: each head's field, as velocity (inverse Laplacian), re-encoded
             z_rec.setdefault(name, []).append(adapter.reencode(fields.velocity_from_vorticity_hat(w, g)).double().cpu().numpy())
         if "vorticity" in w_hats and "streamfunction" in w_hats:
@@ -158,6 +160,8 @@ def steer(adapter, x_prev, x_t, d: np.ndarray, sigma: float, g, env) -> dict:
            "shared_pattern_fraction": float(max(shared)), "change_field_alignment": float(min(align)), "heads": heads}
     if div:
         out["rel_divergence_max"] = float(max(div))
+    if mean_share:
+        out["vorticity_mean_share_max"] = float(max(mean_share))
     if cons:
         i0 = int(np.flatnonzero(ALPHAS == 0)[0])
         out.update({"head_consistency_max": float(max(cons)), "head_consistency_at_0": cons[i0],

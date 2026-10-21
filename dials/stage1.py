@@ -9,6 +9,10 @@ latent), each steered on the Stage 0 explore and matched-energy frames and class
 entry 2 criteria; E1-style prominence (best of the top-3 slow directions, |r| with log Z0 and log E0)
 in the dial, content and full latents; ridge probes from each latent. The Stage 2 autoencoders get
 the same prominence and probes, for reference.
+
+[BUILD] Stage 2 (entry 4) reuses this script for the branch model M2-SF (configs/build/stage2_eval.yaml):
+one rendered field (no psi head, no head ratio) and no omega-psi contrast candidate (its dial groups
+own no head); titles come from the config.
 """
 from __future__ import annotations
 
@@ -29,7 +33,7 @@ import torch  # noqa: E402
 from common.run import REPO, append_log, command_line, environment, load_config, seed_everything  # noqa: E402
 from data.combined import CombinedDataset  # noqa: E402
 from dials import fields  # noqa: E402
-from dials.adapters import SplitModel  # noqa: E402
+from dials.adapters import adapter_for  # noqa: E402
 from dials.harness import classify, envelope, pca_directions, steer, supervised_direction  # noqa: E402
 from dials.split import TARGETS  # noqa: E402
 from dials.stage0 import SETS, frames  # noqa: E402
@@ -54,8 +58,8 @@ def load(run: str) -> Model:
 
 @torch.no_grad()
 def all_latents(model: Model, ds, chunk: int = 4096) -> np.ndarray:
-    """(N, 128) = [dial-omega 4, dial-psi 4, content 120 as the heads see it] for every row."""
-    ad = SplitModel(model, "full")
+    """(N, 128) = [8 dial dims, content 120 as the decoder sees it] for every row."""
+    ad = adapter_for(model, "full")
     out = []
     for i in range(0, len(ds.velocity), chunk):
         x = torch.from_numpy(ds.velocity[np.arange(i, min(i + chunk, len(ds.velocity)))]).cuda() / ds.input_scale
@@ -156,20 +160,23 @@ def main():
             lat = all_latents(model, ds)
             dial = lat[:, :8]
             entry = {"run": run, "rendering": rendering(run, cfg, refs)}
-            if model.head.norm == "rms":
+            if getattr(model.head, "norm", None) == "rms":
                 entry["content_gain"] = float(model.head.log_gain.detach().exp())
             sd = lat[tr].std(0)
             entry["dial_std"] = sd[:8].tolist()
             entry["dial_std_over_content_median"] = float(sd[:8].max() / np.median(sd[8:]))
             entry["dial_collapsed"] = entry["dial_std_over_content_median"] < cfg["collapse_max_ratio"]
             dirs, sig, expl = pca_directions(dial[tr], n=8)
-            c, r_groups = contrast_direction(dial[tr])
+            groups = model.kind == "split_ae"
+            c, r_groups = contrast_direction(dial[tr]) if groups else (np.zeros(8), float("nan"))
             entry.update({"dial_explained": expl.tolist(), "r_group_top_pcs": r_groups})
             d_sd, s_sd, _ = supervised_direction(dial[tr], s_all[tr], ds.frame[tr], dial[va], s_all[va], ds.frame[va])
             d_sf, s_sf, _ = supervised_direction(lat[tr], s_all[tr], ds.frame[tr], lat[va], s_all[va], ds.frame[va])
-            cand = {**{PCS[i]: ("dial", dirs[i], float(sig[i])) for i in range(8)},
-                    CONTRAST: ("dial", c, float((dial[tr] @ c).std())), SUP_DIAL: ("dial", d_sd, s_sd), SUP_FULL: ("full", d_sf, s_sf)}
-            ads = {"dial": SplitModel(model, "dial"), "full": SplitModel(model, "full")}
+            cand = {PCS[i]: ("dial", dirs[i], float(sig[i])) for i in range(8)}
+            if groups:
+                cand[CONTRAST] = ("dial", c, float((dial[tr] @ c).std()))
+            cand.update({SUP_DIAL: ("dial", d_sd, s_sd), SUP_FULL: ("full", d_sf, s_sf)})
+            ads = {"dial": adapter_for(model, "dial"), "full": adapter_for(model, "full")}
             entry["directions"] = {}
             for name, (space, d, s_d) in cand.items():
                 proj = (dial if space == "dial" else lat)[ex] @ d
@@ -205,7 +212,7 @@ def main():
     write_md(cfg, res, ref_res, refs, summary)
     figure(cfg, res)
     figure_strips(cfg, strips)
-    append_log("[BUILD] Stage 1 readouts (M1-spec, M1-G)", cfg["_config_path"], command_line(), "ok",
+    append_log(cfg.get("log_title", "[BUILD] Stage 1 readouts (M1-spec, M1-G)"), cfg["_config_path"], command_line(), "ok",
                {**{f"{label}: seeds with a shape / loudness dial (PC1–8)": f"{v['seeds_shape']} / {v['seeds_loudness']} of {v['n_seeds']}"
                    for label, v in summary.items()},
                 "results": f"{cfg['output_md']}, {cfg['figure']}, {cfg['figure_strips']}, {cfg['output_json_gz']}"},
@@ -216,7 +223,7 @@ def main():
 def strip_data(model, ads, cand, entry, x_ex) -> dict:
     """For the figure: the dial-subspace candidate with the largest |Δs| (explore, vorticity head),
     decoded on one explore frame at alpha = -2, 0, +2 (vorticity head), with shell spectra."""
-    names = [n for n in CANDIDATES if cand[n][0] == "dial"]
+    names = [n for n in cand if cand[n][0] == "dial"]
     best = max(names, key=lambda n: abs(entry["directions"][n]["explore"]["d_s"]))
     space, d, s_d = cand[best]
     d_t = torch.as_tensor(d, dtype=torch.float32, device="cuda")
@@ -244,17 +251,18 @@ def summarize(res: dict, cfg) -> dict:
                              "loudness_PC1-8": loud, "loudness_PC1-4": [n for n in loud if n in PCS[:4]],
                              "best_shape": best_shape,
                              "best_shape_cos2_contrast": dirs[best_shape]["cos2_contrast"] if best_shape else None,
-                             "contrast": {k_: dirs[CONTRAST][k_] for k_ in ("dial", "loudness", "shape")},
+                             "contrast": {k_: dirs[CONTRAST][k_] for k_ in ("dial", "loudness", "shape")} if CONTRAST in dirs else None,
                              "supervised_dial": {k_: dirs[SUP_DIAL][k_] for k_ in ("dial", "loudness", "shape")},
                              "supervised_full": {k_: dirs[SUP_FULL][k_] for k_ in ("dial", "loudness", "shape")},
                              "triggers": {t: r["rendering"][t]["trigger"] for t in TARGETS}, "dial_collapsed": r["dial_collapsed"]})
+        has_contrast = all(p["contrast"] is not None for p in per_seed)
         n_shape = sum(bool(p["shape_PC1-8"]) for p in per_seed)
         with_best = [p for p in per_seed if p["best_shape"]]
         out[label] = {"n_seeds": len(per_seed), "seeds_shape": n_shape, "seeds_shape_PC1-4": sum(bool(p["shape_PC1-4"]) for p in per_seed),
                       "seeds_loudness": sum(bool(p["loudness_PC1-8"]) for p in per_seed),
                       "produces_shape_dial": n_shape >= cfg["criteria"]["min_seeds"],
                       "produces_loudness_dial": sum(bool(p["loudness_PC1-8"]) for p in per_seed) >= cfg["criteria"]["min_seeds"],
-                      "contrast_prediction": (None if not with_best else
+                      "contrast_prediction": (None if not (with_best and has_contrast) else
                                               sum(p["best_shape_cos2_contrast"] >= cfg["contrast_min_cos2"] for p in with_best) * 2 > len(with_best)),
                       "per_seed": per_seed}
     return out
@@ -263,9 +271,9 @@ def summarize(res: dict, cfg) -> dict:
 def write_md(cfg, res, ref_res, refs, summary):
     crit = cfg["criteria"]
     f2, f3 = (lambda v: f"{v:.2f}"), (lambda v: f"{v:.3f}")  # noqa: E731
-    L = ["# [BUILD] Stage 1: M1-spec and M1-G (exploratory)", "",
-         "Definitions and predictions: results/build/PREDICTIONS.md entries 2–3. M1-G's loudness dial exists by construction "
-         "(content is RMS-normalized): it is a design property, not a finding. The finding is whether a label-free shape dial emerges.", "",
+    L = [cfg.get("title", "# [BUILD] Stage 1: M1-spec and M1-G (exploratory)"), "",
+         cfg.get("intro", "Definitions and predictions: results/build/PREDICTIONS.md entries 2–3. M1-G's loudness dial exists by construction "
+                 "(content is RMS-normalized): it is a design property, not a finding. The finding is whether a label-free shape dial emerges."), "",
          f"Dial: effect ≥ {crit['min_effect']}, monotonicity ≥ {crit['min_monotonicity']}, cycle corr ≥ {crit['min_cycle_corr']} and gain in "
          f"[{crit['cycle_gain'][0]}, {crit['cycle_gain'][1]}], shared pattern ≤ {crit['max_shared_pattern']}, envelope ≥ ideal-dial envelope − "
          f"{crit['envelope_rel_margin']} at every α, head inconsistency ≤ {crit['max_head_ratio']}× its α = 0 value; on both explore and "
@@ -276,9 +284,12 @@ def write_md(cfg, res, ref_res, refs, summary):
          "|---|---|---|---|---|---|---|"]
     for label, v in summary.items():
         ps = v["per_seed"]
-        cp = "n/a (no shape dial)" if v["contrast_prediction"] is None else ("yes" if v["contrast_prediction"] else "no")
+        no_c = any(p["contrast"] is None for p in ps)
+        cp = ("n/a (no contrast direction)" if no_c else "n/a (no shape dial)" if v["contrast_prediction"] is None
+              else "yes" if v["contrast_prediction"] else "no")
+        cs = "n/a" if no_c else sum(p["contrast"]["shape"] for p in ps)
         L.append(f"| {label} | {v['seeds_shape']} / {v['seeds_shape_PC1-4']} of {v['n_seeds']} | {v['seeds_loudness']} of {v['n_seeds']} | "
-                 f"{'**yes**' if v['produces_shape_dial'] else 'no'} | {cp} | {sum(p['contrast']['shape'] for p in ps)} | "
+                 f"{'**yes**' if v['produces_shape_dial'] else 'no'} | {cp} | {cs} | "
                  f"{sum(p['supervised_dial']['shape'] for p in ps)} / {sum(p['supervised_full']['shape'] for p in ps)} |")
     L += ["", "## Rendering (val normalized MSE; trigger: > 2× the VICReg AE, > 0.02, or < 50% of the true k ≥ 10 power)", "",
           "| model | seed | ω head MSE | ×plain AE | ×VICReg AE | ω k≥10 power kept | ψ head MSE | ×plain AE | ×VICReg AE | ψ k≥10 power | triggers | "
@@ -302,14 +313,15 @@ def write_md(cfg, res, ref_res, refs, summary):
               "ψ head Δa / Δs | cos² contrast | D L S | fails |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
         for label, runs in res.items():
             for r in runs:
-                for n in CANDIDATES:
-                    e = r["directions"][n]
+                for n, e in r["directions"].items():
                     m = e[s]
-                    ps = m["heads"]["streamfunction"]
+                    ps = m["heads"].get("streamfunction")
+                    psi = f"{ps['d_a']:+.3f} / {ps['d_s']:+.3f}" if ps else "—"
+                    hr = f2(m["head_consistency_ratio"]) if "head_consistency_ratio" in m else "—"
+                    c2 = f2(e["cos2_contrast"]) if CONTRAST in r["directions"] else "—"
                     L.append(f"| {label} | {r['run'].rsplit('_s', 1)[1]} | {n} | {e['sigma']:.3g} | {m['d_a']:+.3f} | {m['d_s']:+.3f} | {m['d_logP']:+.3f} | "
                              f"{f3(m['effect'])} | {f2(m['sigma_shape'])} | {f2(m['monotonicity'])} | {f2(m['cycle_corr'])} / {f2(m['cycle_gain'])} | "
-                             f"{m['envelope_rel_min']:+.2f} | {f2(m['shared_pattern_fraction'])} | {f2(m['head_consistency_ratio'])} | "
-                             f"{ps['d_a']:+.3f} / {ps['d_s']:+.3f} | {f2(e['cos2_contrast'])} | "
+                             f"{m['envelope_rel_min']:+.2f} | {f2(m['shared_pattern_fraction'])} | {hr} | {psi} | {c2} | "
                              f"{'D' if m['dial'] else '·'}{'L' if m['loudness'] else '·'}{'S' if m['shape'] else '·'} | {', '.join(m['fails']) or '—'} |")
     L += ["", "## Prominence (E1-style: best of the top-3 slow directions, |r| with log Z₀ / log E₀, explore inviscid trajectories)", "",
           "| model | seed | dial (8) | content (120) | full (128) |", "|---|---|---|---|---|"]
@@ -347,7 +359,7 @@ def figure(cfg, res):
     for ax, s in zip(axes, SETS):
         for i, (label, runs) in enumerate(res.items()):
             for r in runs:
-                for n in CANDIDATES:
+                for n in r["directions"]:
                     m = r["directions"][n][s]
                     mk = "o" if n in PCS else "D" if n == CONTRAST else "*"
                     ax.scatter(max(m["effect"], 1e-4), m["sigma_shape"], color=SERIES[i], marker=mk, s=60 if mk == "*" else 30,
@@ -361,7 +373,7 @@ def figure(cfg, res):
         ax.set_ylabel("shape selectivity σ_shape")
         ax.set_title(s)
     axes[0].legend(fontsize=8, loc="upper left")
-    fig.suptitle("[BUILD] Stage 1: candidate dials of the split models (exploratory)\n"
+    fig.suptitle(f"[BUILD] {cfg.get('stage_label', 'Stage 1')}: candidate dials (exploratory)\n"
                  "dots PC1–8 · diamonds ω−ψ contrast · stars supervised s · outlined = passes every criterion on this set",
                  fontweight="bold", color=INK)
     fig.savefig(REPO / cfg["figure"], dpi=125)
@@ -393,7 +405,8 @@ def figure_strips(cfg, strips):
             row[4].loglog(k, spec, color=col, label=lab)
         row[4].set_title(f"Δa {st['d_a']:+.3f}, Δs {st['d_s']:+.3f} per α (median, explore)", fontsize=8)
         row[4].legend(fontsize=7)
-    fig.suptitle("[BUILD] Stage 1: the largest-|Δs| dial-subspace candidate per run, vorticity head, one explore frame (exploratory)",
+    fig.suptitle(f"[BUILD] {cfg.get('stage_label', 'Stage 1')}: the largest-|Δs| dial-subspace candidate per run, vorticity field, "
+                 "one explore frame (exploratory)",
                  fontweight="bold", color=INK)
     fig.savefig(REPO / cfg["figure_strips"], dpi=110)
     plt.close(fig)
