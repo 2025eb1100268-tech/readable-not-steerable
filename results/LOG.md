@@ -2201,3 +2201,65 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - Supervised s-direction in M1-G's dial subspace moves loudness, not shape (σ_shape ≤ 0.11, effect ≤ 0.07): shape is not steerable through these dials at all.
 - M1-spec seed 2's supervised direction visibly lifts the k ≥ 8 tail (about 3× at k = 20) but s moves only +0.02 per α (log P +0.05): s is energy-weighted, so fine-scale changes register weakly on it. Reported, definitions unchanged.
 
+
+## 2026-10-21 21:06 — [BUILD] Stage 2 training (M2-SF): b2_m2sf_s0
+- config: `configs/build/stage2/b2_m2sf_s0.yaml`
+- command: `python -m train.train --config configs/build/stage2/b2_m2sf_s0.yaml`
+- git: `fae76b7+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1500.5 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0182
+  - effective rank / latent std median: 101.1 / 1.040
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage2/runs/b2_m2sf_s0.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01818 / 0.00074
+
+## 2026-10-21 21:32 — [BUILD] Stage 2 training (M2-SF): b2_m2sf_s1
+- config: `configs/build/stage2/b2_m2sf_s1.yaml`
+- command: `python -m train.train --config configs/build/stage2/b2_m2sf_s1.yaml`
+- git: `fae76b7+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1546.7 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0190
+  - effective rank / latent std median: 101.6 / 1.035
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage2/runs/b2_m2sf_s1.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01902 / 0.00072
+
+## 2026-10-21 22:00 — [BUILD] Stage 2 training (M2-SF): b2_m2sf_s2
+- config: `configs/build/stage2/b2_m2sf_s2.yaml`
+- command: `python -m train.train --config configs/build/stage2/b2_m2sf_s2.yaml`
+- git: `fae76b7+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1639.5 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0188
+  - effective rank / latent std median: 104.0 / 1.042
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage2/runs/b2_m2sf_s2.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01876 / 0.00081
+
+## 2026-10-21 22:04 — [BUILD] Stage 2 readouts (M2-SF)
+- config: `configs/build/stage2_eval.yaml`
+- command: `python -m dials.stage1 --config configs/build/stage2_eval.yaml`
+- git: `fae76b7+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 222.8 s
+- outcome: ok
+  - M2-SF: seeds with a shape / loudness dial (PC1–8): 0 / 3 of 3
+  - results: results/build/stage2.md, results/build/stage2.png, results/build/stage2_strips.png, results/build/stage2.json.gz
+## 2026-10-21 22:15 — [BUILD] Stage 2 (M2-SF): notes on the readouts above (exploratory)
+- Loudness dial (design property, not a finding) in 3 of 3 seeds: PC1 (88–93% of dial variance) moves a by −1.03 to −1.17 per α at σ_shape 0.01–0.03, monotone, cycle corr 0.99–1.00 and gain 0.94–1.00, envelope within 0.05 of the ideal dial, watermark 0.01, on explore and matched-energy.
+- No shape dial: PC2–8 move the field by ≤ 0.13 per α, mostly loudness; the supervised s-direction moves loudness or almost nothing (dial: σ_shape 0.04–0.44, effect ≤ 0.15; full: effect ≤ 0.2, non-monotone where largest).
+- Shape is readable from the dials but not steerable through them: the dials decode s at R² 0.95–0.96 (explore) against 0.68–0.78 from a alone, yet moving them leaves s unchanged; the decoder takes shape from the scale-free content (s R² 0.88–0.92 from content; log E 0.62–0.64 from content, through pattern correlations only).
+- Rendering trigger fired in all 3 seeds: ω keeps 44–48% of the true k ≥ 10 power (< 50%); val normalized MSE 0.018–0.019 (1.7–1.8× the VICReg AE, below the other two limits). Untested hypothesis: on one field, the derived-ψ term (weight 42.5 vs 14.7 for ω) up-weights large scales.
+- Decoded ω's spatial-mean share of ⟨ω²⟩ ≤ 7.8×10⁻³ in every decode (reported, not scored).
+
