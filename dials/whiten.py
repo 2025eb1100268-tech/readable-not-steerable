@@ -91,7 +91,7 @@ def whiten_reference(x: torch.Tensor) -> list:
     """Median over frames of the RMS-normalized shell power, shells 1..21 (x: scaled velocity, (B, 2, n, n))."""
     probe = SpectralWhiten([1.0] * K_WHITE, 1.0, x.shape[-1]).to(x.device)
     _, power = probe.normalized_spectrum(x)
-    return power[:, 1:K_WHITE + 1].median(dim=0).values.cpu().tolist()
+    return power[:, 1:K_WHITE + 1].cpu().median(dim=0).values.tolist()  # on the CPU: CUDA median is not deterministic
 
 
 def train_sample(data_dir: str, device: str = "cuda") -> torch.Tensor:

@@ -2290,3 +2290,22 @@ pre-registration; none of their numbers is a result of this project. Main findin
 ## 2026-10-22 17:50 — [BUILD] Stage 2b: note on the two whitening checks above
 - 17:41 used the simulated float32 rounding as the noise floor; the figure showed the smoothest frames' high-k plateau above it, so 17:43 uses the empirical floor (power in shells k ≥ 31, where the solver puts none; about 2× the simulation at the 99th percentile). Same cap (1000), same capped fractions; the 17:43 outputs are the current ones. Largest floor-safe gain 3,212 (k = 21).
 
+
+## 2026-10-22 18:15 — [BUILD] Stage 2b training: b2b_m2sfw_s0
+- config: `configs/build/stage2b/b2b_m2sfw_s0.yaml`
+- command: `python -m train.train --config configs/build/stage2b/b2b_m2sfw_s0.yaml`
+- git: `087866c+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1533.8 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0152
+  - effective rank / latent std median: 102.3 / 1.047
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage2b/runs/b2b_m2sfw_s0.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01525 / 0.00119
+## 2026-10-22 18:20 — [BUILD] Stage 2b: M2-SW runs crashed at start-up (no training happened)
+- b2b_m2sw_s0, s1, s2 each failed within ~10 s, before the first step: whiten_reference took a CUDA median, which has no deterministic implementation (train.py runs with torch.use_deterministic_algorithms(True)). The whitening check and the readout dry run did not exercise that path. No checkpoint, results file or curve was written; the M2-SF omega-only run (b2b_m2sfw_s0) was unaffected and completed. The chained readouts then failed for lack of the M2-SW checkpoints.
+- Fix: the median is taken on the CPU (dials/whiten.py). Same value: 4,305 frames (odd count), and the reference reproduces the committed whitening check's ref_k to every printed digit under deterministic mode. The three M2-SW runs are rerun unchanged.
+
