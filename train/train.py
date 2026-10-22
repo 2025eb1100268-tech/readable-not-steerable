@@ -20,6 +20,8 @@ loss_weights.head, VICReg on the pooled content only.
 encoder on the raw input, one rendered field); same loss as split_ae.
 [BUILD] Stage 2b (entry 5): content_input "whiten" (M2-SW: the content encoder sees the spectrally
 whitened input of dials/whiten.py; whiten_ref computed from v1 train frames like the target scales).
+[BUILD] Step B (entry 8): content_input "shape_noise" (dials/shape_noise.py: random tilt / curvature
+distortion of the content input's spectrum at dose shape_noise_tau; sigmas from v1 train frames).
 """
 from __future__ import annotations
 
@@ -40,6 +42,7 @@ from common.run import REPO, append_log, command_line, environment, load_config,
 from data.dataset import Dataset  # noqa: E402
 from dials.split import TARGETS as SPLIT_TARGETS  # noqa: E402
 from dials.split import BranchHeads, ScaleFree, SplitHeads  # noqa: E402
+from dials.shape_noise import Noised, ShapeNoise, data_sigmas  # noqa: E402
 from dials.whiten import SpectralWhiten, Whitened, whiten_reference  # noqa: E402
 from models.encoder import build_encoder  # noqa: E402
 from models.heads import HORIZONS, PixelDecoder, PooledPredictor, SpatialPredictor, vicreg_var_cov  # noqa: E402
@@ -135,6 +138,8 @@ class Model(torch.nn.Module):
             content_enc = build_encoder(cfg["seed"], d=int(cfg.get("content_dim", 120)))
             if cfg.get("content_input", "rms") == "whiten":
                 self.enc = Whitened(content_enc, SpectralWhiten(cfg["whiten_ref"], cfg["whiten_cap"]))
+            elif cfg.get("content_input") == "shape_noise":
+                self.enc = Noised(content_enc, ShapeNoise(cfg["shape_noise_tau"], cfg["shape_noise_sigmas"]))
             else:
                 self.enc = ScaleFree(content_enc)
             self.ae_scales = {t: float(v) for t, v in cfg["ae_target_scales"].items()}
@@ -426,6 +431,8 @@ def main():
                                    for t in SPLIT_TARGETS}
     if cfg["model"] in BRANCH_KINDS and cfg.get("content_input") == "whiten" and "whiten_ref" not in cfg:  # [BUILD] Stage 2b
         cfg["whiten_ref"] = whiten_reference(train.x[torch.arange(0, train.n, max(1, train.n // 4096), device=device)])
+    if cfg["model"] in BRANCH_KINDS and cfg.get("content_input") == "shape_noise" and "shape_noise_sigmas" not in cfg:  # [BUILD] Step B
+        cfg["shape_noise_sigmas"] = data_sigmas(train.x[torch.arange(0, train.n, max(1, train.n // 4096), device=device)])
     model = Model(cfg).to(device)
     params = [p for p in model.parameters() if p.requires_grad]
     opt = torch.optim.AdamW(params, lr=cfg["lr"], weight_decay=cfg["weight_decay"])

@@ -415,3 +415,69 @@ stays exploratory; a v3 would fix the rule in advance.
 - **PA′.3** d_S and PC2 point the same way (cos² ≥ 0.5) in every seed. 50%.
 - **PA′.4** Both dials are valid in the same seed under the new rule (all criteria) in at least 2 of 3
   seeds. 20%. (Seed 2's loudness direction failed the cycle gain in Step A, so at most seeds 0 and 1.)
+
+---
+
+## Entry 8 — 2026-10-23 — Step B: non-invertible shape-noise dose (12 runs)
+
+Written before any Step B training. The investigator's specification replaces the β (partial
+whitening) curve, which is invertible, with random low-order spectral noise on the content input;
+shape rule PC2 is primary and frozen for the rest of exploration; two secondary rules are reported.
+
+### Fixed definitions
+
+- **Content input** (`dials/shape_noise.py`): RMS-normalize x → multiply each shell k = 1..21 (both
+  velocity components alike) by exp(L_k), L_k = τ·(ε₁·σ₁·φ₁(k) + ε₂·σ₂·φ₂(k)) / 2 (log-amplitude gain),
+  with φ₁ the centred log k and φ₂ the centred square of φ₁ (centred over k = 1..21) → zero the mean and
+  every shell k > 21 → RMS-normalize again. ε ~ N(0, 1) per sample: fresh draws every training step;
+  in evaluation, per-frame draws fixed by a deterministic hash of the RMS-normalized frame (projection
+  on two fixed random fields, wrapped slowly so that float rounding does not re-draw). Exactly blind to
+  overall scale. Tested in `tests/test_dials.py`.
+- **σ₁, σ₂** (`results/build/stepB_calibration.md`): the train-set std of the tilt and curvature
+  coefficients of each frame's own log shell power (least squares on [1, φ₁, φ₂]): σ₁ = 5.159,
+  σ₂ = 2.364. They are 1.7× and 1.5× the robust spread (1.4826·MAD: 3.06, 1.62): the steepest viscous
+  frames give a heavy tail, so τ = 1 is somewhat stronger than "the typical frame's natural spread".
+- **Calibrated dose** (computed before training; ridge from the content input's 21 log shell powers to
+  s, fitted on v1 train frames, R² on v1 val, evaluation draws): **τ = 0: 0.966; 0.5: 0.294; 1: 0.181;
+  2: 0.066.** Two caveats: it measures shell-power readability only (the content's spatial pattern,
+  e.g. vortex sizes, may still carry shape cues that spectral noise does not remove), and the four
+  doses leave no point between R² 0.97 and 0.29, where soft and strict one-route differ most.
+- **Runs** (`dials/stepB_configs.py`): M2-SF-style models (scale-free content encoder with this
+  input, dial encoder on the raw input, one FiLM decoder rendering ω), τ ∈ {0, 0.5, 1, 2} × seeds
+  0–2, ω-only loss, Stage 2b recipe; k > 21 zeroed in every run (τ = 0 included).
+- **Readouts per model** (`dials/stepB.py`, `configs/build/stepB_eval.yaml`):
+  - loudness dial: the symmetry method of Step A (same optimization frames, restarts and criteria);
+  - shape dial: **PC2 of the dial vector (primary, frozen)**; secondary, reported: the projected-out rule
+    of Step A′, and **loudness-null PCA** — z-score the dial vector (v1 train); g = the frame mean of the
+    finite-difference gradient of the decoded field's a = log E with respect to the z-scored dial vector
+    (central differences at ±0.5 z-units, half a natural std, per coordinate, on the Step A optimization
+    frames; the spread of per-frame gradients is reported); restrict to the subspace orthogonal to g;
+    the top PC of the projected data; raw steering direction s ⊙ u;
+  - each direction through the full harness on the standard frames, entry 2's criteria plus the
+    artefact criterion; both dials per rule; rendering check (entry 3's trigger with the ψ counterpart
+    unused); every readout plotted against the calibrated dose.
+  - Loudness-null PCA is also applied to the three M2-SW checkpoints (analysis only), with Step A's
+    loudness direction for the both-dials check.
+- **Wording:** both secondary rules were chosen after seeing results and are exploratory; a v3 fixes
+  its identification rule in advance.
+
+### Predictions
+
+The two versions, in measurable terms: **strict one-route** = PC2's shape selectivity stays low at
+τ ≤ 1 and a shape dial appears only at τ = 2 (content shape R² 0.07); **soft** = PC2's selectivity
+rises step by step as content shape R² falls. **I expect the soft version**, with a clean shape dial
+once content shape R² is below about 0.2 (τ ≥ 1), and rendering error rising steadily with τ.
+
+- **PB.1** (soft) The median over seeds of PC2's σ_shape on explore rises monotonically across
+  τ = 0, 0.5, 1, 2. 50%.
+- **PB.2** PC2 is a shape dial (all criteria) in at least 2 of 3 seeds at τ = 1 and at τ = 2, and in
+  none at τ = 0. 30%. Per dose (≥ 2 of 3 seeds): τ = 0: 5%; 0.5: 20%; 1: 30%; 2: 40%.
+- **PB.3** The median ω val normalized MSE rises monotonically with τ. 65%.
+- **PB.4** The rendering trigger fires in at least 2 seeds at τ = 2: 40%; at τ = 0: 20%.
+- **PB.5** The symmetry method gives a loudness dial (all criteria) in at least 2 seeds at every τ. 45%.
+- **PB.6** At τ = 2, loudness-null PCA's σ_shape (explore) is at least PC2's in at least 2 of 3 seeds. 60%.
+- **PB.7** On M2-SW, loudness-null PCA gives a shape dial (all criteria) in at least 2 of 3 seeds. 30%.
+- **PB.8** The projected-out rule never gives a shape dial (σ_shape < 0.7 on explore in every model). 70%.
+- **PB.9** At τ = 0 (content shape R² 0.97) no rule gives a shape dial in any seed. 75%.
+
+Compute: 12 runs ≈ 5.1 GPU-hours, readouts ≈ 0.9 (≈ 6.3 of 15 used before this step).

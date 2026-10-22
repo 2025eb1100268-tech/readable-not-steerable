@@ -207,6 +207,32 @@ def test_effect_space_jacobian_matches_finite_differences():
     assert np.allclose(es["jacobian"][:, 3], fd, rtol=2e-2, atol=2e-3)
 
 
+def test_shape_noise():
+    from dials.shape_noise import ShapeNoise, basis, log_shell_power
+    from dials.whiten import K_WHITE, _shell_power
+    rng = np.random.default_rng(1)
+    x = torch.stack([fields.velocity_from_vorticity_hat(spectral_field(G, rng, 4.0)[None], G)[0] for _ in range(64)]).float()
+    zero = ShapeNoise(0.0, [0.5, 0.3]).eval()
+    out = zero(x).double()
+    assert torch.allclose(out.pow(2).mean(dim=(1, 2, 3)), torch.ones(64, dtype=torch.float64), atol=1e-5)  # RMS 1
+    p = _shell_power(torch.fft.rfft2(out), zero.shell, zero.w, zero.nk)
+    assert float(p[:, K_WHITE + 1:].sum() / p.sum()) < 1e-12  # k > 21 zeroed at every tau, tau = 0 included
+    noisy = ShapeNoise(2.0, [0.5, 0.3]).eval()
+    a, b = noisy(x), noisy(3.0 * x)
+    assert torch.allclose(a, b, atol=1e-4 * float(a.abs().max()))  # scale-free up to float32 rounding of 3 x
+    assert torch.equal(a, noisy(x))  # fixed per frame in evaluation
+    # the injected log-power distortion is exactly tau * (eps1 sigma1 phi1 + eps2 sigma2 phi2) on shells 1..21
+    d = (log_shell_power(a.double()) - log_shell_power(zero(x).double())).numpy()
+    phi1, phi2 = basis()
+    eps = noisy.draws(ShapeNoise._rms(x.double())).numpy()
+    expect = 2.0 * (eps[:, :1] * 0.5 * phi1 + eps[:, 1:] * 0.3 * phi2)
+    resid = (d - expect)[:, :15]  # shells 16-21 of this synthetic field sit at the float32 floor of the output
+    assert np.allclose(resid - resid.mean(1, keepdims=True), 0, atol=1e-3)  # up to the RMS renormalization constant
+    assert abs(eps.mean()) < 0.4 and 0.6 < eps.std() < 1.4  # hash draws look standard normal
+    noisy.train()
+    assert not torch.allclose(noisy(x), noisy(x))  # fresh draws in training
+
+
 def test_conversions_on_an_analytic_flow():
     """psi = sin(x) cos(y): omega = 2 psi; Biot–Savart round trip; Z/E = k^2 = 2 for this single shell."""
     x, y = G.x.expand(64, 64), G.y.expand(64, 64)

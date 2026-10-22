@@ -1,0 +1,6 @@
+# [BUILD] Step B shape-noise calibration (python -m dials.shape_noise --config configs/build/stepB_calibration.yaml). PREDICTIONS entry 8.
+train_data_dir: data/generated/v1
+taus: [0, 0.5, 1, 2]
+n_fit: 8192
+n_score: 4096
+output_md: results/build/stepB_calibration.md

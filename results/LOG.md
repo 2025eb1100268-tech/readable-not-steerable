@@ -2403,3 +2403,14 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - The new rule's direction is a dial in seed 0 only and a shape dial in no seed: it moves s by +0.49 to +0.53 per α but a by −0.42 to −0.54 (explore), σ_shape 0.50–0.54 (matched 0.58–0.76); seed 1 also fails the artefact criterion (11–18% of frames), seed 2 monotonicity (0.85). Both dials in the same seed: new rule 0 of 3, PC2 rule 1 of 3 (seed 0).
 - Reading: orthogonality to the loudness direction in z-scored latent space is a property of the data's geometry, not of the decoder's response; the dominant remaining variation follows the data's own a–s anticorrelation (r = −0.82 on explore), so the rule returns a mixture whose a and s move in opposite directions. Its cos² with the loudness direction is 0.00 in raw coordinates, yet steering it changes a by about as much as s.
 
+
+## 2026-10-22 23:36 — [BUILD] Step B: shape-noise calibration (before training)
+- config: `configs/build/stepB_calibration.yaml`
+- command: `python -m dials.shape_noise --config configs/build/stepB_calibration.yaml`
+- git: `6c9e29b+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 10.9 s
+- outcome: ok
+  - sigma1 / sigma2: 5.1589 / 2.3639
+  - content shape R^2 by tau: 0: 0.966, 0.5: 0.294, 1: 0.181, 2: 0.066
+  - results: results/build/stepB_calibration.md
