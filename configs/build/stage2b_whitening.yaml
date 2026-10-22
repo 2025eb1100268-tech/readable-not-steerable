@@ -1,0 +1,14 @@
+# [BUILD] Stage 2b whitening check (python -m dials.whiten --config configs/build/stage2b_whitening.yaml). PREDICTIONS entry 5.
+seed: 0
+train_data_dir: data/generated/v1
+data_parts:
+  - [data/generated/v1, [train, val]]
+  - [data/generated/explore_v2, [explore]]
+  - [data/generated/matched_energy_v2, [matched]]
+cache_tag: v1tv_explore_matched
+n_frames: 4096
+cap: 1000
+max_noise_share_of_ref: 0.01   # the cap must keep the amplified noise floor <= 1% of ref_k in every shell
+output_md: results/build/stage2b_whitening.md
+figure: results/build/stage2b_whitening.png
+floor_from_shell: 31             # empirical noise floor: shells beyond the square mask corners (sqrt(2)*21 = 29.7), which the solver leaves empty

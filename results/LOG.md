@@ -2263,3 +2263,30 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - Rendering trigger fired in all 3 seeds: ω keeps 44–48% of the true k ≥ 10 power (< 50%); val normalized MSE 0.018–0.019 (1.7–1.8× the VICReg AE, below the other two limits). Untested hypothesis: on one field, the derived-ψ term (weight 42.5 vs 14.7 for ω) up-weights large scales.
 - Decoded ω's spatial-mean share of ⟨ω²⟩ ≤ 7.8×10⁻³ in every decode (reported, not scored).
 
+
+## 2026-10-22 17:41 — [BUILD] Stage 2b: whitening check (before training)
+- config: `configs/build/stage2b_whitening.yaml`
+- command: `python -m dials.whiten --config configs/build/stage2b_whitening.yaml`
+- git: `5ecd024+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 26.9 s
+- outcome: ok
+  - cap / largest noise-safe gain: 1000 / 4386 (k = 21)
+  - capped pairs / frames: 1.22% / 5.6%
+  - amplified noise / whitened power (max frame): 2.7e-10
+  - results: results/build/stage2b_whitening.md, results/build/stage2b_whitening.png
+
+## 2026-10-22 17:43 — [BUILD] Stage 2b: whitening check (before training)
+- config: `configs/build/stage2b_whitening.yaml`
+- command: `python -m dials.whiten --config configs/build/stage2b_whitening.yaml`
+- git: `5ecd024+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 3.8 s
+- outcome: ok
+  - cap / largest floor-safe gain: 1000 / 3212 (k = 21)
+  - capped pairs / frames: 1.22% / 5.6%
+  - amplified noise / whitened power (max frame): 5.8e-10
+  - results: results/build/stage2b_whitening.md, results/build/stage2b_whitening.png
+## 2026-10-22 17:50 — [BUILD] Stage 2b: note on the two whitening checks above
+- 17:41 used the simulated float32 rounding as the noise floor; the figure showed the smoothest frames' high-k plateau above it, so 17:43 uses the empirical floor (power in shells k ≥ 31, where the solver puts none; about 2× the simulation at the 99th percentile). Same cap (1000), same capped fractions; the 17:43 outputs are the current ones. Largest floor-safe gain 3,212 (k = 21).
+

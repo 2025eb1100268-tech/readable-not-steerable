@@ -13,6 +13,10 @@ the same prominence and probes, for reference.
 [BUILD] Stage 2 (entry 4) reuses this script for the branch model M2-SF (configs/build/stage2_eval.yaml):
 one rendered field (no psi head, no head ratio) and no omega-psi contrast candidate (its dial groups
 own no head); titles come from the config.
+
+[BUILD] Stage 2b (entry 5): with effect_space: true, branch models also get the secondary
+effect-space candidates ES1-4 (dials/effect_space.py), and the summary compares them with PCA.
+Groups with fewer than 3 seeds get no "produces" verdict.
 """
 from __future__ import annotations
 
@@ -34,6 +38,7 @@ from common.run import REPO, append_log, command_line, environment, load_config,
 from data.combined import CombinedDataset  # noqa: E402
 from dials import fields  # noqa: E402
 from dials.adapters import adapter_for  # noqa: E402
+from dials.effect_space import cos2, effect_space  # noqa: E402
 from dials.harness import classify, envelope, pca_directions, steer, supervised_direction  # noqa: E402
 from dials.split import TARGETS  # noqa: E402
 from dials.stage0 import SETS, frames  # noqa: E402
@@ -47,6 +52,7 @@ from train.train import Model  # noqa: E402
 PCS = [f"PC{i}" for i in range(1, 9)]
 CONTRAST, SUP_DIAL, SUP_FULL = "contrast ω−ψ", "supervised s (dial)", "supervised s (full)"
 CANDIDATES = PCS + [CONTRAST, SUP_DIAL, SUP_FULL]
+ES = [f"ES{i}" for i in range(1, 5)]
 
 
 def load(run: str) -> Model:
@@ -175,12 +181,19 @@ def main():
             cand = {PCS[i]: ("dial", dirs[i], float(sig[i])) for i in range(8)}
             if groups:
                 cand[CONTRAST] = ("dial", c, float((dial[tr] @ c).std()))
+            if cfg.get("effect_space") and model.kind == "branch_ae":  # secondary method (entry 5)
+                es = effect_space(model, x["explore"][1], len(ES))
+                for name, d in zip(ES, es["directions"]):
+                    cand[name] = ("dial", d / np.linalg.norm(d), float((dial[tr] @ (d / np.linalg.norm(d))).std()))
+                entry["effect_space"] = {"singular_values": es["singular_values"].tolist(), "left": es["left"].tolist(),
+                                         "jacobian": es["jacobian"].tolist(),
+                                         "cos2_with_PCs": [[cos2(cand[n][1], dirs[j]) for j in range(8)] for n in ES]}
             cand.update({SUP_DIAL: ("dial", d_sd, s_sd), SUP_FULL: ("full", d_sf, s_sf)})
             ads = {"dial": adapter_for(model, "dial"), "full": adapter_for(model, "full")}
             entry["directions"] = {}
             for name, (space, d, s_d) in cand.items():
                 proj = (dial if space == "dial" else lat)[ex] @ d
-                e = {"space": space, "sigma": s_d, "cos2_contrast": float((d[:8] @ c) ** 2),
+                e = {"space": space, "sigma": s_d, "cos2_contrast": float((d[:8] @ c) ** 2), "direction": np.asarray(d).tolist(),
                      "readability": {"abs_r_a": float(abs(np.corrcoef(proj, a_all[ex])[0, 1])),
                                      "abs_r_s": float(abs(np.corrcoef(proj, s_all[ex])[0, 1]))}}
                 for s in SETS:
@@ -246,7 +259,12 @@ def summarize(res: dict, cfg) -> dict:
             dirs = r["directions"]
             shape = [n for n in PCS if dirs[n]["shape"]]
             loud = [n for n in PCS if dirs[n]["loudness"]]
-            best_shape = max(shape, key=lambda n: min(dirs[n]["explore"]["effect"], dirs[n]["matched"]["effect"])) if shape else None
+            strength = lambda n: min(dirs[n]["explore"]["effect"], dirs[n]["matched"]["effect"])  # noqa: E731
+            best_shape = max(shape, key=strength) if shape else None
+            es_shape = [n for n in ES if n in dirs and dirs[n]["shape"]]
+            es_loud = [n for n in ES if n in dirs and dirs[n]["loudness"]]
+            best_es = max(es_shape, key=strength) if es_shape else None
+            both = (np.array(dirs[best_shape]["direction"]), np.array(dirs[best_es]["direction"])) if best_shape and best_es else None
             per_seed.append({"run": r["run"], "shape_PC1-8": shape, "shape_PC1-4": [n for n in shape if n in PCS[:4]],
                              "loudness_PC1-8": loud, "loudness_PC1-4": [n for n in loud if n in PCS[:4]],
                              "best_shape": best_shape,
@@ -254,17 +272,28 @@ def summarize(res: dict, cfg) -> dict:
                              "contrast": {k_: dirs[CONTRAST][k_] for k_ in ("dial", "loudness", "shape")} if CONTRAST in dirs else None,
                              "supervised_dial": {k_: dirs[SUP_DIAL][k_] for k_ in ("dial", "loudness", "shape")},
                              "supervised_full": {k_: dirs[SUP_FULL][k_] for k_ in ("dial", "loudness", "shape")},
-                             "triggers": {t: r["rendering"][t]["trigger"] for t in TARGETS}, "dial_collapsed": r["dial_collapsed"]})
+                             "triggers": {t: r["rendering"][t]["trigger"] for t in TARGETS}, "dial_collapsed": r["dial_collapsed"],
+                             **({"shape_ES": es_shape, "loudness_ES": es_loud, "best_shape_ES": best_es,
+                                 "cos2_best_PC_vs_best_ES": cos2(*both) if both else None,
+                                 "methods_agree": bool(bool(shape) == bool(es_shape) and (both is None or cos2(*both) >= 0.5))}
+                                if "effect_space" in r else {})})
         has_contrast = all(p["contrast"] is not None for p in per_seed)
         n_shape = sum(bool(p["shape_PC1-8"]) for p in per_seed)
         with_best = [p for p in per_seed if p["best_shape"]]
+        enough = len(per_seed) >= 3
         out[label] = {"n_seeds": len(per_seed), "seeds_shape": n_shape, "seeds_shape_PC1-4": sum(bool(p["shape_PC1-4"]) for p in per_seed),
                       "seeds_loudness": sum(bool(p["loudness_PC1-8"]) for p in per_seed),
-                      "produces_shape_dial": n_shape >= cfg["criteria"]["min_seeds"],
-                      "produces_loudness_dial": sum(bool(p["loudness_PC1-8"]) for p in per_seed) >= cfg["criteria"]["min_seeds"],
+                      "produces_shape_dial": n_shape >= cfg["criteria"]["min_seeds"] if enough else None,
+                      "produces_loudness_dial": (sum(bool(p["loudness_PC1-8"]) for p in per_seed) >= cfg["criteria"]["min_seeds"]
+                                                 if enough else None),
                       "contrast_prediction": (None if not (with_best and has_contrast) else
                                               sum(p["best_shape_cos2_contrast"] >= cfg["contrast_min_cos2"] for p in with_best) * 2 > len(with_best)),
                       "per_seed": per_seed}
+        if all("shape_ES" in p for p in per_seed):
+            n_es = sum(bool(p["shape_ES"]) for p in per_seed)
+            out[label].update({"seeds_shape_ES": n_es, "seeds_loudness_ES": sum(bool(p["loudness_ES"]) for p in per_seed),
+                               "produces_shape_dial_ES": n_es >= cfg["criteria"]["min_seeds"] if enough else None,
+                               "methods_agree": all(p["methods_agree"] for p in per_seed)})
     return out
 
 
@@ -288,9 +317,31 @@ def write_md(cfg, res, ref_res, refs, summary):
         cp = ("n/a (no contrast direction)" if no_c else "n/a (no shape dial)" if v["contrast_prediction"] is None
               else "yes" if v["contrast_prediction"] else "no")
         cs = "n/a" if no_c else sum(p["contrast"]["shape"] for p in ps)
+        prod = "n/a (1 seed)" if v["produces_shape_dial"] is None else "**yes**" if v["produces_shape_dial"] else "no"
         L.append(f"| {label} | {v['seeds_shape']} / {v['seeds_shape_PC1-4']} of {v['n_seeds']} | {v['seeds_loudness']} of {v['n_seeds']} | "
-                 f"{'**yes**' if v['produces_shape_dial'] else 'no'} | {cp} | {cs} | "
+                 f"{prod} | {cp} | {cs} | "
                  f"{sum(p['supervised_dial']['shape'] for p in ps)} / {sum(p['supervised_full']['shape'] for p in ps)} |")
+    if any("seeds_shape_ES" in v for v in summary.values()):
+        L += ["", "## Effect-space method (secondary): top-4 right-singular vectors of the frame-averaged Jacobian of the decoded "
+              "log shell spectrum with respect to the dial vector", "",
+              "| model | seed | singular values (top 4) | shape dials: PCA (PC1–8) / effect space (ES1–4) | loudness dials: PCA / effect space | "
+              "cos² best PCA vs best ES shape dial | methods agree? | each ES's best-matching PC (cos²) |", "|---|---|---|---|---|---|---|---|"]
+        for label, runs in res.items():
+            for r, p_ in zip(runs, summary[label]["per_seed"]):
+                if "effect_space" not in r:
+                    continue
+                esd = r["effect_space"]
+                match = ", ".join(f"ES{i + 1}→PC{int(np.argmax(row)) + 1} ({max(row):.2f})" for i, row in enumerate(esd["cos2_with_PCs"]))
+                c2b = "—" if p_["cos2_best_PC_vs_best_ES"] is None else f"{p_['cos2_best_PC_vs_best_ES']:.2f}"
+                L.append(f"| {label} | {r['run'].rsplit('_s', 1)[1]} | {', '.join(f'{v:.3g}' for v in esd['singular_values'][:4])} | "
+                         f"{', '.join(p_['shape_PC1-8']) or 'none'} / {', '.join(p_['shape_ES']) or 'none'} | "
+                         f"{', '.join(p_['loudness_PC1-8']) or 'none'} / {', '.join(p_['loudness_ES']) or 'none'} | {c2b} | "
+                         f"{'yes' if p_['methods_agree'] else 'no'} | {match} |")
+        for label, v in summary.items():
+            if "seeds_shape_ES" in v:
+                prod = "n/a (1 seed)" if v["produces_shape_dial_ES"] is None else "yes" if v["produces_shape_dial_ES"] else "no"
+                L.append(f"\n{label}: effect-space shape dial in {v['seeds_shape_ES']} of {v['n_seeds']} seeds (produces: {prod}); "
+                         f"loudness in {v['seeds_loudness_ES']}; methods agree in every seed: {'yes' if v['methods_agree'] else 'no'}.")
     L += ["", "## Rendering (val normalized MSE; trigger: > 2× the VICReg AE, > 0.02, or < 50% of the true k ≥ 10 power)", "",
           "| model | seed | ω head MSE | ×plain AE | ×VICReg AE | ω k≥10 power kept | ψ head MSE | ×plain AE | ×VICReg AE | ψ k≥10 power | triggers | "
           "content gain | max dial std / median content std | r(top PC dial-ω, top PC dial-ψ) |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
@@ -361,7 +412,7 @@ def figure(cfg, res):
             for r in runs:
                 for n in r["directions"]:
                     m = r["directions"][n][s]
-                    mk = "o" if n in PCS else "D" if n == CONTRAST else "*"
+                    mk = "o" if n in PCS else "D" if n == CONTRAST else "s" if n in ES else "*"
                     ax.scatter(max(m["effect"], 1e-4), m["sigma_shape"], color=SERIES[i], marker=mk, s=60 if mk == "*" else 30,
                                edgecolors=INK if m["dial"] else "none", linewidths=1.2 if m["dial"] else 0, alpha=0.85,
                                label=label if (r is runs[0] and n == "PC1") else None)
@@ -374,7 +425,7 @@ def figure(cfg, res):
         ax.set_title(s)
     axes[0].legend(fontsize=8, loc="upper left")
     fig.suptitle(f"[BUILD] {cfg.get('stage_label', 'Stage 1')}: candidate dials (exploratory)\n"
-                 "dots PC1–8 · diamonds ω−ψ contrast · stars supervised s · outlined = passes every criterion on this set",
+                 "dots PC1–8 · squares effect-space ES1–4 · diamonds ω−ψ contrast · stars supervised s · outlined = passes every criterion on this set",
                  fontweight="bold", color=INK)
     fig.savefig(REPO / cfg["figure"], dpi=125)
     plt.close(fig)

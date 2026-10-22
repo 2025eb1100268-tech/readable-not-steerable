@@ -167,6 +167,46 @@ def test_branch_adapter_and_loss():
     assert m.head.dial_enc.net[0].weight.grad is not None and m.enc.inner.net[0].weight.grad is not None
 
 
+def test_spectral_whitening():
+    from dials.whiten import K_WHITE, SpectralWhiten, _shell_power
+    rng = np.random.default_rng(0)
+    w_hat = torch.stack([spectral_field(G, rng, 4.0) for _ in range(3)])
+    x = fields.velocity_from_vorticity_hat(w_hat, G)
+    ref = [10.0 ** (-0.3 * k) for k in range(1, K_WHITE + 1)]
+    wh = SpectralWhiten(ref, 1e12)  # effectively uncapped for this field
+    out = wh(x).double()
+    assert torch.allclose(out, wh(3.7 * x).double(), atol=1e-5 * float(out.abs().max()))  # scale-free
+    p = _shell_power(torch.fft.rfft2(out), wh.shell, wh.w, wh.nk)
+    assert torch.allclose(p[:, 1:K_WHITE + 1], torch.tensor(ref, dtype=torch.float64).expand(3, -1), rtol=1e-4)
+    assert float(p[:, K_WHITE + 1:].sum()) < 1e-12 and float(p[:, 0].sum()) < 1e-12  # mean and k > 21 zeroed
+    div = fields.relative_divergence(out, G)
+    assert float(div.max()) < 1e-6  # same gain for both components: still incompressible
+    low = SpectralWhiten(ref, 1.0)  # cap 1: no shell is amplified
+    _, p_in = low.normalized_spectrum(x)
+    p_low = _shell_power(torch.fft.rfft2(low(x).double()), wh.shell, wh.w, wh.nk)
+    assert torch.all(p_low[:, 1:K_WHITE + 1] <= p_in[:, 1:K_WHITE + 1] * (1 + 1e-4) + 1e-12)  # + float32 output rounding
+
+
+def test_effect_space_jacobian_matches_finite_differences():
+    from dials.effect_space import effect_space
+    from train.train import Model
+    cfg = {"model": "branch_ae", "seed": 0, "horizons": [0], "ae_target_scales": {"vorticity": 2.6, "streamfunction": 1.2}}
+    m = Model(cfg).eval()
+    torch.manual_seed(0)
+    for f in m.head.dec.film:  # give the dials an effect (FiLM starts as the identity)
+        torch.nn.init.normal_(f.weight, std=0.05)
+    x = torch.randn(4, 2, 64, 64)
+    es = effect_space(m, x, 4)
+    assert es["jacobian"].shape == (fields.K_MAX, 8) and np.all(np.diff(es["singular_values"]) <= 1e-12)
+    with torch.no_grad():
+        content, g0 = m.enc(x), m.head.dial(x)
+        logspec = lambda g: torch.log(fields.shell_spectrum(fields.vorticity_hat(m.head.dec(content, g).double() * 2.6, "vorticity", G), G))  # noqa: E731
+        e = torch.zeros(8)
+        e[3] = 1e-3
+        fd = ((logspec(g0 + e) - logspec(g0 - e)) / 2e-3).mean(0).numpy()
+    assert np.allclose(es["jacobian"][:, 3], fd, rtol=2e-2, atol=2e-3)
+
+
 def test_conversions_on_an_analytic_flow():
     """psi = sin(x) cos(y): omega = 2 psi; Biot–Savart round trip; Z/E = k^2 = 2 for this single shell."""
     x, y = G.x.expand(64, 64), G.y.expand(64, 64)

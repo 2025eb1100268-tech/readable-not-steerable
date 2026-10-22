@@ -227,3 +227,82 @@ loudness, never the spectral shape of one field. M2-SF removes both causes.
 - **P2.7** ω rendering within 1.5× of M1-G's (val normalized MSE ≤ 0.014) in every seed. 70%.
 
 Compute: 3 runs ≈ 1.3 GPU-hours, readouts ≈ 0.05 (≈ 2.7 of 15 used before this stage).
+
+---
+
+## Entry 5 — 2026-10-22 — Stage 2b: M2-SW (3 seeds) and M2-SF with the ω-only loss (1 seed, attribution)
+
+Written before any Stage 2b training. The investigator's specification: M2-SW, 3 seeds, ω-only loss
+(ψ reported, not trained), plus 1 seed of M2-SF with the ω-only loss for attribution; a whitening
+gain cap justified from the explore spectra, shells above the dealiasing cutoff zeroed, and a check
+with a figure that the whitened inputs carry no high-k noise artefacts; a second, secondary
+dial-identification method in effect space. Why (Stage 2): M2-SF's dials carried s (R² 0.95–0.96)
+but the decoder took shape from the scale-free content, which still saw the spectral shape.
+
+### Fixed definitions
+
+- **M2-SW** = M2-SF (entry 4) with one change: the content encoder sees W(x) (`dials/whiten.py`)
+  instead of x / RMS(x).
+  - *W:* RMS-normalize; rescale each integer shell k = 1..21 (round |k|; both velocity components
+    alike, so incompressibility is kept) to ref_k, the median RMS-normalized shell power of the v1
+    train frames train.py samples for its target scales (every (n // 4096)-th train frame); the gain
+    is capped at **G_max = 1000**; the mean and every shell k > 21 are set to zero. Shells 22–29 hold
+    only the corner modes of the solver's square dealiasing mask (partial rings that carry real energy
+    in thermalized inviscid frames); shells ≥ 30 are empty. Float64 with autocast off. W(c·x) = W(x)
+    for c > 0.
+  - *Cap justification* (`results/build/stage2b_whitening.md`, 4,096 explore frames). The noise floor
+    is taken empirically: the power the stored fields carry where the solver puts none (shells k ≥ 31),
+    per mode, scaled to each shell's mode count, 99th percentile over frames; it is about 2× the
+    simulated float32 rounding, so it is the one used. The largest gain that keeps the amplified floor
+    ≤ 1% of ref_k is 3,212 (binding at k = 21); G_max = 1000 keeps it ≤ 0.10% of ref_k in every shell.
+  - *What the cap costs:* it binds in 1.22% of explore (frame, shell) pairs and 5.6% of frames (the
+    smoothest viscous frames, shells k ≥ 8). This is the only route by which spectral shape can still
+    reach the content encoder.
+  - *Artefact check* (`results/build/stage2b_whitening.png`): power beyond k = 21 is 7×10⁻³² of the
+    power in shells 1–21; uncapped shells equal ref_k to 1×10⁻¹³; the amplified floor is ≤ 5.8×10⁻¹⁰
+    of the whitened power in every frame; the whitened fields show no grid-scale noise.
+- **Loss (both models):** 14.699·MSE_ω + 0·MSE_ψ + 25·VICReg variance + 1·VICReg covariance (pooled
+  content); ψ is derived from ω and reported (val normalized MSE of the derived ψ). Otherwise the
+  Stage 1–2 recipe. Configs from `dials/stage2b_configs.py`.
+- **M2-SF, ω-only loss** (`b2b_m2sfw_s0`): entry 4's M2-SF, seed 0, with this loss. Attribution:
+  compared with Stage 2's M2-SF seed 0 (ω val normalized MSE 0.0182; k ≥ 10 power kept 0.48).
+- **Dial identification:**
+  - *Primary (unchanged):* PC1–8 of the 8-dim dial vector, and the 2-of-3-seeds rule (entry 2).
+  - *Secondary, reported:* effect space (`dials/effect_space.py`). J = the mean over the 256 explore
+    steering frames of ∂ log E_k(decoded ω) / ∂g, for shells k = 1..21 and the raw dial vector g
+    (autograd; checked against finite differences in `tests/test_dials.py`). SVD of J; the top-4
+    right-singular vectors ES1–4 (unit norm; σ_d = train std along each) are steered with the same
+    harness and criteria. "The effect-space method produces a shape dial" = at least 2 of 3 seeds
+    have one among ES1–4.
+  - *Agreement, per seed:* both methods find a shape dial or neither does, and when both do, their
+    largest-effect shape dials have cos² ≥ 0.5. "The methods agree" = every M2-SW seed agrees.
+  - Also reported: cos² of each ES with each PC; the supervised s-direction (dial and full latent).
+- **Criteria:** entry 2 on the single rendered field (no head criterion). Rendering trigger, dial
+  collapse and readouts as entries 3–4; readout script `dials/stage1.py` with
+  `configs/build/stage2b_eval.yaml`.
+- **Wording:** in M2-SW, shape information in the dials is a design property (content can't carry it,
+  except through capped shells), and so is the loudness dial. The finding is whether label-free
+  analysis of the dials yields separate loudness and shape directions that each steer cleanly and pass
+  realism.
+
+### Predictions
+
+- **P2b.1** (attribution) M2-SF with the ω-only loss does not fire the rendering trigger (k ≥ 10 power
+  kept ≥ 50%) and renders ω better than Stage 2's M2-SF seed 0 (val normalized MSE < 0.0182): the ψ
+  term caused the Stage 2 trigger. 65%.
+- **P2b.2** M2-SW fires no rendering trigger in any seed. 45%. (The content no longer tells the decoder
+  the spectrum; 8 dials acting through 4 FiLM stages must set it.)
+- **P2b.3** Shape leaves the content: s decoded from M2-SW's content latent with R² < 0.5 on explore
+  (0.88–0.92 in M2-SF). 55%. (Against: the capped shells, and pattern geometry such as vortex size
+  that whitening does not remove.)
+- **P2b.4** (design check) M2-SW's dials decode s with R² ≥ 0.95, and a loudness dial appears among
+  PC1–8 in at least 2 seeds. 65%.
+- **P2b.5** PCA: M2-SW produces a shape dial (at least 2 of 3 seeds). 35%. Reason: a and s are
+  correlated in the data (r = −0.82 on explore), so the variance-ordered PCs are likely mixtures.
+- **P2b.6** Effect space: a shape dial among ES1–4 in at least 2 seeds. 45%.
+- **P2b.7** The two methods agree in every seed: 45%. If they disagree, the effect-space method is the
+  one that finds a shape dial: 75% (conditional).
+- **P2b.8** The supervised s-direction in M2-SW's dial subspace is a shape dial in at least 2 seeds
+  (shape is steerable through these dials at all). 55%.
+
+Compute: 4 runs ≈ 1.75 GPU-hours, readouts ≈ 0.1 (≈ 4.1 of 15 used before this stage).
