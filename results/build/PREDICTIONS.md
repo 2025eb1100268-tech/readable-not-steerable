@@ -381,3 +381,37 @@ SVD is dropped as a discovery method (its Stage 2b numbers stay in the record).
 - **PA.5** Its σ_shape is ≤ 0.2 on both datasets in every seed, whatever the other criteria. 60%.
 - **PA.6** (retroactive) Stage 2's M2-SF loudness dials (with the ψ term) fail the artefact criterion in
   at least 2 of 3 seeds. 55%.
+
+---
+
+## Entry 7 — 2026-10-23 — Step A′: shape dial = top PC after projecting out the symmetry-loudness direction (no training)
+
+Written before Step A′ is run. The investigator's specification: a new label-free shape rule, applied to
+the three M2-SW checkpoints with the full harness and the artefact criterion, reported per seed next to
+the PC2 rule, with the both-dials check under each rule. It was chosen after seeing results, so it
+stays exploratory; a v3 would fix the rule in advance.
+
+### Procedure (`dials/stepA_prime.py`)
+
+1. Dial latents G (n × 8) of the v1 train frames; per-dimension mean μ and std s; Z = (G − μ) / s.
+2. The Step A loudness direction d_L (raw dial space, unit; `results/build/stepA.json.gz`) in z-coordinates:
+   l = (d_L / s) / ‖d_L / s‖ (a raw shift along d_L is a z-shift along d_L / s).
+3. Projection: Z′ = Z − (Z l) lᵀ (Euclidean, in z-space).
+4. u = the top principal direction of Z′ (centred SVD); u ⟂ l.
+5. Raw steering direction: d_S = (s ⊙ u) / ‖s ⊙ u‖ (a z-shift along u is a raw shift along s ⊙ u);
+   σ_d = the std of G·d_S over the train frames, as for every candidate.
+6. Steering, criteria and frames as Step A: entry 2's criteria plus the artefact criterion, on the
+   standard explore and matched-energy steering frames; a shape dial needs σ_shape ≥ 0.7 on both.
+- **Both dials, per rule:** the Step A loudness direction is a loudness dial and the rule's direction
+  (PC2, or d_S) is a shape dial, in the same seed, under all criteria (entry 2's alone also reported).
+- Also reported: cos² of d_S with PC2 and with d_L (raw coordinates), σ_d, and the share of Z's
+  variance that u explains.
+
+### Predictions
+
+- **PA′.1** d_S is a shape dial (all criteria) in at least 2 of 3 seeds. 35%.
+- **PA′.2** d_S is shape-dominant (σ_shape ≥ 0.5 on both datasets) in every seed, whatever the other
+  criteria. 55%.
+- **PA′.3** d_S and PC2 point the same way (cos² ≥ 0.5) in every seed. 50%.
+- **PA′.4** Both dials are valid in the same seed under the new rule (all criteria) in at least 2 of 3
+  seeds. 20%. (Seed 2's loudness direction failed the cycle gain in Step A, so at most seeds 0 and 1.)

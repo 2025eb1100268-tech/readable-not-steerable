@@ -33,3 +33,5 @@ artefact:                     # PREDICTIONS entry 6: grid-artefact criterion
 output_md: results/build/stepA.md
 output_json_gz: results/build/stepA.json.gz
 figure: results/build/stepA.png
+output_md_prime: results/build/stepA_prime.md        # Step A prime (entry 7)
+output_json_gz_prime: results/build/stepA_prime.json.gz
