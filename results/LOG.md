@@ -2373,3 +2373,19 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - Rendering trigger fired in all M2-SW seeds: ω val normalized MSE 0.039–0.041 (3.8–3.9× the VICReg AE). Diagnosis on 1,024 v1 val frames: 77% of the ω error at k ≤ 10, 2% at k > 21 (not the zeroed corner modes); correcting each shell's amplitude removes only 24% (mostly pattern, not spectrum); the ~4× penalty over M2-SF (ω-only) is the same at every whitening-gain level (median frames 3.9×, top 1% 4.1×), so not the cap.
 - Attribution: M2-SF with the ω-only loss clears the trigger (ω 0.0152 vs 0.0182, k ≥ 10 power kept 0.52 vs 0.48; one seed each). Its pooled content decodes s at R² 0.10 (0.88–0.92 with the ψ term), so the pooled-content probe does not by itself show whether whitening removed shape from content (M2-SW: 0.20).
 
+
+## 2026-10-22 23:25 — [BUILD] Step A: loudness by symmetry (M2-SW) and the grid-artefact criterion retroactively
+- config: `configs/build/stepA.yaml`
+- command: `python -m dials.stepA --config configs/build/stepA.yaml`
+- git: `2382399+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 708.6 s
+- outcome: ok
+  - seeds with both dials valid (all criteria): 1 of 3
+  - M2-SW seeds with a PCA shape dial after the artefact criterion: 1 of 3
+  - results: results/build/stepA.md, results/build/stepA.png, results/build/stepA.json.gz
+## 2026-10-23 — [BUILD] Step A: notes on the run above (exploratory)
+- Loudness by symmetry: the chosen direction leaves 3.5–3.7% of its steered change unexplained by rescaling (PC1: 31–59%, PC2: 64–74%); σ_d 4.6–5.8 (PC1 6.0–6.8). It is a loudness dial under all criteria in seeds 0 and 1 (Δa 0.45–0.56 per α, σ_shape 0.02–0.08, no artefact frames); seed 2 fails one criterion (cycle gain 0.48 < 0.5 on matched). It is not confined to the PC1–PC2 plane (cos² 0.65–0.79); the best restarts began at PC3, PC5 and a random direction.
+- Both dials valid in the same seed: seed 0 only (1 of 3), so M2-SW does not meet the both-dials condition, under all criteria or under entry 2's alone.
+- Retroactive artefact criterion (calibrated on seed 1): M2-SW keeps a PCA shape dial in seed 0 only; every PCA loudness-type direction of M2-SF fails it, including Stage 2's M2-SF loudness dials (checkerboard frames at α = +2: 14.1%, 7.0%, 5.1% of explore frames; 0% on matched).
+
