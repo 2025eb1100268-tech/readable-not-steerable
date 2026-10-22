@@ -2414,3 +2414,142 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - sigma1 / sigma2: 5.1589 / 2.3639
   - content shape R^2 by tau: 0: 0.966, 0.5: 0.294, 1: 0.181, 2: 0.066
   - results: results/build/stepB_calibration.md
+
+## 2026-10-23 00:05 — [BUILD] Step B training: b3_sn_t2_s0
+- config: `configs/build/stepB/b3_sn_t2_s0.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t2_s0.yaml`
+- git: `afd31a1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1468.5 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.3809
+  - effective rank / latent std median: 111.8 / 1.057
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t2_s0.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.38093 / 0.08804
+
+## 2026-10-23 00:29 — [BUILD] Step B training: b3_sn_t0_s0
+- config: `configs/build/stepB/b3_sn_t0_s0.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t0_s0.yaml`
+- git: `afd31a1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1466.7 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0152
+  - effective rank / latent std median: 100.3 / 1.043
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t0_s0.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01525 / 0.00115
+
+## 2026-10-23 00:54 — [BUILD] Step B training: b3_sn_t1_s0
+- config: `configs/build/stepB/b3_sn_t1_s0.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t1_s0.yaml`
+- git: `afd31a1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1464.3 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.1247
+  - effective rank / latent std median: 113.4 / 1.055
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t1_s0.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.12470 / 0.03654
+
+## 2026-10-23 01:18 — [BUILD] Step B training: b3_sn_t0p5_s0
+- config: `configs/build/stepB/b3_sn_t0p5_s0.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t0p5_s0.yaml`
+- git: `afd31a1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1458.9 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0409
+  - effective rank / latent std median: 112.3 / 1.058
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t0p5_s0.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.04090 / 0.01625
+
+## 2026-10-23 01:43 — [BUILD] Step B training: b3_sn_t2_s1
+- config: `configs/build/stepB/b3_sn_t2_s1.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t2_s1.yaml`
+- git: `afd31a1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1467.9 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.3739
+  - effective rank / latent std median: 112.9 / 1.057
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t2_s1.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.37393 / 0.08330
+
+## 2026-10-23 02:07 — [BUILD] Step B training: b3_sn_t0_s1
+- config: `configs/build/stepB/b3_sn_t0_s1.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t0_s1.yaml`
+- git: `afd31a1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1445.0 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0157
+  - effective rank / latent std median: 97.9 / 1.048
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t0_s1.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01570 / 0.00110
+
+## 2026-10-23 02:32 — [BUILD] Step B training: b3_sn_t1_s1
+- config: `configs/build/stepB/b3_sn_t1_s1.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t1_s1.yaml`
+- git: `afd31a1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1508.2 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.1318
+  - effective rank / latent std median: 113.4 / 1.054
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t1_s1.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.13179 / 0.03737
+
+## 2026-10-23 02:58 — [BUILD] Step B training: b3_sn_t0p5_s1
+- config: `configs/build/stepB/b3_sn_t0p5_s1.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t0p5_s1.yaml`
+- git: `afd31a1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1522.9 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0418
+  - effective rank / latent std median: 112.2 / 1.057
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t0p5_s1.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.04185 / 0.01709
+
+## 2026-10-23 03:23 — [BUILD] Step B training: b3_sn_t2_s2
+- config: `configs/build/stepB/b3_sn_t2_s2.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t2_s2.yaml`
+- git: `afd31a1+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1522.2 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.3730
+  - effective rank / latent std median: 112.8 / 1.057
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t2_s2.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.37298 / 0.08328
+## 2026-10-23 — [BUILD] Step B: power outage during training
+- The machine lost power at about 03:41 (last driver-log write 03:40:35; reboot 03:42:57), during b3_sn_t0_s2 (started 03:23:41, about 17 min ≈ 0.3 GPU-hours in). train.py writes nothing until a run ends, so that run left no checkpoint, results file or log entry. The 9 runs before it completed and are intact (results files parse; checkpoints present; log entries complete above).
+- Resumed with the same driver, which skips finished runs: b3_sn_t0_s2 restarts from scratch with its committed config and seed (deterministic training), then b3_sn_t1_s2, b3_sn_t0p5_s2, then the readouts.
+
