@@ -2309,3 +2309,67 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - b2b_m2sw_s0, s1, s2 each failed within ~10 s, before the first step: whiten_reference took a CUDA median, which has no deterministic implementation (train.py runs with torch.use_deterministic_algorithms(True)). The whitening check and the readout dry run did not exercise that path. No checkpoint, results file or curve was written; the M2-SF omega-only run (b2b_m2sfw_s0) was unaffected and completed. The chained readouts then failed for lack of the M2-SW checkpoints.
 - Fix: the median is taken on the CPU (dials/whiten.py). Same value: 4,305 frames (odd count), and the reference reproduces the committed whitening check's ref_k to every printed digit under deterministic mode. The three M2-SW runs are rerun unchanged.
 
+
+## 2026-10-22 18:42 — [BUILD] Stage 2b training: b2b_m2sw_s0
+- config: `configs/build/stage2b/b2b_m2sw_s0.yaml`
+- command: `python -m train.train --config configs/build/stage2b/b2b_m2sw_s0.yaml`
+- git: `f497d6d+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1508.9 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0399
+  - effective rank / latent std median: 109.6 / 1.042
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage2b/runs/b2b_m2sw_s0.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.03991 / 0.00744
+
+## 2026-10-22 19:07 — [BUILD] Stage 2b training: b2b_m2sw_s1
+- config: `configs/build/stage2b/b2b_m2sw_s1.yaml`
+- command: `python -m train.train --config configs/build/stage2b/b2b_m2sw_s1.yaml`
+- git: `f497d6d+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1500.2 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0393
+  - effective rank / latent std median: 108.9 / 1.046
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage2b/runs/b2b_m2sw_s1.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.03933 / 0.00698
+
+## 2026-10-22 19:32 — [BUILD] Stage 2b training: b2b_m2sw_s2
+- config: `configs/build/stage2b/b2b_m2sw_s2.yaml`
+- command: `python -m train.train --config configs/build/stage2b/b2b_m2sw_s2.yaml`
+- git: `f497d6d+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1494.4 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0408
+  - effective rank / latent std median: 109.5 / 1.036
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stage2b/runs/b2b_m2sw_s2.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.04082 / 0.00820
+
+## 2026-10-22 19:37 — [BUILD] Stage 2b readouts (M2-SW, M2-SF omega-only)
+- config: `configs/build/stage2b_eval.yaml`
+- command: `python -m dials.stage1 --config configs/build/stage2b_eval.yaml`
+- git: `f497d6d+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 291.7 s
+- outcome: ok
+  - M2-SW: seeds with a shape / loudness dial (PC1–8): 2 / 0 of 3
+  - M2-SF, omega-only loss: seeds with a shape / loudness dial (PC1–8): 0 / 1 of 1
+  - results: results/build/stage2b.md, results/build/stage2b.png, results/build/stage2b_strips.png, results/build/stage2b.json.gz
+## 2026-10-22 19:55 — [BUILD] Stage 2b: notes on the readouts above (exploratory)
+- PCA (primary): M2-SW produces a shape dial under entry 2's rule: PC2 in seeds 0 and 2 (σ_shape 0.75 / 0.76 and 0.99 / 0.74 on explore / matched; |Δs| 0.31–0.41 per α; monotone; cycle corr 0.97–0.99, gain 0.79–0.96; envelope within 0.01 of the ideal dial; watermark ≤ 0.01; vorticity mean share ≤ 1e-3). Seed 1's PC2 is a dial but misses the shape bar on explore (σ_shape 0.697; 0.81 on matched). Visually (results/build/stage2b_shape_dials.png) PC2 moves energy between the largest scale (k = 1–2) and k ≈ 4 with the vortices in place; seed 1's PC2 shows blocky grid artefacts at α = −2 on the explore frame that no realism criterion flagged.
+- No loudness dial under PCA: PC1 is a dial in every seed but mixes loudness and shape (σ_shape 0.22–0.35).
+- Effect space (secondary): no shape dial in any seed; a loudness dial in seed 2 (ES3). Methods disagree in seeds 0 and 2 (PCA finds the shape dial, effect space does not). ES1 (largest singular value) has the smallest σ_d: the raw-coordinate SVD orders by sensitivity per unit of dial, not per unit of natural variation.
+- Supervised s-direction in the dials: a dial in 0 seeds (cycle gain 0.20–0.31).
+- Rendering trigger fired in all M2-SW seeds: ω val normalized MSE 0.039–0.041 (3.8–3.9× the VICReg AE). Diagnosis on 1,024 v1 val frames: 77% of the ω error at k ≤ 10, 2% at k > 21 (not the zeroed corner modes); correcting each shell's amplitude removes only 24% (mostly pattern, not spectrum); the ~4× penalty over M2-SF (ω-only) is the same at every whitening-gain level (median frames 3.9×, top 1% 4.1×), so not the cap.
+- Attribution: M2-SF with the ω-only loss clears the trigger (ω 0.0152 vs 0.0182, k ≥ 10 power kept 0.52 vs 0.48; one seed each). Its pooled content decodes s at R² 0.10 (0.88–0.92 with the ψ term), so the pooled-content probe does not by itself show whether whitening removed shape from content (M2-SW: 0.20).
+
