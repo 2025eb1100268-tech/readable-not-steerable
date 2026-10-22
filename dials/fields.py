@@ -57,6 +57,16 @@ def relative_divergence(vel: torch.Tensor, g: SpectralGrid) -> torch.Tensor:
     return torch.sqrt(num / den)
 
 
+def out_of_band_share(field: torch.Tensor, g: SpectralGrid, kmax: int = 21) -> torch.Tensor:
+    """[BUILD] entry 6 (grid-artefact criterion): per field, the share of its power outside the
+    solver's square dealiasing band (|kx| or |ky| > kmax), from the unmasked FFT. The solver puts no
+    power there (true data ~1e-32), so a decoder's power there is artefact. field: (B, 1, n, n) or (B, n, n)."""
+    f = field[:, 0] if field.dim() == 4 else field
+    p = torch.fft.rfft2(f.to(g.dtype)).abs() ** 2 * g.parseval_w
+    out = (g.kx.abs() > kmax + 0.5) | (g.ky.abs() > kmax + 0.5)
+    return (p * out).sum((-2, -1)) / p.sum((-2, -1))
+
+
 def head_consistency(w_hat_omega_head: torch.Tensor, w_hat_psi_head: torch.Tensor, g: SpectralGrid) -> torch.Tensor:
     """||omega_head - (-lap psi_head)|| / ||omega_head|| per field (inputs already as vorticity spectra)."""
     num = ((w_hat_omega_head - w_hat_psi_head).abs() ** 2 * g.parseval_w).sum((-2, -1))

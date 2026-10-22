@@ -108,12 +108,14 @@ def steer(adapter, x_prev, x_t, d: np.ndarray, sigma: float, g, env) -> dict:
     d_t = torch.as_tensor(d, dtype=torch.float32, device=dev)
     per_head: dict = {}
     z_rec: dict = {}
-    cons, div, mean_share = [], [], []
+    cons, div, mean_share, oob = [], [], [], []
     primary_field, w_at0 = {}, {}
     for alpha in ALPHAS:
         outs = adapter.decode(x_prev, x_t, float(alpha * sigma) * d_t)
         if alpha in (-2.0, 0.0, 2.0):
             primary_field[float(alpha)] = outs[0][2].double().flatten(1)
+        if outs[0][1] != "velocity":  # grid-artefact criterion (entry 6): out-of-band share of the primary decoded field
+            oob.append(fields.out_of_band_share(outs[0][2], g).cpu().numpy())
         w_hats = {}
         for name, kind, f in outs:
             w = fields.vorticity_hat(f, kind, g)
@@ -162,6 +164,10 @@ def steer(adapter, x_prev, x_t, d: np.ndarray, sigma: float, g, env) -> dict:
         out["rel_divergence_max"] = float(max(div))
     if mean_share:
         out["vorticity_mean_share_max"] = float(max(mean_share))
+    if oob:
+        worst = np.stack(oob).max(0)  # per frame, max over alpha
+        out["oob_share_worst_per_frame"] = worst.tolist()
+        out["oob_share_at_0_max"] = float(oob[int(np.flatnonzero(ALPHAS == 0)[0])].max())
     if cons:
         i0 = int(np.flatnonzero(ALPHAS == 0)[0])
         out.update({"head_consistency_max": float(max(cons)), "head_consistency_at_0": cons[i0],
@@ -188,6 +194,9 @@ def classify(m: dict, crit: dict) -> dict:
         checks["head consistency"] = m["head_consistency_max"] <= crit["max_head_inconsistency"]
     if "head_consistency_ratio" in m and crit.get("max_head_ratio") is not None:
         checks["head ratio"] = m["head_consistency_ratio"] <= crit["max_head_ratio"]
+    if crit.get("artefact_oob_share") is not None and "oob_share_worst_per_frame" in m:  # entry 6
+        frac = float(np.mean(np.asarray(m["oob_share_worst_per_frame"]) > crit["artefact_oob_share"]))
+        checks["grid artefacts"] = frac <= crit["artefact_max_frame_fraction"]
     dial = all(bool(v) for v in checks.values())
     return {"dial": dial, "loudness": bool(dial and m["sigma_shape"] <= crit["max_sigma_loudness"]),
             "shape": bool(dial and m["sigma_shape"] >= crit["min_sigma_shape"]),

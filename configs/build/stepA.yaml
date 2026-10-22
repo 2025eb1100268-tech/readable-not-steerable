@@ -1,0 +1,35 @@
+# [BUILD] Step A (python -m dials.stepA --config configs/build/stepA.yaml). PREDICTIONS entry 6. No training.
+seed: 0
+data_parts:
+  - [data/generated/v1, [train, val]]
+  - [data/generated/explore_v2, [explore]]
+  - [data/generated/matched_energy_v2, [matched]]
+cache_tag: v1tv_explore_matched
+n_frames: 256                 # the Stage 0-2b steering frames (scoring)
+n_envelope: 4096
+n_opt_frames: 256             # optimization frames: explore rows outside the steering frames
+opt_seed: 1
+opt_steps: 150
+opt_batch: 32
+opt_lr: 0.05
+n_random_inits: 4             # restarts: PC1-8 + 4 random directions
+m2sw_runs: [b2b_m2sw_s0, b2b_m2sw_s1, b2b_m2sw_s2]
+stage2b_json: results/build/stage2b.json.gz
+stage2_m2sf_runs: [b2_m2sf_s0, b2_m2sf_s1, b2_m2sf_s2]
+criteria_stage2b:             # PREDICTIONS entry 2 (no head criterion: one rendered field)
+  min_effect: 0.2
+  min_monotonicity: 0.9
+  min_cycle_corr: 0.9
+  cycle_gain: [0.5, 2.0]
+  max_shared_pattern: 0.5
+  envelope_rel_margin: 0.05
+  max_head_ratio: 1.5
+  max_sigma_loudness: 0.2
+  min_sigma_shape: 0.7
+  min_seeds: 2
+artefact:                     # PREDICTIONS entry 6: grid-artefact criterion
+  artefact_oob_share: 0.01
+  artefact_max_frame_fraction: 0.01
+output_md: results/build/stepA.md
+output_json_gz: results/build/stepA.json.gz
+figure: results/build/stepA.png

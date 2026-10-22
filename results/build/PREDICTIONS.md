@@ -306,3 +306,78 @@ but the decoder took shape from the scale-free content, which still saw the spec
   (shape is steerable through these dials at all). 55%.
 
 Compute: 4 runs ≈ 1.75 GPU-hours, readouts ≈ 0.1 (≈ 4.1 of 15 used before this stage).
+
+---
+
+## Entry 6 — 2026-10-23 — Grid-artefact criterion; Step A (loudness by symmetry on M2-SW, no training)
+
+Written before Step A is run. The investigator's specification: a grid-artefact metric with a threshold
+that catches M2-SW seed 1's blocky output at α = −2, committed here, applied to every steered field
+from now on and retroactively to the Stage 2b dials (reported, labelled as calibrated on seed 1); then
+a symmetry-based loudness direction for each M2-SW seed, run through the full harness; the effect-space
+SVD is dropped as a discovery method (its Stage 2b numbers stay in the record).
+
+### Grid-artefact criterion (calibrated on M2-SW seed 1's PC2 at α = −2)
+
+- **Metric** (`dials/fields.py: out_of_band_share`): for each decoded field, the share of its power
+  outside the solver's square dealiasing band (|kx| or |ky| > 21), from the unmasked FFT. The solver puts
+  no power there (true explore and matched frames: ~4×10⁻³²), so a decoder's power there is artefact; the
+  decoder's 2×-upsampling stages put their block and checkerboard harmonics there.
+- **Criterion:** a direction fails on a dataset if more than **1% of frames** have an out-of-band share
+  above **τ = 1×10⁻²** at some α. It is applied to the primary decoded field when that field is a scalar
+  (vorticity or streamfunction output), on explore and matched-energy, alongside entry 2's criteria.
+- **Calibration** (`results/build/artefact_calibration.png`, `dials/artefact_calibration.py`): seed 1's
+  blocky frame (frame 0, α = −2) has a share of 3.2×10⁻²; its striped ES3 frames 1.1–1.3×10⁻¹. No
+  unsteered decoded frame of any Stage 2b model exceeds 2.5×10⁻³, so τ is 4× above that and 3× below
+  the calibration case. In the figure, frames above about 1.3×10⁻² look visibly broken (blocky,
+  striped, checkerboard or mottled); frames near 10⁻² are mixed. A ring-relative lattice statistic was
+  tried first and rejected: on true data it reaches 1.2×10⁻², and it flags weak, invisible structure
+  in rings the steering has emptied.
+- **What was seen before the tolerance was chosen** (frames with share > 10⁻², explore / matched):
+  M2-SW PC2, seed 0: 0.8% / 0%; seed 1: 1.2% / 3.5%; seed 2: 2.0% / 0%. M2-SF with the ω-only loss,
+  PC1: 4.7% / 0% (checkerboards at α = +2, which the median-based criteria missed). Sensitivity of the
+  tolerance: at 0% no M2-SW PC2 survives; at 2% seed 2's would too; seed 1 is caught at any tolerance
+  below 3.5%. **Known consequence, not a prediction:** after this criterion, M2-SW keeps a PCA shape
+  dial in seed 0 only (1 of 3), so M2-SW no longer meets the 2-of-3 rule for a shape dial.
+- **Retroactive application:** every dial-space direction of the Stage 2b models, and (added, because
+  the calibration figure showed the failure mode) Stage 2's M2-SF loudness dials (PC1, recomputed the
+  same way: that stage's results file keeps no direction vectors). Reported, labelled as calibrated on
+  seed 1.
+
+### Step A definitions (`dials/stepA.py`, `configs/build/stepA.yaml`)
+
+- **Loudness by symmetry:** in the 8-dim dial space of each M2-SW seed, the unit direction d minimizing
+  J(d) = Σ ‖y_α − c·y_0‖² / Σ ‖y_α − y_0‖², where y_α is the decoded vorticity at z + α·σ_d·d, the sums
+  run over α ∈ {−2, −1.5, …, 2} \ {0} and over 256 explore frames disjoint from the steering frames, and
+  σ_d = √(dᵀCd) with C the v1-train covariance of the dial vector.
+  - *Choices made explicit:* c is fitted per frame and α (least squares), i.e. each field may be
+    rescaled by its own factor. J is the fraction of the steered change that rescaling does not explain:
+    the investigator's "residual after the best scalar fit", normalized by the size of the change,
+    because the unnormalized residual is minimized trivially by a direction that changes nothing.
+  - *Optimization:* Adam (lr 0.05, 150 steps, batches of 32 frames) on an unnormalized vector, restarts
+    from PC1–8 and 4 random directions; the restart with the lowest J on all 256 optimization frames is
+    kept.
+  - *Validation on a model with a known loudness dial (M2-SF, ω-only, seed 0; not part of Step A):*
+    PC1 has J = 0.0061; started from PC2 the search reaches J = 0.0028 at σ_d 6.6 (PC1 7.2), cos² 0.83
+    with PC1. Random starts stall at J ≈ 0.20. J falls mildly with step size (PC1: 0.0061 at full
+    steps, 0.0042 at quarter steps), so the search can favour lower-variance directions; the chosen
+    direction's σ_d is reported next to PC1's.
+- **Scoring:** the full harness on the standard steering frames with entry 2's criteria plus the
+  artefact criterion; loudness dial = all criteria and σ_shape ≤ 0.2, on both datasets.
+- **Both-dials condition:** in the same seed, the loudness direction is a loudness dial and PC2 is a
+  shape dial, both under all criteria; M2-SW meets it if this holds in at least 2 of 3 seeds, subject to
+  the rendering check (which fired for M2-SW in Stage 2b). Also reported: the same under entry 2's
+  criteria alone.
+
+### Predictions
+
+- **PA.1** Under entry 2's criteria alone, the loudness direction is a loudness dial in at least 2 of 3
+  seeds. 65%.
+- **PA.2** Under all criteria (with the artefact criterion), it is a loudness dial in at least 2 of 3
+  seeds. 35%. (Strong loudness steering made checkerboards in M2-SF's loudness dial.)
+- **PA.3** Under entry 2's criteria alone, both dials are valid in the same seed in at least 2 of 3
+  seeds. 45%. (Under all criteria at most 1 seed can qualify; see the known consequence above.)
+- **PA.4** The loudness direction lies mostly in the PC1–PC2 plane (cos² ≥ 0.8) in every seed. 70%.
+- **PA.5** Its σ_shape is ≤ 0.2 on both datasets in every seed, whatever the other criteria. 60%.
+- **PA.6** (retroactive) Stage 2's M2-SF loudness dials (with the ψ term) fail the artefact criterion in
+  at least 2 of 3 seeds. 55%.
