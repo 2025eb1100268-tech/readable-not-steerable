@@ -481,3 +481,51 @@ once content shape R² is below about 0.2 (τ ≥ 1), and rendering error rising
 - **PB.9** At τ = 0 (content shape R² 0.97) no rule gives a shape dial in any seed. 75%.
 
 Compute: 12 runs ≈ 5.1 GPU-hours, readouts ≈ 0.9 (≈ 6.3 of 15 used before this step).
+
+---
+
+## Entry 9 — 2026-10-23 — Step C: resize-convolution decoder at τ = 0.5; the decoder rule for τ = 0.2
+
+Written before any Step C training. Budget raised to 18 GPU-hours by the investigator (≈ 12.2 used).
+
+### Decoder report and the branch taken
+
+The decoder's upsampling is **sub-pixel convolution**: at each stage GELU → 3×3 convolution to 4·c_out
+channels at the low resolution → PixelShuffle(2) (`models/heads.py` PixelDecoder, reused by
+`dials/split.py` FiLMDecoder). It is neither of the investigator's two cases literally, but it is
+mathematically equivalent to a stride-2 transposed convolution and shares its checkerboard artefacts,
+so the transposed-convolution branch (Step C) applies.
+
+### Fixed definitions
+
+- **Resize-convolution decoder** (`dials/split.py`, `decoder_upsample: resize`): at each stage GELU →
+  nearest-neighbour ×2 (expand + reshape, deterministic) → 3×3 convolution c_in → c_in → GELU → 3×3
+  convolution c_in → c_out; FiLM unchanged (after the input stage and after each upsampling stage).
+  Decoder parameters 1.45 M vs 1.83 M (79%; the closest practical match: one convolution per stage
+  would give 0.67 M); it adds one convolution per stage and costs about 3.7× the decoder's compute.
+- **Runs** (`dials/stepC_configs.py`): Step B's τ = 0.5 configs, seeds 0–2, with only the decoder
+  changed (same shape-noise input, ω-only loss, recipe and seeds).
+- **Readouts:** Step B's (`dials/stepB.py` with `configs/build/stepC_eval.yaml`): loudness by symmetry;
+  shape by PC2 (primary, frozen), loudness-null PCA and the projected-out rule; entry 2's criteria plus
+  the artefact criterion (tolerance stays 1%); rendering check. Compared with Step B's τ = 0.5
+  (pixel-shuffle) models.
+- **Decoder rule for τ = 0.2 (by the artefact check alone, fixed now):** per model, the mean
+  artefact-frame fraction over the loudness, PC2 and loudness-null directions and both datasets (six
+  numbers); per decoder, the median over its three τ = 0.5 seeds. The pixel-shuffle score is
+  **0.0137** (Step B: seeds 0.0137, 0.0098, 0.0339). τ = 0.2 uses the resize-convolution decoder if its
+  score is lower; otherwise pixel-shuffle.
+
+### Predictions
+
+- **PC.1** With the resize-convolution decoder, both dials (the symmetry loudness direction and the
+  loudness-null shape direction) stay at or below 1% artefact frames on both datasets in at least 2 of
+  3 seeds. 45%.
+- **PC.2** Rendering: the median ω val normalized MSE is within ±20% of the pixel-shuffle τ = 0.5 value
+  (0.0409). 50%. The k ≥ 10 power kept is lower than pixel-shuffle's (median 0.42). 60%.
+- **PC.3** The shape knob is preserved: loudness-null PCA's σ_shape on explore is ≥ 0.7 in at least 2 of
+  3 seeds. 75%.
+- **PC.4** Both dials valid under all criteria in the same seed in at least 2 of 3 seeds: with the
+  loudness-null shape rule 35%; with PC2 (primary) 5%.
+- **PC.5** The decoder rule picks resize-convolution for τ = 0.2. 60%.
+
+Compute: 3 runs ≈ 2.2 GPU-hours, readouts ≈ 0.2.

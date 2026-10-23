@@ -34,15 +34,33 @@ from solver.ns2d import SpectralGrid
 TARGETS = ("vorticity", "streamfunction")
 
 
-class FiLMDecoder(nn.Module):
-    """PixelDecoder's layers (one horizon) with FiLM after the input stage and each upsampling stage."""
+class NearestUp2(nn.Module):
+    """x2 nearest-neighbour upsampling by expand + reshape: its backward is a plain sum, deterministic on
+    CUDA (F.interpolate's nearest backward is not)."""
 
-    def __init__(self, in_ch: int, n_dial: int, widths=(256, 128, 64, 32), out_ch: int = 1):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        b, c, h, w = x.shape
+        return x[:, :, :, None, :, None].expand(b, c, h, 2, w, 2).reshape(b, c, 2 * h, 2 * w)
+
+
+class FiLMDecoder(nn.Module):
+    """PixelDecoder's layers (one horizon) with FiLM after the input stage and each upsampling stage.
+    upsample "pixelshuffle" (sub-pixel convolution, as PixelDecoder: GELU, 3x3 conv to 4 c_out, PixelShuffle 2)
+    or [BUILD] Step C "resize" (resize-convolution: GELU, nearest x2, 3x3 conv c_in -> c_in, GELU, 3x3 conv
+    c_in -> c_out; 79% of the sub-pixel decoder's parameters)."""
+
+    def __init__(self, in_ch: int, n_dial: int, widths=(256, 128, 64, 32), out_ch: int = 1, upsample: str = "pixelshuffle"):
         super().__init__()
         self.inp = _conv(in_ch, widths[0])
         self.k = HorizonEmbedding(widths[0], 1)
-        self.stages = nn.ModuleList(nn.Sequential(nn.GELU(), _conv(c_in, 4 * c_out), nn.PixelShuffle(2))
-                                    for c_in, c_out in zip(widths[:-1], widths[1:]))
+        if upsample == "pixelshuffle":
+            self.stages = nn.ModuleList(nn.Sequential(nn.GELU(), _conv(c_in, 4 * c_out), nn.PixelShuffle(2))
+                                        for c_in, c_out in zip(widths[:-1], widths[1:]))
+        elif upsample == "resize":
+            self.stages = nn.ModuleList(nn.Sequential(nn.GELU(), NearestUp2(), _conv(c_in, c_in), nn.GELU(), _conv(c_in, c_out))
+                                        for c_in, c_out in zip(widths[:-1], widths[1:]))
+        else:
+            raise ValueError(upsample)
         self.out = nn.Sequential(nn.GELU(), nn.Conv2d(widths[-1], out_ch, 1))
         kaiming_init(self)
         self.film = nn.ModuleList(nn.Linear(n_dial, 2 * w) for w in widths)
@@ -126,7 +144,7 @@ class BranchHeads(nn.Module):
         super().__init__()
         self.n_dial = int(cfg.get("n_dial", 8))
         self.dial_enc = build_encoder(cfg["seed"] + 500, d=self.n_dial)
-        self.dec = FiLMDecoder(d_content, self.n_dial)
+        self.dec = FiLMDecoder(d_content, self.n_dial, upsample=cfg.get("decoder_upsample", "pixelshuffle"))
         self.scales = {t: float(v) for t, v in cfg["ae_target_scales"].items()}
         self._grid = None
 

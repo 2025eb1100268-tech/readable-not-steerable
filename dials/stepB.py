@@ -139,7 +139,7 @@ def main():
             res[tau].append(r)
             print(f"tau {tau} {run}: loudness {label(r['loudness'])}, shape PC2 / proj / null: "
                   + " / ".join(label(r["shape"][k]) for k in RULES) + f", omega {m:.4f} ({time.perf_counter() - t0:.0f} s)", flush=True)
-    sw = json.load(gzip.open(REPO / cfg["stepA_json"], "rt", encoding="utf-8"))["stepA"]
+    sw = json.load(gzip.open(REPO / cfg["stepA_json"], "rt", encoding="utf-8"))["stepA"] if cfg.get("m2sw_reference", True) else []
     m2sw = []
     for a in sw:  # M2-SW reference point (analysis only): Step A's loudness direction, the three shape rules
         r = analyse(a["run"], with_loudness_search=False, d_l=np.asarray(a["direction"]))

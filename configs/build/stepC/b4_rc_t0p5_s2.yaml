@@ -1,0 +1,36 @@
+# [BUILD] Step C (python -m train.train --config configs/build/stepC/b4_rc_t0p5_s2.yaml); PREDICTIONS entry 9
+# = configs/build/stepB/b3_sn_t0p5_s2.yaml with the resize-convolution decoder; dials/stepC_configs.py
+data_dir: data/generated/v1
+weight_decay: 0.05
+batch: 256
+amp_bf16: true
+ema_start: 0.996
+predictor_width: 256
+log_every: 100
+collapse:
+  min_effective_rank: 8
+  min_std_median: 0.1
+horizons:
+- 0
+epochs: 30
+warmup_frac: 0.05
+eval_every_epochs: 5
+grad_clip: 1.0
+lr: 0.001
+diagnostics: true
+loss_weights:
+  head:
+    vorticity: 14.699
+    streamfunction: 0.0
+  var: 25.0
+  cov: 1.0
+results_dir: results/build/stepC/runs
+log_title: '[BUILD] Step C training'
+model: branch_ae
+content_dim: 120
+n_dial: 8
+content_input: shape_noise
+shape_noise_tau: 0.5
+seed: 2
+run_name: b4_rc_t0p5_s2
+decoder_upsample: resize

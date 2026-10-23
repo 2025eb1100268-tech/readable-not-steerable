@@ -233,6 +233,20 @@ def test_shape_noise():
     assert not torch.allclose(noisy(x), noisy(x))  # fresh draws in training
 
 
+def test_resize_decoder():
+    from dials.split import FiLMDecoder, NearestUp2
+    x = torch.arange(4.0).reshape(1, 1, 2, 2)
+    assert torch.equal(NearestUp2()(x), torch.nn.functional.interpolate(x, scale_factor=2, mode="nearest"))
+    dec = FiLMDecoder(120, 8, upsample="resize").eval()
+    c = torch.randn(2, 120, 8, 8)
+    with torch.no_grad():
+        out = dec(c, torch.zeros(2, 8))
+        assert out.shape == (2, 1, 64, 64) and torch.allclose(out, dec(c, torch.randn(2, 8)))  # FiLM starts as the identity
+    n_rc = sum(p.numel() for p in dec.parameters())
+    n_ps = sum(p.numel() for p in FiLMDecoder(120, 8).parameters())
+    assert 0.75 < n_rc / n_ps < 0.85
+
+
 def test_conversions_on_an_analytic_flow():
     """psi = sin(x) cos(y): omega = 2 psi; Biot–Savart round trip; Z/E = k^2 = 2 for this single shell."""
     x, y = G.x.expand(64, 64), G.y.expand(64, 64)
