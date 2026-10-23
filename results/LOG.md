@@ -2618,3 +2618,63 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - Rendering: ω val normalized MSE (median) 0.0154 / 0.0409 / 0.1250 / 0.3739; trigger in 2 / 3 / 3 / 3 seeds (at τ = 0 only through the small-scale power: 0.49 and 0.50).
 - M2-SW reference: loudness-null PCA is shape-dominant on explore (σ_shape 0.83–0.96) but not on matched-energy (0.56–0.66), so not a shape dial there; PC2 stays the better rule for M2-SW.
 
+
+## 2026-10-23 22:36 — [BUILD] Step C training: b4_rc_t0p5_s0
+- config: `configs/build/stepC/b4_rc_t0p5_s0.yaml`
+- command: `python -m train.train --config configs/build/stepC/b4_rc_t0p5_s0.yaml`
+- git: `fa7e95d+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2524.7 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0394
+  - effective rank / latent std median: 112.5 / 1.061
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/stepC/runs/b4_rc_t0p5_s0.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.03936 / 0.01506
+
+## 2026-10-23 23:18 — [BUILD] Step C training: b4_rc_t0p5_s1
+- config: `configs/build/stepC/b4_rc_t0p5_s1.yaml`
+- command: `python -m train.train --config configs/build/stepC/b4_rc_t0p5_s1.yaml`
+- git: `fa7e95d+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2535.8 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0392
+  - effective rank / latent std median: 112.3 / 1.057
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/stepC/runs/b4_rc_t0p5_s1.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.03916 / 0.01467
+
+## 2026-10-24 00:01 — [BUILD] Step C training: b4_rc_t0p5_s2
+- config: `configs/build/stepC/b4_rc_t0p5_s2.yaml`
+- command: `python -m train.train --config configs/build/stepC/b4_rc_t0p5_s2.yaml`
+- git: `fa7e95d+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2565.6 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0390
+  - effective rank / latent std median: 112.3 / 1.058
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/stepC/runs/b4_rc_t0p5_s2.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.03902 / 0.01458
+
+## 2026-10-24 00:32 — [BUILD] Step B readouts (shape-noise dose)
+- config: `configs/build/stepC_eval.yaml`
+- command: `python -m dials.stepB --config configs/build/stepC_eval.yaml`
+- git: `fa7e95d+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1845.0 s
+- outcome: ok
+  - tau 0.5 (content shape R² 0.294): shape dial PC2 / proj / null: 1 / 0 / 3; loudness 3; both (PC2) 1
+  - results: results/build/stepC.md, results/build/stepC.png, results/build/stepC.json.gz
+## 2026-10-24 — [BUILD] Step C: notes on the readouts above (exploratory)
+- Resize-convolution decoder at τ = 0.5: artefact frames 0.0% for the loudness, PC2 and loudness-null directions in every seed and on both datasets (pixel-shuffle Step B: up to 9.4%). Decoder score 0.0000 vs 0.0137, so τ = 0.2 uses resize-convolution (rule of entry 9).
+- Under all criteria: symmetry loudness dial 3 of 3 (Δa 0.51–0.61 per α, σ_shape ≤ 0.04); loudness-null shape dial 3 of 3 (Δs 0.30–0.35 per α, σ_shape 0.85–1.00, monotone, cycle corr 0.94–0.99 / gain 0.63–0.94); both dials in the same seed 3 of 3 with the loudness-null rule, 1 of 3 with PC2 (primary; seed 2's PC2 is a loudness dial). Rendering: ω 0.0390–0.0394 (pixel-shuffle 0.0405–0.0418); the trigger still fires in every seed (> 0.02, > 2× the VICReg AE; k ≥ 10 power kept 0.46–0.51).
+- Diagnostic, not a criterion: a decoded vorticity spatial mean (k = 0, impossible for a periodic flow) appears in the tails of steered fields with both decoders and for loudness dials too: e.g. Step C loudness-null directions put > 10% of ⟨ω²⟩ in the mean in 5–15% of explore frames (pixel-shuffle loudness, seed 2: 10.5%). It is invisible to a, the cycle check, the envelope and the out-of-band criterion (all velocity-based or k ≥ 1), and enters only s and the watermark statistic through Z. With the mean removed from every decoded field the Step C classifications are unchanged in every seed (loudness-null Δs 0.30–0.36 per α), so the shape dial is not produced by it. Figure: results/build/stepC_dials.png (seed 2's shape direction, α = +2, explore frame 0, shows the offset).
+
