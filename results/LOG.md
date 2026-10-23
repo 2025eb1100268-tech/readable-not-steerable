@@ -2553,3 +2553,68 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - The machine lost power at about 03:41 (last driver-log write 03:40:35; reboot 03:42:57), during b3_sn_t0_s2 (started 03:23:41, about 17 min ≈ 0.3 GPU-hours in). train.py writes nothing until a run ends, so that run left no checkpoint, results file or log entry. The 9 runs before it completed and are intact (results files parse; checkpoints present; log entries complete above).
 - Resumed with the same driver, which skips finished runs: b3_sn_t0_s2 restarts from scratch with its committed config and seed (deterministic training), then b3_sn_t1_s2, b3_sn_t0p5_s2, then the readouts.
 
+
+## 2026-10-23 04:46 — [BUILD] Step B training: b3_sn_t0_s2
+- config: `configs/build/stepB/b3_sn_t0_s2.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t0_s2.yaml`
+- git: `00a79a9+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1542.2 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0154
+  - effective rank / latent std median: 106.3 / 1.043
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t0_s2.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01535 / 0.00108
+
+## 2026-10-23 05:12 — [BUILD] Step B training: b3_sn_t1_s2
+- config: `configs/build/stepB/b3_sn_t1_s2.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t1_s2.yaml`
+- git: `00a79a9+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1516.8 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.1250
+  - effective rank / latent std median: 113.0 / 1.060
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t1_s2.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.12505 / 0.03600
+
+## 2026-10-23 05:37 — [BUILD] Step B training: b3_sn_t0p5_s2
+- config: `configs/build/stepB/b3_sn_t0p5_s2.yaml`
+- command: `python -m train.train --config configs/build/stepB/b3_sn_t0p5_s2.yaml`
+- git: `00a79a9+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 1485.1 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0405
+  - effective rank / latent std median: 112.4 / 1.058
+  - steps: 7920
+  - peak GPU memory GB: 4.51
+  - results: results/build/stepB/runs/b3_sn_t0p5_s2.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.04047 / 0.01679
+
+## 2026-10-23 06:18 — [BUILD] Step B readouts (shape-noise dose)
+- config: `configs/build/stepB_eval.yaml`
+- command: `python -m dials.stepB --config configs/build/stepB_eval.yaml`
+- git: `00a79a9+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2487.7 s
+- outcome: ok
+  - tau 0 (content shape R² 0.966): shape dial PC2 / proj / null: 0 / 0 / 0; loudness 1; both (PC2) 0
+  - tau 0.5 (content shape R² 0.294): shape dial PC2 / proj / null: 0 / 0 / 0; loudness 1; both (PC2) 0
+  - tau 1 (content shape R² 0.181): shape dial PC2 / proj / null: 0 / 0 / 0; loudness 0; both (PC2) 0
+  - tau 2 (content shape R² 0.066): shape dial PC2 / proj / null: 0 / 0 / 0; loudness 0; both (PC2) 0
+  - results: results/build/stepB.md, results/build/stepB.png, results/build/stepB.json.gz
+## 2026-10-23 — [BUILD] Step B: notes on the readouts above (exploratory)
+- No shape dial under all criteria at any dose, under any rule. Loudness-null PCA: median σ_shape on explore 0.07 at τ = 0, then 0.93 / 0.88 / 0.93 at τ = 0.5 / 1 / 2 (content shape R² 0.97 → 0.29 / 0.18 / 0.07): a jump between the first two doses (no dose in between). PC2: 0.11 / 0.33 / 0.36 / 0.44 (gradual), never a shape dial. Projected-out rule: ≤ 0.50 everywhere.
+- Under entry 2's criteria alone, τ = 0.5 meets the both-dials condition in 3 of 3 seeds (loudness-null shape dial: σ_shape 0.86–1.00, |Δs| 0.29–0.35 per α, monotone, cycle corr 0.94–0.96, gain 0.57–0.66; symmetry loudness dial in every seed). The artefact criterion removes all of them: shape direction 0.4% / 1.6%, 2.3% / 2.7%, 9.4% / 0.8% of frames (explore / matched) above the threshold; loudness direction 4.3%, 0%, 2.7% on explore. At τ ≥ 1 the shape direction's cycle gain also falls below 0.5 in most seeds. At τ = 0 the loudness-null direction is not a shape direction (σ_shape ≤ 0.22; 100% artefact frames in two seeds).
+- Loudness by symmetry: pure in every model (σ_shape ≤ 0.03, effect 0.60–0.86); valid under all criteria in 1 / 1 / 0 / 0 seeds at τ = 0 / 0.5 / 1 / 2, failing on artefact tails (up to 43% of frames at τ = 2); under entry 2 alone, 3 of 3 at every dose.
+- Rendering: ω val normalized MSE (median) 0.0154 / 0.0409 / 0.1250 / 0.3739; trigger in 2 / 3 / 3 / 3 seeds (at τ = 0 only through the small-scale power: 0.49 and 0.50).
+- M2-SW reference: loudness-null PCA is shape-dominant on explore (σ_shape 0.83–0.96) but not on matched-energy (0.56–0.66), so not a shape dial there; PC2 stays the better rule for M2-SW.
+
