@@ -529,3 +529,48 @@ so the transposed-convolution branch (Step C) applies.
 - **PC.5** The decoder rule picks resize-convolution for τ = 0.2. 60%.
 
 Compute: 3 runs ≈ 2.2 GPU-hours, readouts ≈ 0.2.
+
+---
+
+## Entry 10 — 2026-10-25 — Step D: τ = 0.2 with the resize-convolution decoder; the v3 dose rule
+
+Written before any τ = 0.2 training, and so before any of its readouts exist. Budget cap 18.5 GPU-hours
+for this phase (τ = 0.2 and the build report; investigator).
+
+### Fixed definitions
+
+- **Runs** (`configs/build/stepD/`): Step C's configs with only `shape_noise_tau: 0.2` (resize-convolution
+  decoder, chosen by entry 9's rule: score 0.0000 vs 0.0137), seeds 0–2; no zero-mean constraint.
+- **Calibrated dose** (`results/build/stepD_calibration.md`, the Step B procedure): content shape
+  R² = **0.611** at τ = 0.2 (τ = 0: 0.966; τ = 0.5: 0.294).
+- **Readouts:** Step C's (`dials/stepB.py`, `configs/build/stepD_eval.yaml`): loudness by symmetry; shape
+  by PC2 (primary for exploration, frozen), loudness-null PCA and the projected-out rule; entry 2's
+  criteria plus the artefact criterion at 1%; rendering check. **New diagnostic** (not a criterion):
+  for every steered direction, dataset and α, the fraction of frames whose decoded ω has more than 10%
+  of ω² in its spatial mean.
+- **Jump or steep slope.** The loudness-null rule's median σ_shape on explore was 0.07 at content shape
+  R² 0.97 (τ = 0, pixel-shuffle) and 0.93 / 0.96 at R² 0.29 (τ = 0.5, pixel-shuffle / resize); a line
+  in R² would give about 0.54 at R² 0.61. The τ = 0.2 median is read as **consistent with a jump** if it
+  is ≤ 0.25 or ≥ 0.8 (it sits at one end level), and as **a steep slope** if it is between 0.25 and 0.8.
+  One intermediate point cannot prove a jump; τ = 0 exists only with the pixel-shuffle decoder (the
+  two decoders gave the same selectivity at τ = 0.5).
+- **The v3 dose rule (investigator's proposal, fixed now):** v3 uses **τ = 0.2 only if** loudness-null
+  PCA gives both dials (with the symmetry loudness direction) under all criteria in at least 2 of 3
+  seeds at τ = 0.2 **and** the median ω val normalized MSE at τ = 0.2 is lower than at τ = 0.5 with the
+  same decoder (Step C: 0.0392); **otherwise τ = 0.5.**
+
+### Predictions
+
+- **PD.1** The loudness-null rule's median σ_shape at τ = 0.2: ≥ 0.8: 30%; between 0.25 and 0.8 (steep
+  slope): 40%; ≤ 0.25: 30%.
+- **PD.2** Both dials under all criteria with the loudness-null rule in at least 2 of 3 seeds. 30%.
+- **PD.3** The median ω val normalized MSE is lower than Step C's 0.0392. 95% (expected near 0.025).
+- **PD.4** The rendering trigger fires in at least 2 seeds. 75%.
+- **PD.5** The v3 dose rule picks τ = 0.2. 30%.
+- **PD.6** The symmetry loudness direction is a loudness dial under all criteria in at least 2 of 3
+  seeds. 70%.
+- **PD.7** No direction (loudness, PC2, loudness-null) exceeds 1% artefact frames in any seed or dataset. 75%.
+- **PD.8** In every seed, at least one direction has more than 10% of ω² in the mean in at least 5% of
+  explore frames at some α. 60%.
+
+Compute: 3 runs ≈ 2.2 GPU-hours, readouts ≈ 0.5, calibration ≈ 0.02 (≈ 14.9 used before this step).

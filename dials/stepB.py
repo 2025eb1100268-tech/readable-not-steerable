@@ -183,6 +183,16 @@ def write(cfg, res, m2sw, wall):
                      f"{label(lo)}, {f2(lo['explore']['sigma_shape'])}, {lo['explore']['effect']:.2f}, "
                      f"{lo['explore']['artefact_fraction']:.1%} / {lo['matched']['artefact_fraction']:.1%} | {fmt(sh['PC2'])} | {fmt(sh['projected-out'])} | "
                      f"{fmt(sh['loudness-null'])} | {f2(r['cos2']['null_vs_PC2'])} | {f2(r['loudness_gradient']['median_cos_frame_vs_mean'])} |")
+    alist = "−2, −1.5, −1, −0.5, 0, 0.5, 1, 1.5, 2"
+    L += ["", f"## Spatial-mean offset diagnostic (entry 10; not a criterion): fraction of frames whose decoded ω has more than 10% "
+          f"of ω² in its spatial mean, per α ({alist})", "", "| τ | seed | direction | explore | matched |", "|---|---|---|---|---|"]
+    for tau, rs in res.items():
+        for r in rs:
+            for name, e in [("loudness", r["loudness"])] + [(k, r["shape"][k]) for k in RULES]:
+                if "mean_share_gt10_by_alpha" not in e.get("explore", {}):
+                    continue
+                L.append(f"| {float(tau):g} | {r['run'][-1]} | {name} | " + " | ".join(
+                    " ".join(f"{100 * v:.0f}%" for v in e[s]["mean_share_gt10_by_alpha"]) for s in SETS) + " |")
     L += ["", "## M2-SW reference (full whitening; analysis only; Step A's loudness direction)", "",
           "| seed | PC2 | projected-out | loudness-null | both dials: PC2 / projected-out / loudness-null | cos² null vs PC2 | loudness gradient cos |",
           "|---|---|---|---|---|---|---|"]

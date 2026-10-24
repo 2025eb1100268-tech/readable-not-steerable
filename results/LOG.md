@@ -2678,3 +2678,14 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - Under all criteria: symmetry loudness dial 3 of 3 (Δa 0.51–0.61 per α, σ_shape ≤ 0.04); loudness-null shape dial 3 of 3 (Δs 0.30–0.35 per α, σ_shape 0.85–1.00, monotone, cycle corr 0.94–0.99 / gain 0.63–0.94); both dials in the same seed 3 of 3 with the loudness-null rule, 1 of 3 with PC2 (primary; seed 2's PC2 is a loudness dial). Rendering: ω 0.0390–0.0394 (pixel-shuffle 0.0405–0.0418); the trigger still fires in every seed (> 0.02, > 2× the VICReg AE; k ≥ 10 power kept 0.46–0.51).
 - Diagnostic, not a criterion: a decoded vorticity spatial mean (k = 0, impossible for a periodic flow) appears in the tails of steered fields with both decoders and for loudness dials too: e.g. Step C loudness-null directions put > 10% of ⟨ω²⟩ in the mean in 5–15% of explore frames (pixel-shuffle loudness, seed 2: 10.5%). It is invisible to a, the cycle check, the envelope and the out-of-band criterion (all velocity-based or k ≥ 1), and enters only s and the watermark statistic through Z. With the mean removed from every decoded field the Step C classifications are unchanged in every seed (loudness-null Δs 0.30–0.36 per α), so the shape dial is not produced by it. Figure: results/build/stepC_dials.png (seed 2's shape direction, α = +2, explore frame 0, shows the offset).
 
+
+## 2026-10-25 01:38 — [BUILD] Step B: shape-noise calibration (before training)
+- config: `configs/build/stepD_calibration.yaml`
+- command: `python -m dials.shape_noise --config configs/build/stepD_calibration.yaml`
+- git: `f0f6c1f+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 42.8 s
+- outcome: ok
+  - sigma1 / sigma2: 5.1589 / 2.3639
+  - content shape R^2 by tau: 0.2: 0.611
+  - results: results/build/stepD_calibration.md

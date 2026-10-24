@@ -108,7 +108,7 @@ def steer(adapter, x_prev, x_t, d: np.ndarray, sigma: float, g, env) -> dict:
     d_t = torch.as_tensor(d, dtype=torch.float32, device=dev)
     per_head: dict = {}
     z_rec: dict = {}
-    cons, div, mean_share, oob = [], [], [], []
+    cons, div, mean_share, oob, mean_gt10 = [], [], [], [], []
     primary_field, w_at0 = {}, {}
     for alpha in ALPHAS:
         outs = adapter.decode(x_prev, x_t, float(alpha * sigma) * d_t)
@@ -130,7 +130,9 @@ def steer(adapter, x_prev, x_t, d: np.ndarray, sigma: float, g, env) -> dict:
             if kind == "velocity" and name == outs[0][0]:
                 div.append(float(fields.relative_divergence(f, g).median()))
             if kind == "vorticity" and name == outs[0][0]:  # reported (entry 4): enstrophy counts the spatial mean, energy does not
-                mean_share.append(float((f.double().mean(dim=(-2, -1)) ** 2 / f.double().pow(2).mean(dim=(-2, -1))).median()))
+                share = f.double().mean(dim=(-2, -1)) ** 2 / f.double().pow(2).mean(dim=(-2, -1))
+                mean_share.append(float(share.median()))
+                mean_gt10.append(float((share > 0.1).double().mean()))  # entry 10 diagnostic: frames with > 10% of omega^2 in the mean
             # cycle: each head's field, as velocity (inverse Laplacian), re-encoded
             z_rec.setdefault(name, []).append(adapter.reencode(fields.velocity_from_vorticity_hat(w, g)).double().cpu().numpy())
         if "vorticity" in w_hats and "streamfunction" in w_hats:
@@ -164,6 +166,7 @@ def steer(adapter, x_prev, x_t, d: np.ndarray, sigma: float, g, env) -> dict:
         out["rel_divergence_max"] = float(max(div))
     if mean_share:
         out["vorticity_mean_share_max"] = float(max(mean_share))
+        out["mean_share_gt10_by_alpha"] = mean_gt10
     if oob:
         worst = np.stack(oob).max(0)  # per frame, max over alpha
         out["oob_share_worst_per_frame"] = worst.tolist()
