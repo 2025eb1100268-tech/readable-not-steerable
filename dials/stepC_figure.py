@@ -3,10 +3,12 @@ direction and the loudness-null shape direction), decoded at alpha = -2..+2 on o
 matched-energy steering frame, with shell spectra. Directions and sigma_d from results/build/stepC.json.gz.
 Exploratory; no new measurement.
 
-    python -m dials.stepC_figure
+    python -m dials.stepC_figure                      # Step C (tau = 0.5)
+    python -m dials.stepC_figure --step D             # Step D (tau = 0.2)
 """
 from __future__ import annotations
 
+import argparse
 import gzip
 import json
 
@@ -31,8 +33,12 @@ ALPHAS = (-2.0, -1.0, 0.0, 1.0, 2.0)
 
 @torch.no_grad()
 def main():
-    cfg = load_config(str(REPO / "configs" / "build" / "stepC_eval.yaml"))
-    res = json.load(gzip.open(REPO / cfg["output_json_gz"], "rt", encoding="utf-8"))["results"]["0.5"]
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--step", default="C", choices=["C", "D"])
+    step = ap.parse_args().step
+    tau = {"C": "0.5", "D": "0.2"}[step]
+    cfg = load_config(str(REPO / "configs" / "build" / f"step{step}_eval.yaml"))
+    res = json.load(gzip.open(REPO / cfg["output_json_gz"], "rt", encoding="utf-8"))["results"][tau]
     ds = CombinedDataset(cfg["data_parts"], cfg["cache_tag"])
     g = SpectralGrid(64, "cuda")
     xs = {s: torch.from_numpy(ds.velocity[frames(ds, s, cfg["n_frames"], 4, cfg["seed"])[:1]]).cuda() / ds.input_scale
@@ -61,9 +67,9 @@ def main():
         m = e[s]
         row[-1].set_title(f"Δa {m['d_a']:+.2f}, Δs {m['d_s']:+.2f} per α (median), σ_shape {m['sigma_shape']:.2f}", fontsize=7)
         row[-1].legend(fontsize=6)
-    fig.suptitle("[BUILD] Step C: both dials of the resize-convolution models at τ = 0.5, vorticity field (exploratory)",
+    fig.suptitle(f"[BUILD] Step {step}: both dials of the resize-convolution models at τ = {tau}, vorticity field (exploratory)",
                  fontweight="bold", color=INK)
-    fig.savefig(REPO / "results" / "build" / "stepC_dials.png", dpi=95)
+    fig.savefig(REPO / "results" / "build" / f"step{step}_dials.png", dpi=95)
     plt.close(fig)
 
 

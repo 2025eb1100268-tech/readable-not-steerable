@@ -2689,3 +2689,65 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - sigma1 / sigma2: 5.1589 / 2.3639
   - content shape R^2 by tau: 0.2: 0.611
   - results: results/build/stepD_calibration.md
+
+## 2026-10-25 02:27 — [BUILD] tau = 0.2 training (Step D): b5_rc_t0p2_s0
+- config: `configs/build/stepD/b5_rc_t0p2_s0.yaml`
+- command: `python -m train.train --config configs/build/stepD/b5_rc_t0p2_s0.yaml`
+- git: `a7e4b32+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2869.7 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0223
+  - effective rank / latent std median: 109.5 / 1.058
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/stepD/runs/b5_rc_t0p2_s0.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.02226 / 0.00456
+
+## 2026-10-25 03:15 — [BUILD] tau = 0.2 training (Step D): b5_rc_t0p2_s1
+- config: `configs/build/stepD/b5_rc_t0p2_s1.yaml`
+- command: `python -m train.train --config configs/build/stepD/b5_rc_t0p2_s1.yaml`
+- git: `a7e4b32+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2891.3 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0216
+  - effective rank / latent std median: 109.8 / 1.053
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/stepD/runs/b5_rc_t0p2_s1.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.02157 / 0.00443
+
+## 2026-10-25 04:03 — [BUILD] tau = 0.2 training (Step D): b5_rc_t0p2_s2
+- config: `configs/build/stepD/b5_rc_t0p2_s2.yaml`
+- command: `python -m train.train --config configs/build/stepD/b5_rc_t0p2_s2.yaml`
+- git: `a7e4b32+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2846.7 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0230
+  - effective rank / latent std median: 109.5 / 1.060
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/stepD/runs/b5_rc_t0p2_s2.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.02296 / 0.00473
+
+## 2026-10-25 04:38 — [BUILD] Step B readouts (shape-noise dose)
+- config: `configs/build/stepD_eval.yaml`
+- command: `python -m dials.stepB --config configs/build/stepD_eval.yaml`
+- git: `a7e4b32+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2084.6 s
+- outcome: ok
+  - tau 0.2 (content shape R² 0.611): shape dial PC2 / proj / null: 2 / 0 / 3; loudness 3; both (PC2) 2
+  - results: results/build/stepD.md, results/build/stepD.png, results/build/stepD.json.gz
+## 2026-10-25 — [BUILD] Step D (τ = 0.2): notes on the readouts above (exploratory)
+- Under all criteria: symmetry loudness dial 3 of 3 (|Δa| 0.50–0.69 per α, σ_shape ≤ 0.05); loudness-null shape dial 3 of 3 (Δs 0.29–0.46 per α, σ_shape 0.82–0.99); PC2 shape dial 2 of 3 (seed 2: σ_shape 0.689 on explore). Both dials in the same seed: loudness-null rule 3 of 3, PC2 rule 2 of 3. Artefact frames 0.0% for every direction, seed and dataset. Figure: results/build/stepD_dials.png.
+- Rendering: ω val normalized MSE 0.0216–0.0230 (median 0.0223; τ = 0.5: 0.0392; τ = 0: 0.0154 with the pixel-shuffle decoder); k ≥ 10 power kept 0.55–0.56; the trigger fires in every seed through > 0.02 and > 2× the VICReg AE (0.0209).
+- Jump or slope (entry 10's reading): loudness-null median σ_shape 0.88 at content shape R² 0.61, so consistent with a jump between R² 0.97 and 0.61.
+- v3 dose rule (entry 10): both dials with the loudness-null rule in 3 of 3 seeds and ω MSE 0.0223 < 0.0392, so the rule picks τ = 0.2.
+- Spatial-mean diagnostic: at most 5.5% of explore frames with > 10% of ω² in the mean for the loudness, PC2 and loudness-null directions (10.2% for the projected-out direction, seed 0, α = −2); 0% on matched-energy everywhere.
+
