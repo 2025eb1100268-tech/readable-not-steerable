@@ -2764,3 +2764,37 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - inviscid trajectories: 300
   - input scale (copied from data/generated/v1): 0.9548
   - sha256 velocity.npy: fff143f3e5ac5128…
+
+## 2026-10-27 20:16 — [BUILD] v3 untrained control (untrained): b6_untrained_s300
+- config: `configs/build/v3/b6_untrained_s300.yaml`
+- command: `python -m dials.v3_untrained --config configs/build/v3/b6_untrained_s300.yaml`
+- git: `781b2ad+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 0.0 s
+- outcome: ok
+  - FiLM init: pytorch_default_linear (seed 2300)
+  - results: results/build/v3/runs/b6_untrained_s300.json
+
+## 2026-10-27 20:17 — [BUILD] v3 untrained control (untrained): b6_untrained_s301
+- config: `configs/build/v3/b6_untrained_s301.yaml`
+- command: `python -m dials.v3_untrained --config configs/build/v3/b6_untrained_s301.yaml`
+- git: `781b2ad+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 0.0 s
+- outcome: ok
+  - FiLM init: pytorch_default_linear (seed 2301)
+  - results: results/build/v3/runs/b6_untrained_s301.json
+
+## 2026-10-27 20:17 — [BUILD] v3 untrained control (untrained): b6_untrained_s302
+- config: `configs/build/v3/b6_untrained_s302.yaml`
+- command: `python -m dials.v3_untrained --config configs/build/v3/b6_untrained_s302.yaml`
+- git: `781b2ad+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 0.0 s
+- outcome: ok
+  - FiLM init: pytorch_default_linear (seed 2302)
+  - results: results/build/v3/runs/b6_untrained_s302.json
+## 2026-10-27 — [BUILD] v3: power outage during training (no evaluation had happened)
+- The machine lost power at about 20:40 (last driver-log write 20:39:20; reboot 20:42:12), during b6_main_s100 (started 20:17:11, about 23 min ≈ 0.4 GPU-hours in). train.py writes nothing until a run ends, so that run left no checkpoint, record or log entry. The three untrained controls (b6_untrained_s300–302) had been built and are intact. No v3 model had been evaluated; the sealed sets were not touched.
+- Resumed with the same driver (it skips finished runs): b6_main_s100 restarts from scratch with its committed config and seed (deterministic training), then the remaining runs, then the freeze.
+
