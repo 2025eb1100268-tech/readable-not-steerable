@@ -1,0 +1,93 @@
+# [BUILD] v3 Stage 5 confirmation (python -m dials.v3_confirm --config configs/build/v3_confirm.yaml). PREREGISTRATION_v3.md.
+# Criteria = PREDICTIONS entries 2 and 6 (copied from configs/build/stepD_eval.yaml); data_sha256 computed at generation time.
+seed: 0
+data_parts:
+- - data/generated/v1
+  - - train
+    - val
+- - data/generated/explore_v2
+  - - explore
+- - data/generated/confirm3
+  - - confirm3
+- - data/generated/matched_energy_confirm
+  - - matched_confirm
+cache_tag: v1tv_explore_confirm3_matchedconfirm
+score_sets:
+  confirm3: confirm3
+  matched-energy-confirm: matched_confirm
+n_frames: 256
+n_envelope: 4096
+n_frames_explore_excluded: 256
+n_opt_frames: 256
+opt_seed: 1
+opt_steps: 150
+opt_batch: 32
+opt_lr: 0.05
+n_random_inits: 4
+groups:
+  main:
+  - b6_main_s100
+  - b6_main_s101
+  - b6_main_s102
+  - b6_main_s103
+  - b6_main_s104
+  tau0:
+  - b6_tau0_s200
+  - b6_tau0_s201
+  - b6_tau0_s202
+  untrained:
+  - b6_untrained_s300
+  - b6_untrained_s301
+  - b6_untrained_s302
+runs_dirs:
+- results/build/v3/runs
+vicreg_ae_reference:
+- s2_ae_vorticity_vicreg_k0_lr0.001_s0
+- s2_ae_vorticity_vicreg_k0_lr0.001_s1
+- s2_ae_vorticity_vicreg_k0_lr0.001_s2
+criteria:
+  min_effect: 0.2
+  min_monotonicity: 0.9
+  min_cycle_corr: 0.9
+  cycle_gain:
+  - 0.5
+  - 2.0
+  max_shared_pattern: 0.5
+  envelope_rel_margin: 0.05
+  max_head_ratio: 1.5
+  max_sigma_loudness: 0.2
+  min_sigma_shape: 0.7
+  min_seeds: 2
+artefact:
+  artefact_oob_share: 0.01
+  artefact_max_frame_fraction: 0.01
+rules:
+  pass_min: 4
+  partial_min: 3
+  tau0_max_shape: 1
+  untrained_max_shape: 0
+outcome_text:
+  pass: 'SUPPORTED: in {n} of {of} fresh main-model seeds, a loudness dial and a shape dial found by the pre-registered label-free rules are both valid under every committed criterion on both sealed sets (confirm3 and matched-energy-confirm).'
+  partial: 'PARTIALLY SUPPORTED: both dials are valid in {n} of {of} fresh main-model seeds (the pass rule needs 4): the design produces both dials in most, but not reliably in all, training runs.'
+  fail: 'NOT SUPPORTED: both dials are valid in only {n} of {of} fresh main-model seeds: the exploration result does not replicate on fresh seeds and sealed data.'
+control_failure_text:
+  tau0: 'CONTROL FAILURE (tau = 0): the no-noise control also shows a shape dial in {n} of {of} seeds (rule: at most 1), so a shape dial in the main model cannot be attributed to the shape-noise content input.'
+  untrained: 'CONTROL FAILURE (untrained): the identification rules find a shape dial in {n} of {of} untrained networks (rule: none), so a shape dial found by these rules is not evidence of anything learned.'
+controls_ok_text: 'Both controls behave as pre-registered (tau = 0: shape dial in {n_tau0} of {of_tau0} seeds; untrained: {n_untr} of {of_untr}).'
+frozen_file: configs/build/v3_frozen.json
+data_sha256:
+  data/generated/confirm3:
+    velocity.npy: 2ae4993f6cbe86a4c005fb48c3e8c7d25aebe80e2b4e10ea143dc5286518435f
+    frames.npz: 62403f1373f41dd409d51435344edfcd8816762dbee5a8e259a47996097dc6fe
+    trajectories.json: 35b2081cea6059de786f226dc32f11948b0254172e7b309e526191cf02d5a5f1
+    manifest.json: 5051c655d4772852722fce49ee5f48cd6a2e855716b527ff01d73e30ad776376
+    ic_index.json: c0ce7515bda00025eb0fdf4fa108f20246b1ef37357d333567a6335282f3221d
+  data/generated/matched_energy_confirm:
+    velocity.npy: fff143f3e5ac5128515ee93c82f52ce2240be901d51e698bdf15acf71a82e0ee
+    frames.npz: e88b3533ab9e29b8f80795513439e46df0931c2ab414af908261a3f0844d3490
+    trajectories.json: ea91f2d55a6cbe435171db56e4e1708081a167e80a7fb074215b1ebcbf6837f9
+    manifest.json: b55458f0ada5b87e5cb123811397e1aa25af1f5e56a3a36335e4a15dfc92f13d
+    ic_index.json: c5f95a0854b83601ede26dd866bc574cfb27fb951b2022326e72834b4a6d288c
+output_md: results/build/v3/confirm.md
+output_json_gz: results/build/v3/confirm.json.gz
+figure: results/build/v3/confirm_dials.png

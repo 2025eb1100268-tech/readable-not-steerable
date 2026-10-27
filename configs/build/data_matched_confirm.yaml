@@ -1,0 +1,39 @@
+# [BUILD] matched-energy-confirm, SEALED (python -m data.generate --config configs/build/data_matched_confirm.yaml)
+# Same recipe as the exploration matched-energy set (configs/explore/data_matched_energy.yaml), new seed. Loadable only
+# after data.seal.unseal(prereg="PREREGISTRATION_v3.md"), which only the v3 Stage 5 script calls.
+# 300 inviscid spectral fields, all at the same initial energy E* = 0.289 (median E0 of v1's
+# spectral inviscid train/val runs); enstrophy varies through the spectral peak and slope.
+# Z0 is kept inside v1's range [2, 8]; slopes p in [3, 5] around the training value 4.
+seed: 20261027
+device: cuda
+cpu_threads: 8
+n: 64
+cfl: 0.3
+dt_out: 0.04
+n_traj: 300
+inviscid_fraction: 1.0
+frames_viscous: 64
+frames_inviscid: 24
+nu_range: [0.003, 0.05]
+batch: 250
+
+ic:
+  blob_fraction: 0.0
+  blob_count: [2, 12]
+  blob_radius: [0.25, 0.6]
+  spectral_k0: [2.0, 5.0]   # drawn, then replaced by the matched-energy planner
+  omega_rms: [2.0, 4.0]     # unused (fields are scaled to energy, not rms vorticity)
+  matched_energy:
+    e0: 0.2893
+    slope: [3.0, 5.0]
+    z0: [2.0, 8.0]
+
+split:
+  mode: single
+  label: matched_confirm
+
+input_scale_from: data/generated/v1
+sealed: true
+sealed_for: PREREGISTRATION_v3.md
+log_title: "[BUILD] data generation: matched-energy-confirm (sealed for PREREGISTRATION_v3.md; counts and checksums only)"
+out_dir: data/generated/matched_energy_confirm

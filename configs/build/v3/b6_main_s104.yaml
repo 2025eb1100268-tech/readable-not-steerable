@@ -1,0 +1,36 @@
+# [BUILD] v3, group main (PREREGISTRATION_v3.md); dials/v3_configs.py from configs/build/stepD/b5_rc_t0p2_s0.yaml
+# python -m train.train --config configs/build/v3/b6_main_s104.yaml
+data_dir: data/generated/v1
+weight_decay: 0.05
+batch: 256
+amp_bf16: true
+ema_start: 0.996
+predictor_width: 256
+log_every: 100
+collapse:
+  min_effective_rank: 8
+  min_std_median: 0.1
+horizons:
+- 0
+epochs: 30
+warmup_frac: 0.05
+eval_every_epochs: 5
+grad_clip: 1.0
+lr: 0.001
+diagnostics: true
+loss_weights:
+  head:
+    vorticity: 14.699
+    streamfunction: 0.0
+  var: 25.0
+  cov: 1.0
+results_dir: results/build/v3/runs
+log_title: '[BUILD] v3 training (main)'
+model: branch_ae
+content_dim: 120
+n_dial: 8
+content_input: shape_noise
+shape_noise_tau: 0.2
+seed: 104
+run_name: b6_main_s104
+decoder_upsample: resize

@@ -2751,3 +2751,16 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - v3 dose rule (entry 10): both dials with the loudness-null rule in 3 of 3 seeds and ω MSE 0.0223 < 0.0392, so the rule picks τ = 0.2.
 - Spatial-mean diagnostic: at most 5.5% of explore frames with > 10% of ω² in the mean for the loudness, PC2 and loudness-null directions (10.2% for the projected-out direction, seed 0, α = −2); 0% on matched-energy everywhere.
 
+
+## 2026-10-27 20:05 — [BUILD] data generation: matched-energy-confirm (sealed for PREREGISTRATION_v3.md; counts and checksums only)
+- config: `configs/build/data_matched_confirm.yaml`
+- command: `python -m data.generate --config configs/build/data_matched_confirm.yaml`
+- git: `70ec339+dirty`
+- device: cuda
+- wall-clock: 7.9 s
+- outcome: ok
+  - frames: 7200
+  - split counts (trajectories): {'matched_confirm': 300}
+  - inviscid trajectories: 300
+  - input scale (copied from data/generated/v1): 0.9548
+  - sha256 velocity.npy: fff143f3e5ac5128…

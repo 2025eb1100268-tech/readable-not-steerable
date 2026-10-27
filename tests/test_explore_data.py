@@ -18,6 +18,7 @@ from solver.ns2d import SpectralGrid
 GEN = Path(__file__).resolve().parents[1] / "data" / "generated"
 V1, EXPLORE, CONFIRM, MATCHED = (GEN / d for d in ("v1", "explore_v2", "confirm_v2", "matched_energy_v2"))
 CONFIRM3 = GEN / "confirm3"  # [BUILD]
+MATCHED_CONFIRM = GEN / "matched_energy_confirm"  # [BUILD] v3
 need = lambda *ds: pytest.mark.skipif(not all((d / "manifest.json").exists() for d in ds), reason="dataset not generated")  # noqa: E731
 
 
@@ -79,6 +80,8 @@ def test_new_datasets_share_no_seeds_or_initial_fields():
     new_sets = [("explore", EXPLORE), ("confirm", CONFIRM), ("matched", MATCHED)]
     if (CONFIRM3 / "ic_index.json").exists():  # [BUILD] confirm3, disjoint from everything before it
         new_sets.append(("confirm3", CONFIRM3))
+    if (MATCHED_CONFIRM / "ic_index.json").exists():  # [BUILD] v3's matched-energy-confirm, likewise
+        new_sets.append(("matched-energy-confirm", MATCHED_CONFIRM))
     for name, d in new_sets:
         idx = _json(d / "ic_index.json")  # seeds and hashes only; the sealed sets are not loaded
         sets[name] = ({e["ic_seed"] for e in idx}, {e["ic_sha256"] for e in idx})
@@ -156,3 +159,19 @@ def test_confirmation_set_is_sealed():
     if not (GEN.parents[1] / "PREREGISTRATION_v2.md").exists():
         with pytest.raises(seal.SealedDatasetError):
             seal.unseal("test: must be refused before the v2 pre-registration exists")
+
+
+@need(CONFIRM, CONFIRM3, MATCHED_CONFIRM)
+def test_matched_energy_confirm_is_sealed_for_v3_only(monkeypatch):
+    """[BUILD] matched-energy-confirm: sealed for PREREGISTRATION_v3.md (manifests only; nothing is loaded)."""
+    from data import seal
+
+    m = _json(MATCHED_CONFIRM / "manifest.json")
+    assert m["sealed"] and m["sealed_for"] == "PREREGISTRATION_v3.md"
+    assert m["split_counts"] == {"matched_confirm": 300} and m["n_inviscid"] == 300
+    for unsealed in (set(), {"PREREGISTRATION_v2.md"}):
+        monkeypatch.setattr(seal, "_UNSEALED", unsealed)
+        with pytest.raises(seal.SealedDatasetError):
+            seal.check(MATCHED_CONFIRM, m)
+    monkeypatch.setattr(seal, "_UNSEALED", {"PREREGISTRATION_v3.md"})
+    seal.check(MATCHED_CONFIRM, m)
