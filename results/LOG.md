@@ -2802,3 +2802,7 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - b6_main_s100, restarted at 20:43:49, lost power again before its first 5-epoch evaluation (about 7 min in; the driver log has no epoch line; reboot 21:57:28), so at most ≈ 0.1 GPU-hours. Nothing was written; the untrained controls and every committed file are intact; the sealed sets were not touched.
 - Resumed again with the same driver at about 22:00.
 
+## 2026-10-27 22:14 — [BUILD] v3: training paused by the investigator (expected power cut)
+- b6_main_s100 (restarted 22:00:38, through epoch 5 of 30) was stopped on purpose, with the driver; about 14 min ≈ 0.2 GPU-hours discarded. train.py writes nothing until a run ends, so no partial checkpoint or record exists. Done so far: the three untrained controls. No v3 model has been evaluated; the sealed sets are untouched.
+- To resume: rerun the same driver; it skips finished work and restarts b6_main_s100 from scratch (deterministic). v3 compute lost to interruptions so far ≈ 0.7 GPU-hours.
+
