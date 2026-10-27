@@ -2798,3 +2798,7 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - The machine lost power at about 20:40 (last driver-log write 20:39:20; reboot 20:42:12), during b6_main_s100 (started 20:17:11, about 23 min ≈ 0.4 GPU-hours in). train.py writes nothing until a run ends, so that run left no checkpoint, record or log entry. The three untrained controls (b6_untrained_s300–302) had been built and are intact. No v3 model had been evaluated; the sealed sets were not touched.
 - Resumed with the same driver (it skips finished runs): b6_main_s100 restarts from scratch with its committed config and seed (deterministic training), then the remaining runs, then the freeze.
 
+## 2026-10-27 — [BUILD] v3: second power outage during training (no evaluation had happened)
+- b6_main_s100, restarted at 20:43:49, lost power again before its first 5-epoch evaluation (about 7 min in; the driver log has no epoch line; reboot 21:57:28), so at most ≈ 0.1 GPU-hours. Nothing was written; the untrained controls and every committed file are intact; the sealed sets were not touched.
+- Resumed again with the same driver at about 22:00.
+
