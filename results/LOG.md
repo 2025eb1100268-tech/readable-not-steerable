@@ -2926,3 +2926,20 @@ pre-registration; none of their numbers is a result of this project. Main findin
   - results: results/build/v3/runs/b6_main_s104.json
   - diagnostics: 
   - val normalized MSE vorticity / streamfunction head: 0.02314 / 0.00451
+
+## 2026-10-29 16:52 — UNSEAL datasets sealed for PREREGISTRATION_v3.md
+- config: `-`
+- command: `python -m dials.v3_confirm --config configs/build/v3_confirm.yaml`
+- git: `fc3b703`
+- outcome: unsealed
+  - reason: v3 Stage 5 confirmation run
+
+## 2026-10-29 18:48 — [BUILD] v3 Stage 5 confirmation run (single use of confirm3 and matched-energy-confirm)
+- config: `configs/build/v3_confirm.yaml`
+- command: `python -m dials.v3_confirm --config configs/build/v3_confirm.yaml`
+- git: `fc3b703+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 6968.6 s
+- outcome: ok
+  - verdict: PARTIALLY SUPPORTED: both dials are valid in 3 of 5 fresh main-model seeds (the pass rule needs 4): the design produces both dials in most, but not reliably in all, training runs. Both controls behave as pre-registered (tau = 0: shape dial in 0 of 3 seeds; untrained: 0 of 3).
+  - results: results/build/v3/confirm.md, results/build/v3/confirm.json.gz
