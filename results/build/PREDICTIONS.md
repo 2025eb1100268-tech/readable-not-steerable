@@ -574,3 +574,74 @@ for this phase (τ = 0.2 and the build report; investigator).
   explore frames at some α. 60%.
 
 Compute: 3 runs ≈ 2.2 GPU-hours, readouts ≈ 0.5, calibration ≈ 0.02 (≈ 14.9 used before this step).
+
+## Entry 11 — 2026-10-29 — Exploratory autopsy of the v3 Stage 5 run (no training; sealed sets not reopened)
+
+Written after Stage 5 (verdict *partially supported*, 3 of 5; `258d6af`) and before any autopsy number
+exists. Everything here is **exploratory and post hoc**; nothing changes REPORT_v3's verdict. Requested
+by the investigator.
+
+### Fixed definitions
+
+- **Data.** Exploration only. Directions, g, σ_d and every sealed-set score are read from
+  `results/build/v3/confirm.json.gz`; `confirm3` and `matched-energy-confirm` are not loaded. New
+  measurements use v1 train (PCA, σ_d, envelope), the build's 256 explore optimization frames (seed 1),
+  and the build's exploration scoring sets: 256 `explore` steering frames and 256 exploration
+  matched-energy frames (`matched_energy_v2`), seed 0. Scoring as in v3: the decoded spatial mean is
+  removed before every measurement, and the criteria are entry 2 plus the 1% artefact criterion.
+- **A1 (why loudness-null picked a weak direction in seed 102).** Per main seed, in the z-scored dial
+  space of the rule:
+  - g = the frame-mean gradient of a (recomputed, checked against the stored one); v = PC2 mapped to
+    z-space; h = the same finite-difference gradient of s.
+  - Reported: cos²(g, v), cos²(g, h), and the fraction of PC2's shape effect removed by projecting v
+    onto g⊥. That fraction is computed linearly, (h·ĝ)(ĝ·v)/(h·v), and steered, 1 − median Δs(Pδ) /
+    median Δs(δ) for δ = ±σ_PC2 along PC2 on the optimization frames.
+  - Also reported: the variance of the projected z-data along the chosen direction and along Pv.
+  - Investigator's hypothesis: in 102, shape is partly encoded along g, so projecting out g deletes it.
+- **A2 (is the union lenient).** From the stored control outputs: PC2 shape dials and
+  "loudness-null OR PC2" shape dials in the τ = 0 and untrained seeds, on both sealed sets.
+- **A3 (transformation-matched shape rule, new, post hoc).**
+  - Family: for decoded vorticity y₀ (unsteered) and y_α (steered), T_t(y₀) multiplies every Fourier
+    mode in shells k = 1..21 (round |k|) by c·exp(t₁φ₁(k) + t₂φ₂(k)). Here φ₁ and φ₂ are the content
+    noise's tilt and curvature basis, and c > 0 keeps the energy of shells 1..21 unchanged. The mean
+    and shells > 21 are left unchanged.
+  - This is the content distortion's family (log-k tilt and curvature gains at fixed energy), written
+    on vorticity.
+  - Fit: per frame and α, t is chosen to minimize ‖y_α − T_t(y₀)‖² by a three-level grid search
+    (t ∈ [−8, 8]², steps 0.25, 0.025, 0.0025). t is then held fixed for the gradient.
+  - Objective: J_T(d) = Σ‖y_α − T_t(y₀)‖² / Σ‖y_α − y₀‖², the fraction of the steered change that a
+    fixed-energy tilt and curvature reshaping does not explain.
+  - Search, the same as the symmetry rule's: α ∈ {±0.5, …, ±2}; σ_d = √(dᵀCd); raw decoder output;
+    Adam (lr 0.05, 150 steps, batches of 32) on the 256 optimization frames; restarts from PC1–8 and 4
+    random directions (seed 0); the lowest J_T over all optimization frames is kept.
+  - Scored with the v3 harness and criteria on both exploration scoring sets for all 11 v3 models. For
+    the main seeds, the stored loudness, loudness-null and PC2 directions are scored on the same frames.
+  - "Finds a shape dial" means a shape dial under every criterion on both exploration sets. "Both
+    dials" additionally needs the stored loudness direction to be a loudness dial there.
+  - J_T is also reported for PC1–8 and for the stored directions.
+- **A4 (seed 103 without mean removal).** Rerunning it on `confirm3` would need the sealed set, so it is
+  not done there. Instead, seed 103's loudness and loudness-null directions are scored on the
+  exploration sets with the zero-mean step off and on, and the pre-removal mean fractions are reported.
+
+### Predictions
+
+- **PA.1** The investigator's hypothesis holds in seed 102: the linear removed fraction is ≥ 0.5 in 102
+  and < 0.2 in each of the other four seeds. **20%.** My reason for doubting it: PC2 barely changes a in
+  102 (Δa −0.016 per α on confirm3), so it cannot lie much along g.
+- **PA.2** In 102 the projection keeps most of PC2's shape effect (linear removed fraction < 0.2), but Pv
+  is not the top principal direction of the z-scored projected data: z-scoring lets a low-raw-variance
+  combination win. **65%.**
+- **PA.3** (A2) No prediction: confirm.md already shows no PC2 shape dial in any control, so the union
+  finds none either.
+- **PA.4** The transformation-matched rule finds a shape dial in seed 102: **60%**; in seed 104: **55%**.
+- **PA.5** It finds a shape dial, with the stored loudness dial valid, in ≥ 4 of 5 main seeds on the
+  exploration sets: **50%**.
+- **PA.6** It finds no shape dial in any τ = 0 or untrained seed: **85%**.
+- **PA.7** On the exploration sets, the stored loudness-null direction fails again in 102: **90%**. It
+  passes in 104 (its sealed-set failure was narrow and on one set): **55%**.
+- **PA.8** Seed 103's classification on the exploration sets is the same with and without mean removal:
+  **65%.**
+
+Compute (estimate): 11 searches plus about 56 steered scorings on 256 frames, about 2 GPU-hours. There is
+no training. The v3 budget (≈ 8.8 of 10 used) does not cover this exploratory analysis; it is reported
+separately.
