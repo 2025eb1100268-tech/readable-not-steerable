@@ -2943,3 +2943,14 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - outcome: ok
   - verdict: PARTIALLY SUPPORTED: both dials are valid in 3 of 5 fresh main-model seeds (the pass rule needs 4): the design produces both dials in most, but not reliably in all, training runs. Both controls behave as pre-registered (tau = 0: shape dial in 0 of 3 seeds; untrained: 0 of 3).
   - results: results/build/v3/confirm.md, results/build/v3/confirm.json.gz
+
+## 2026-10-29 21:38 — [BUILD] Autopsy of v3 Stage 5 (exploratory; no training; sealed sets not opened)
+- config: `configs/build/autopsy.yaml`
+- command: `python -m dials.autopsy --config configs/build/autopsy.yaml`
+- git: `195a4c3+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 8167.4 s
+- outcome: ok
+  - TM shape dials (main / tau0 / untrained): 0 / 0 / 0
+  - both dials with TM (exploration sets): 0 of 5
+  - results: results/build/autopsy/autopsy.md, results/build/autopsy/autopsy.json.gz, results/build/autopsy/autopsy_tm.png
