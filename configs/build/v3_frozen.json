@@ -1,0 +1,60 @@
+{
+ "note": "[BUILD] v3 checkpoints, frozen after training and committed before the confirmation run",
+ "runs": {
+  "b6_main_s100": {
+   "group": "main",
+   "sha256": "69d99574ec7748c460ae3ece4f4c5e938ed7c1a2b737963c6d0bf37c01635659",
+   "val_omega_normalized_mse": 0.022694854646408035
+  },
+  "b6_main_s101": {
+   "group": "main",
+   "sha256": "646f70864c77fcefd132f2b2eabe41ff41ffdfdce10962189b49bcb8015301b8",
+   "val_omega_normalized_mse": 0.02122903870257097
+  },
+  "b6_main_s102": {
+   "group": "main",
+   "sha256": "05dd55ee2ce061d8f0067fb6531e593de4d84ae5c9221d12941550f623653dca",
+   "val_omega_normalized_mse": 0.022418618191393416
+  },
+  "b6_main_s103": {
+   "group": "main",
+   "sha256": "dda90e05d7dabb480d2f9cb5857f71a159107c47fb84a5a6a00a386d2c9145a0",
+   "val_omega_normalized_mse": 0.02216864616078888
+  },
+  "b6_main_s104": {
+   "group": "main",
+   "sha256": "5476785553d2e94ccc9a89073938dd171405e7d794d20cdbfec9ca339da5dd33",
+   "val_omega_normalized_mse": 0.023139336708855218
+  },
+  "b6_tau0_s200": {
+   "group": "tau0",
+   "sha256": "9f9ba703e4856e01cde822d4c036c81374ee17a67835cf8ff65be37c49df7c1b",
+   "val_omega_normalized_mse": 0.015883877223422077
+  },
+  "b6_tau0_s201": {
+   "group": "tau0",
+   "sha256": "41ab0ca1504994603559fe3d089732f17b1567e2ea0940cbb8ba184284e68ac7",
+   "val_omega_normalized_mse": 0.014334485484456913
+  },
+  "b6_tau0_s202": {
+   "group": "tau0",
+   "sha256": "627e81cfaba7e7b2b5f6b8713917a1fbc054eb38bc2ffb2d5e6369ad5f59b2ff",
+   "val_omega_normalized_mse": 0.015589488377742723
+  },
+  "b6_untrained_s300": {
+   "group": "untrained",
+   "sha256": "d7beae1566b01e0b7b80bcd82ee77c8fcf62d2d6f65ee63c814e168698416337",
+   "val_omega_normalized_mse": null
+  },
+  "b6_untrained_s301": {
+   "group": "untrained",
+   "sha256": "b99b0558d4547a7f8939952048a6def5e09104f6478d893146bbbbde98e42edb",
+   "val_omega_normalized_mse": null
+  },
+  "b6_untrained_s302": {
+   "group": "untrained",
+   "sha256": "00e1bd3c9c167e14f5088a7220c96ad8a8864e39b15d2fbb608f571f160d2914",
+   "val_omega_normalized_mse": null
+  }
+ }
+}

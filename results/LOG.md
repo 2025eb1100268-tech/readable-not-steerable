@@ -2806,3 +2806,123 @@ pre-registration; none of their numbers is a result of this project. Main findin
 - b6_main_s100 (restarted 22:00:38, through epoch 5 of 30) was stopped on purpose, with the driver; about 14 min ≈ 0.2 GPU-hours discarded. train.py writes nothing until a run ends, so no partial checkpoint or record exists. Done so far: the three untrained controls. No v3 model has been evaluated; the sealed sets are untouched.
 - To resume: rerun the same driver; it skips finished work and restarts b6_main_s100 from scratch (deterministic). v3 compute lost to interruptions so far ≈ 0.7 GPU-hours.
 
+
+## 2026-10-29 01:42 — [BUILD] v3 training (main): b6_main_s100
+- config: `configs/build/v3/b6_main_s100.yaml`
+- command: `python -m train.train --config configs/build/v3/b6_main_s100.yaml`
+- git: `0433882+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2791.3 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0227
+  - effective rank / latent std median: 109.8 / 1.054
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/v3/runs/b6_main_s100.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.02269 / 0.00465
+
+## 2026-10-29 02:27 — [BUILD] v3 training (tau0): b6_tau0_s200
+- config: `configs/build/v3/b6_tau0_s200.yaml`
+- command: `python -m train.train --config configs/build/v3/b6_tau0_s200.yaml`
+- git: `0433882+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2697.1 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0159
+  - effective rank / latent std median: 100.5 / 1.044
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/v3/runs/b6_tau0_s200.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01588 / 0.00081
+
+## 2026-10-29 03:12 — [BUILD] v3 training (main): b6_main_s101
+- config: `configs/build/v3/b6_main_s101.yaml`
+- command: `python -m train.train --config configs/build/v3/b6_main_s101.yaml`
+- git: `0433882+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2676.4 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0212
+  - effective rank / latent std median: 109.5 / 1.057
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/v3/runs/b6_main_s101.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.02123 / 0.00456
+
+## 2026-10-29 03:56 — [BUILD] v3 training (tau0): b6_tau0_s201
+- config: `configs/build/v3/b6_tau0_s201.yaml`
+- command: `python -m train.train --config configs/build/v3/b6_tau0_s201.yaml`
+- git: `0433882+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2665.1 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0143
+  - effective rank / latent std median: 105.7 / 1.043
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/v3/runs/b6_tau0_s201.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01433 / 0.00074
+
+## 2026-10-29 04:42 — [BUILD] v3 training (main): b6_main_s102
+- config: `configs/build/v3/b6_main_s102.yaml`
+- command: `python -m train.train --config configs/build/v3/b6_main_s102.yaml`
+- git: `0433882+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2742.0 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0224
+  - effective rank / latent std median: 109.9 / 1.056
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/v3/runs/b6_main_s102.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.02242 / 0.00458
+
+## 2026-10-29 05:30 — [BUILD] v3 training (tau0): b6_tau0_s202
+- config: `configs/build/v3/b6_tau0_s202.yaml`
+- command: `python -m train.train --config configs/build/v3/b6_tau0_s202.yaml`
+- git: `0433882+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2870.0 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0156
+  - effective rank / latent std median: 106.2 / 1.056
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/v3/runs/b6_tau0_s202.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.01559 / 0.00086
+
+## 2026-10-29 06:19 — [BUILD] v3 training (main): b6_main_s103
+- config: `configs/build/v3/b6_main_s103.yaml`
+- command: `python -m train.train --config configs/build/v3/b6_main_s103.yaml`
+- git: `0433882+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2918.8 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0222
+  - effective rank / latent std median: 109.7 / 1.053
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/v3/runs/b6_main_s103.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.02217 / 0.00432
+
+## 2026-10-29 07:08 — [BUILD] v3 training (main): b6_main_s104
+- config: `configs/build/v3/b6_main_s104.yaml`
+- command: `python -m train.train --config configs/build/v3/b6_main_s104.yaml`
+- git: `0433882+dirty`
+- device: NVIDIA GeForce RTX 3060
+- wall-clock: 2941.3 s
+- outcome: ok
+  - final val normalized reconstruction MSE (vorticity head): 0.0231
+  - effective rank / latent std median: 109.7 / 1.056
+  - steps: 7920
+  - peak GPU memory GB: 5.10
+  - results: results/build/v3/runs/b6_main_s104.json
+  - diagnostics: 
+  - val normalized MSE vorticity / streamfunction head: 0.02314 / 0.00451
