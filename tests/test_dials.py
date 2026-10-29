@@ -259,3 +259,28 @@ def test_conversions_on_an_analytic_flow():
     assert float(fields.stats(w_from_vel, G)["s"][0]) == pytest.approx(math.log(2.0), abs=1e-12)
     assert float(fields.relative_divergence(vel, G)[0]) < 1e-12
     assert float(fields.head_consistency(w_from_vel, fields.vorticity_hat(psi[None, None], "streamfunction", G), G)[0]) < 1e-12
+
+
+def test_autopsy_shape_family():
+    """[BUILD] entry 11: a field reshaped by the family is fully explained (t recovered); a pure rescaling is not."""
+    from dials.autopsy import ShapeFamily
+    from dials.shape_noise import basis
+    rng = np.random.default_rng(1)
+    y0 = torch.stack([torch.fft.irfft2(spectral_field(G, rng, 4.0), s=(64, 64)) for _ in range(3)])[:, None]
+    fam = ShapeFamily(G, [[0.25, 32], [0.025, 10], [0.0025, 10]])
+    t_true = torch.tensor([0.4, -0.3], dtype=torch.float64)
+    shell = torch.round(G.kmag).long()
+    gain = torch.ones(int(shell.max()) + 1, dtype=torch.float64)
+    gain[1:22] = torch.exp(t_true @ torch.as_tensor(np.stack(basis())))
+    x0 = torch.fft.rfft2(y0[:, 0].double())
+    band = (shell >= 1) & (shell <= 21)
+    e = lambda x: ((x.abs() ** 2) * G.inv_k2 * G.parseval_w * band).sum((-2, -1))  # noqa: E731
+    xg = x0 * torch.where(band, gain[shell], torch.ones_like(gain[shell]))
+    c = torch.sqrt(e(x0) / e(xg))[:, None, None]
+    ya = torch.fft.irfft2(torch.where(band, c * xg, x0), s=(64, 64))[:, None]
+    num, den = fam.terms(y0, ya)
+    assert float(num / den) < 1e-4
+    A, B, C, E, _, _ = fam.sums(y0, ya)
+    assert torch.allclose(fam.fit(A, B, C, E), t_true.expand(3, 2), atol=3e-3)
+    num, den = fam.terms(y0, 1.5 * y0)
+    assert float(num / den) > 0.3

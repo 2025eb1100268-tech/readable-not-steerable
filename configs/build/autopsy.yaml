@@ -1,0 +1,64 @@
+# [BUILD] Exploratory autopsy of the v3 Stage 5 run (python -m dials.autopsy --config configs/build/autopsy.yaml). PREDICTIONS entry 11.
+# Exploration data only: the sealed sets are not opened; directions, g and sealed-set scores come from stage5_json (258d6af).
+# Criteria and artefact copied from configs/build/v3_confirm.yaml.
+seed: 0
+data_parts:
+- - data/generated/v1
+  - - train
+    - val
+- - data/generated/explore_v2
+  - - explore
+- - data/generated/matched_energy_v2
+  - - matched
+cache_tag: v1tv_explore_matched
+score_sets:
+  explore: explore
+  matched-energy (exploration): matched
+stage5_json: results/build/v3/confirm.json.gz
+n_frames: 256
+n_envelope: 4096
+n_opt_frames: 256
+opt_seed: 1
+opt_steps: 150
+opt_batch: 32
+opt_lr: 0.05
+n_random_inits: 4
+fit_grid:
+- [0.25, 32]
+- [0.025, 10]
+- [0.0025, 10]
+a4_run: b6_main_s103
+groups:
+  main:
+  - b6_main_s100
+  - b6_main_s101
+  - b6_main_s102
+  - b6_main_s103
+  - b6_main_s104
+  tau0:
+  - b6_tau0_s200
+  - b6_tau0_s201
+  - b6_tau0_s202
+  untrained:
+  - b6_untrained_s300
+  - b6_untrained_s301
+  - b6_untrained_s302
+criteria:
+  min_effect: 0.2
+  min_monotonicity: 0.9
+  min_cycle_corr: 0.9
+  cycle_gain:
+  - 0.5
+  - 2.0
+  max_shared_pattern: 0.5
+  envelope_rel_margin: 0.05
+  max_head_ratio: 1.5
+  max_sigma_loudness: 0.2
+  min_sigma_shape: 0.7
+  min_seeds: 2
+artefact:
+  artefact_oob_share: 0.01
+  artefact_max_frame_fraction: 0.01
+output_md: results/build/autopsy/autopsy.md
+output_json_gz: results/build/autopsy/autopsy.json.gz
+figure: results/build/autopsy/autopsy_tm.png
