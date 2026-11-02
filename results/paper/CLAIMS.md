@@ -43,7 +43,7 @@ them. These are claim statements for the paper to draw on, not paper prose.
 | 1.1 | The pre-registered hypothesis is **not supported**. S1 fails (the mandatory Okubo–Weiss target does not count), S2 fails (no gain in decoding ν), and S3 fails (enstrophy is less prominent in the JEPA's slow directions than in the untrained control's). | C primary | Test-ID, raw pooled latent, 3 seeds; CIs resample trajectories, not seeds. |
 | 1.2 | Of the JEPA's three counted S1 gains, the vortex-count gain is attributed to shift tolerance by the pre-registered rule, leaving two (enstrophy, palinstrophy). | C primary (§2.6 rule) | — |
 | 1.3 | A JEPA trained on non-physical linear dynamics reads enstrophy, palinstrophy and vortex count significantly better than the JEPA trained on Navier–Stokes. A static VICReg model with no time beats it on all four structure targets. | C descriptive | Pre-registered controls, no pass/fail. The non-physical task is easier per frame, and static VICReg sees augmentations the JEPA does not (`REPORT.md` §6.8). |
-| 1.4 | Predicting the spatial map is better than predicting the pooled vector on every measure. | C descriptive | — |
+| 1.4 | Predicting the spatial map is better than predicting the pooled vector on every S1 target and on ν (significantly on 4 of 5 S1 targets); the S3 point estimate favours the pooled JEPA (−0.076 [−0.11, +0.09]). | C descriptive | Corrected 2026-11-03 (see Corrections). Do not write "on every measure". |
 | 1.5 | The JEPA and the pixel predictor keep different information: the JEPA keeps vortex count and Okubo–Weiss; the pixel model keeps ν and an enstrophy-tracking slow direction. | C descriptive | Pre-registered comparison, no pass/fail. |
 | 1.6 | No model breaks down out of distribution (an interior Re band): OOD / neighbour MSE ratios are 0.71–1.46. | C descriptive | — |
 | 1.7 | The verdict does not hinge on the rule version: S1 fails under every version except dropping the Okubo–Weiss clause, which would also pass the non-physical and static controls. | PH | The rule variants are a robustness reading done after the test run. |
@@ -56,7 +56,7 @@ them. These are claim statements for the paper to draw on, not paper prose.
 | E.1 | Probing the spatial maps did not reveal enstrophy prominence that pooling hid (JEPA: pooled 0.353, map mean ⊕ std 0.303). | E | The PCA-512 map readout is not a superset of the pooled latent (diagnostic). |
 | E.2 | The pixel predictor's enstrophy prominence survives on fresh data and at matched energy (kill gate passed). | E | — |
 | E.3 | Prominence does not grow with prediction horizon. A plain autoencoder that renders the present reaches the imaginer's level. | E | Horizon is confounded with training length; k = 16 rests on one seed. |
-| E.4 | Adding VICReg to autoencoders drops enstrophy prominence to control level while raising linear decodability. | E | Confirmed in part by v2 (2.2, 2.4). |
+| E.4 | Adding VICReg to autoencoders drops enstrophy prominence to control level while raising the autoencoders' linear decodability. | E | Confirmed in part by v2 (2.2, 2.4). Applies to autoencoders only; scope made explicit 2026-11-03 (see Corrections). |
 | E.5 | Shifting the latent along the enstrophy direction barely changes the rendered field ("prominent is not the same as used"). | E (imagination probe); PH (contrast probe) | P6.1 failed in all 3 seeds. |
 
 ## v2: rendering and regularization (NUMBERS §3)
@@ -66,7 +66,7 @@ them. These are claim statements for the paper to draw on, not paper prose.
 | 2.1 | **H1 holds.** On sealed data with fresh training seeds, plain autoencoders rendering velocity or vorticity make enstrophy prominent in their slowest unsupervised directions: E1 0.86 and 0.80 against 0.38 for the untrained control. | C primary | "Prominent in a latent", not "discovered conservation". The result is about prominence under this method (z-score → PCA 32 → Ledoit–Wolf within/between). |
 | 2.2 | **H2 fails.** VICReg lowered E1 for both render targets, but the pre-registered drop of ≥ 0.20 held for velocity (+0.338) and not for vorticity (+0.149). | C primary | Do not state "VICReg removes prominence" for both targets. VICReg also costs about 25× in rendering, so the drop cannot be separated from worse rendering. |
 | 2.3 | **Verdict: partially supported.** | C primary | — |
-| 2.4 | VICReg lowered E1 in every comparison on the confirm set (5 of 5 drops positive with CIs above 0), while raising linear decodability: prominence and decodability dissociate. | C descriptive | The size depends on the render target and the seeds. |
+| 2.4 | VICReg lowered E1 in all six plain/VICReg pairs on the confirm set (the five with computed CIs all above 0), while raising the autoencoders' linear decodability (log Z and log P R²): prominence and decodability dissociate. The imaginer with VICReg did not decode better (log Z R² 0.937 vs 0.941; log P R² 0.782 vs 0.830). | C descriptive | The size depends on the render target and the seeds. Corrected 2026-11-03 (see Corrections). |
 | 2.5 | **H4 holds** (secondary): the pixel predictor with VICReg drops from 0.815 to 0.500 (+0.315), about two-thirds of the imaginer-vs-summarizer gap (0.483). **H3 holds** (secondary): the vorticity AE's E4 is 1.00 vs 3.13 for streamfunction. | C secondary | Not part of the verdict. H4 carries the same rendering confound (about 20×). |
 | 2.6 | The imaginer-vs-summarizer gap at k = 4 replicates on sealed data (+0.483 [+0.42, +0.52]). | C descriptive | Uses the frozen Stage 2 seeds, not fresh ones. |
 | 2.7 | Study 1's JEPA result is *consistent with* its VICReg regularizer; predicting dynamics was never required for the effect. | C secondary (rests on H4) + interpretation | "Consistent with", not "caused by". A JEPA without VICReg collapses, so the summarizer could not be tested unregularized. |
@@ -123,3 +123,39 @@ them. These are claim statements for the paper to draw on, not paper prose.
 | Seed 102 failed because of z-scoring | Inferred, not tested | 7.2 |
 | Seed 103 passes `confirm3` without mean removal | Never computed on `confirm3` | 3.7, 7.4 |
 | Any result generalizes beyond 2D decaying flow, this simulator and initial-condition distribution, or this small CNN family | Every report's scope statement | `REPORT.md` §6.10, §7; `REPORT_v2.md`; `REPORT_v3.md` |
+
+---
+
+## Corrections
+
+All three were found by `results/paper/AUDIT_v1.md`. The committed reports they came from are left
+unchanged.
+
+**2026-11-03, claim 1.4.**
+- **What changed:** "on every measure" now reads "on every S1 target and on ν (significantly on 4 of
+  5 S1 targets); the S3 point estimate favours the pooled JEPA (−0.076 [−0.11, +0.09])".
+- **Why:** `REPORT.md` @ `31eba06` §2 table, JEPA − pooled JEPA:
+  - S3 enstrophy \|r\| −0.076, CI spans zero;
+  - log dissipation +0.028 [−0.006, +0.061], also spans zero.
+  The old wording repeated `REPORT.md` §2's "worse everywhere".
+- **Found by:** audit row S1-26.
+
+**2026-11-03, claim 2.4.**
+- **What changed:**
+  - "while raising linear decodability" now reads "while raising the autoencoders' linear
+    decodability", with the imaginer exception stated.
+  - "every comparison … (5 of 5 …)" now reads "all six plain/VICReg pairs (the five with computed CIs
+    all above 0)".
+- **Why:** `results/explore/stage3/confirm.md` @ `a88ddee`.
+  - The imaginer + VICReg has log Z / log P R² 0.937 / 0.782, against 0.941 / 0.830 for the plain
+    imaginer. `REPORT_v2.md` says "every VICReg model", which is wrong for the imaginer.
+  - The sixth pair (streamfunction autoencoder, Stage 2 seeds: E1 0.558 → 0.390) also drops but has
+    no computed interval.
+- **Found by:** audit rows A-7, S2-22 and S2-23.
+
+**2026-11-03, claim E.4.**
+- **What changed:** "raising linear decodability" now reads "raising the autoencoders' linear
+  decodability".
+- **Why:** the exploratory claim was already about autoencoders, since no imaginer + VICReg model was
+  trained in exploration. The edit only makes the scope explicit, so it cannot be read as covering the
+  imaginer, whose v2 result is the exception in 2.4.

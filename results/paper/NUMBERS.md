@@ -138,7 +138,7 @@ The test sets were retired. These numbers come from `explore` (1,006 trajectorie
 | E4 a/b, plain: renders ω / u / ψ; untrained | 1.01 / 0.82 / 3.10; 6.1 | ES |
 | log P R², ω autoencoder plain → + VICReg | 0.68 → 0.93 | ES |
 | Imagination probe: rendered log Z change at ±2 std along the enstrophy direction | about ±1–5% (P6.1 failed, 3 of 3 seeds) | ES |
-| Divergences: imaginer-family runs at constant lr | 11 of 24 (across two lrs) | ES |
+| Divergences: imaginer-family runs at constant lr | 11 of 30: 8 of 15 at 3 × 10⁻³, 3 of 15 at 10⁻³ (corrected 2026-11-03; see Corrections) | LOG 2026-10-15/16 (the 30 Stage 2 imaginer-family training entries); explore PREDICTIONS entry 5 @ `33ba39b` |
 | Compute, exploratory line | 24.5 h | ES; R2 |
 
 ---
@@ -351,3 +351,19 @@ predictions were committed before computation (BP11, `1cbc2e7`).
 | **Sum** (computed here, not in any report) | **≈ 70** | — |
 
 All runs used one RTX 3060 (12 GB).
+
+---
+
+## Corrections
+
+**2026-11-03, §2, divergences.**
+- **What changed:** "11 of 24 (across two lrs)" now reads "11 of 30: 8 of 15 at 3 × 10⁻³, 3 of 15 at
+  10⁻³".
+- **Why:** the old value was copied from `results/explore/STAGE2_SUMMARY.md` @ `244f625`, whose
+  denominator is wrong.
+  - `results/LOG.md` lists 30 imaginer-family Stage 2 training runs: 15 at each learning rate, each set
+    including the k = 4 seed-0 selection run.
+  - 8 diverged at 3 × 10⁻³ (also stated in explore PREDICTIONS entry 5 @ `33ba39b`). 3 diverged at
+    10⁻³: k = 1 seed 1, and k = 16 seeds 0 and 1.
+- **Found by:** `results/paper/AUDIT_v1.md` (CHECK-3, rows P-10 and AP-F7).
+- **Not changed:** `STAGE2_SUMMARY.md` is a committed report and keeps its original wording.
