@@ -605,3 +605,108 @@ The committed reports themselves are records and stay as they are.
   frame (the sealed set is not reopened).
 - **References.** Every "ext." row above goes to the Phase 3 reference check, as do the [CHECK] note on
   references and the TMLR policy statement (P-25).
+
+---
+
+## Delta check: DRAFT_v2 against the AUDIT_v1 fixes (2026-11-03)
+
+**What was checked:**
+- **Target:** `results/paper/DRAFT_v2.md` @ `80210d7`, a byte-identical copy of the investigator's
+  export `results/paper/Readable Is Not Steerable — TMLR draft.md` (SHA-256 `d4b6ec20…`).
+- **Scope:**
+  - every AUDIT_v1 row marked MISMATCH, WORDING or TAG (85 rows);
+  - the rest of DRAFT_v2, read for new errors.
+  New wording was checked against the same sources as the original rows. No data was opened.
+
+**Pack corrections made first:** the three pack errors are now corrected, with dated notes, in `19c2f88`:
+- `NUMBERS.md` §2: 11 of 30;
+- `CLAIMS.md` 1.4;
+- `CLAIMS.md` 2.4 and E.4.
+
+### Result
+
+- **All 85 rows were addressed.**
+  - 82 match the proposed fix.
+  - 2 were applied, but the new text contains a new error: M-14 → N-1, and M-43 → N-2.
+  - 1 was applied as proposed, but the proposal itself was partly wrong: S2-10 → N-3.
+- **Five more small issues** appear in new or edited text (N-4 to N-8).
+- **No fix changes a number in a figure caption.** The one figure-relevant item (N-8) is resolved in
+  Phase 2 without changing a caption. So Phase 2 proceeds.
+
+The internal UNSUPPORTED rows were also resolved:
+- A-15 now reads "will be released".
+- S1-8's pilot sentence is removed.
+- S3-14's rationale is replaced by a design statement.
+- P-21 and P-24 are rewritten, with a [CHECK] kept for references.
+
+### Row by row
+
+| row | DRAFT_v2 location | result |
+|---|---|---|
+| A-1, A-2, A-7 | Abstract ¶1–2 | applied |
+| A-12 | Abstract ¶3 ("In exploration, …") | applied |
+| A-13 | Abstract ¶3 | applied. Optional: the loudness-versus-variance comparison is itself exploratory; contribution 3 tags it (E), the abstract does not |
+| I-1, I-2, I-7, I-8, I-11 | §1 ¶1, ¶5; contributions 1–2 | applied |
+| I-15, I-16 | contribution 3 | applied, tagged (E) |
+| I-18 | contribution 4 | applied ("Every result"); one untagged result remains (N-7) |
+| R-11, R-13 | §2 ¶5–6 | applied |
+| M-6, M-8, M-11 | §3.1 ¶1–2 | applied; the time stepping, IC details and viscous length were added as suggested |
+| M-14 | §3.1 ¶3 | **applied with a new error (N-1)** |
+| M-17, M-18, M-19 | §3.2 | applied |
+| M-23, M-24, M-25, M-28 | §3.3 Targets, Prominence | applied |
+| M-33, M-36 | §3.3 criteria | applied (CHECK-1 text, plus "Every criterion must hold separately on each of the two scoring sets") |
+| M-38, M-39 | §3.4 ¶1 | applied |
+| M-43 | §3.4 ¶2 | **applied; "and are marked" is not yet true (N-2)** |
+| S1-1, S1-17, S1-24, S1-26 | §4, §4.3, §4.4 | applied |
+| S2-1, S2-2, S2-7 | §5 ¶1; §5.1 | applied |
+| S2-10 | §5.1 ¶2 | **applied as proposed; the proposal was partly wrong (N-3)** |
+| S2-14 | §5.2 H3 | applied (CHECK-2 text) |
+| S2-22, S2-25, S2-27, S2-28 | §5.3, §5.4 | applied |
+| S3-1, S3-4 | §6 ¶1; §6.1 | applied ("0.1 … the threshold at the time"; untrained readability 0.96) |
+| S3-8, S3-9, S3-11, S3-12 | §6.2 | applied |
+| S3-16 | §6.2 Decoder and loss | applied; one new wording issue (N-5) |
+| S3-17 | §6.2 ¶2 | applied |
+| S3-21, S3-23, S3-27, S3-28 | §6.3 | applied |
+| S3-32, S3-34, S3-37 | §6.4 | applied |
+| S3-44, S3-52, S3-53, S3-54 | §6.5 | applied (the verdict quote now matches `PREREGISTRATION_v3.md` §2 exactly) |
+| S3-67, S3-68, S3-69 | §6.6 | applied |
+| D-1, D-3, D-5 | §7, §7.1 | applied |
+| D-7, D-9 | §7.2 | applied; streamfunction 0.558 and E4 3.13 (energy-leaning) check against confirm.md @ `a88ddee` |
+| D-16, D-17 | §7.4 | applied |
+| D-22, D-25 | §7.5 | applied |
+| P-1, P-2, P-6 | §8 ¶1; §8.1 | applied |
+| P-10, P-11, P-15 | §8.2 | applied (CHECK-3 text) |
+| P-20, P-23 | §8.5 | applied; two wording points (N-6) |
+| AP-F7 | Table F1 | applied |
+| AP-F9 | text after Table F1 | applied; each of the five items checks against TIMELINE.md @ `8fc7f02` |
+
+### Problems found
+
+| id | location | issue | source @ commit | proposed fix |
+|---|---|---|---|---|
+| N-1 | §3.1 ¶3 (from M-14) | "tested for disjoint seeds and initial-field hashes against every earlier set" overstates the test. The test compares each new set with Study 1's training and validation trajectories and with the other new sets. The retired Study 1 test splits were deliberately not read. | `tests/test_explore_data.py` @ `26921ea` (`test_new_datasets_share_no_seeds_or_initial_fields`; module docstring) | "… and were tested for disjoint seeds and initial-field hashes against Study 1's training and validation trajectories and against each other (the retired test splits were not read)." |
+| N-2 | §3.4 ¶2 (from M-43) | "Some exploratory cells rest on one or two seeds, and are marked." The one-seed cell (imaginer k = 16) is marked; the two-seed cell (imaginer k = 1) is not, in either §5.1 or Table B1. | `results/explore/STAGE2_SUMMARY.md` @ `244f625` ("imaginer seeds per k = 2/3/1/3") | Mark k = 1 as two seeds in §5.1 and in Table B1's horizon row (e.g. "0.68 (two seeds) / 0.31"), and add it to the Table B1 caption. |
+| N-3 | §5.1 ¶2 (from S2-10; the error is in AUDIT_v1's proposed fix) | "within the range produced by random directions" holds for seeds 0 and 2 only. For seed 1, the enstrophy direction's \|d log Z / dδ\| (0.0256) exceeds the 95th percentile of 20 random directions (0.0196). The phrase came from `STAGE2_SUMMARY.md` via the audit, not from the probe output. | `results/explore/probe.md` @ `2187603` | "… by only about 1–5%, within the 95th percentile of random directions in two of three seeds, and with energy and palinstrophy moving together …". Also in Table B1: "Rendered log Z change … about 1–5%" → "Rendered enstrophy change …" (a change of 0.01–0.05 in log Z). |
+| N-4 | Table 6 and Abstract ¶3 | The column header says "GPU-hours"; the new caption says "logged wall-clock hours … including CPU-bound phases". The abstract and §1 say "about 70 GPU-hours". | NUMBERS.md §7 @ `19c2f88` | Use one unit throughout, e.g. header "Hours (logged)" and "about 70 hours of logged compute on one consumer GPU", or keep "GPU-hours" and say in the caption that Study 1's figure includes CPU phases. |
+| N-5 | §6.2 Decoder and loss | "the content code is whitened and the dial code is not". "Whitened" here means VICReg variance and covariance terms. The next paragraph uses "fully whitening the content spectrum" for the spectral whitening of the input (Stage 2b). The two meanings sit side by side. | `train/train.py` @ `afd31a1`; `dials/whiten.py` | "… so, in line with Study 2, the content code is regularized with VICReg and the dial code is not." |
+| N-6 | §8.5 | Two points. (1) "wrote the brief for each stage": there is one brief per line of work (Study 1's, quoted in `PREREGISTRATION.md` §1; the exploration brief; the build brief). Stage-level steps came as approvals and agreed changes. (2) "audited … by a separate pass that did not write it": accurate, but it does not say that the auditor was the AI coding agent, which a reader may take for an independent human audit. | `results/explore/BRIEF.md` @ `c11e97a`; `results/build/BRIEF.md` @ `08c1511`; `PREREGISTRATION.md` @ `f7237f2` | (1) "wrote the brief for each line of work". (2) "… then audited claim by claim against the committed outputs by the AI coding agent, which had not written the manuscript." |
+| N-7 | §7.3 ¶1 | "Shape had one in most seeds once the content pathway's copy of it was degraded, even though that copy was still partly readable (R² 0.61)" is untagged. The 3-of-5 result is C; R² 0.61 is an exploration calibration (E). | `results/build/stepD_calibration.md` @ `6a3420d`; `REPORT_v3.md` @ `aff659d` | Add "(C; R² from exploration, E)" or similar. |
+| N-8 | Figure 4 note (§6.1) | The note says "redraw the floor at the committed 0.2" (from FIGURES.md). §6.1 now says, correctly, that Stage 0 used 0.1, "the threshold at the time". A figure showing only 0.2 would not match the text. | `results/build/PREDICTIONS.md` entries 1 (0.1) and 2 (0.2) | Phase 2 draws both lines, labelled: 0.1, the Stage 0 floor, and 0.2, the floor committed later. The caption's wording ("the dial threshold") needs no change. |
+| — | Appendix E text | "the pre-removal offset appeared in 16.4% of exploration frames". Unchanged and minor (AP-E2 note). | `results/build/autopsy/autopsy.md` @ `3c55d66` | Optional: "in 16.4% of explore-set frames at the worst α (0% at matched energy)". |
+
+### Heads-up for Phase 3's number lint
+
+DRAFT_v2 now cites many numbers that `NUMBERS.md` does not contain, all traced in this audit to
+committed code, configs or outputs. They include:
+- configuration constants: ν range 3 × 10⁻³ – 5 × 10⁻², CFL 0.3, blob radius 0.25–0.6, k₀ 2–5, rms
+  vorticity 2–4, 64 viscous snapshots, the training recipe and loss weights 14.7 / 25 / 1;
+- dial criteria: 0.9, 0.5–2, 10⁻², 1%;
+- build details: 1.45 M parameters and 79%; J 3.5–3.7% and 31–59%; 65–79%; σ_shape 0.86–1.00 and
+  0.92–1.00; 9.4% and 4.3%; cycle gain 0.48 and 0.20–0.31; supervised readability 0.96;
+- the pilot's 6% palinstrophy error and log-E R² 0.01–0.02;
+- the divergence counts 8 of 15 and 3 of 15;
+- 44–97%.
+
+If the lint checks only against `NUMBERS.md`, these will fail. Before Phase 3, `NUMBERS.md` needs a
+section of setup, criteria and build details with their sources; this audit's setup table and claim
+rows give each source. Not done here; it needs the investigator's go-ahead.
