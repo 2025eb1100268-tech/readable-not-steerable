@@ -6,6 +6,24 @@ structure, viscosity) better than an untrained encoder of the same architecture?
 criteria are pre-registered in `PREREGISTRATION.md` (written before any training); results go in
 `REPORT.md`; every run is logged in `results/LOG.md`.
 
+## Paper, checkpoints and licences
+
+This repository accompanies the paper "Readable Is Not Steerable: Pre-Registered Tests of Physical
+Structure in Learned Fluid Representations". Its source and build are in `paper/` (`paper/BUILD_REPORT.md`
+describes the build), and `results/paper/` holds the paper-materials pack. The commit history is part of
+the record: each pre-registration was committed before the data it governs were opened.
+
+The 50 scored checkpoints (Study 2: 39; Study 3: 11) are attached to the v1.0 release. Their SHA-256
+values were committed before evaluation (`configs/explore/stage3_confirm.yaml`,
+`configs/build/v3_frozen.json`); `results/paper/tools/checkpoint_manifest.txt` lists each file, its size
+and the check against the frozen value.
+
+- **Code** (Python modules and scripts, configurations, tests, build tools): MIT, see `LICENSE`.
+- **Reports, results, figures and the paper** (the Markdown reports and pre-registrations, `results/`,
+  `paper/`): CC BY 4.0, see `LICENSE-CC-BY-4.0.txt`.
+- The TMLR style files in `paper/` (`tmlr.sty`, `tmlr.bst`, `fancyhdr.sty`) keep their own licences
+  (`paper/tmlr/`).
+
 ## Setup (Windows, Python 3.13, NVIDIA GPU)
 
 ```
