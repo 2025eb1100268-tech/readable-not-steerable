@@ -1,5 +1,14 @@
 # Paper materials: figures
 
+> **Update, 2026-11-03.** The figures used in `DRAFT_v2.md` have been regenerated as vector PDFs in
+> `results/paper/figures/` (Phase 2), with one script per figure. `results/paper/figures/README.md` maps
+> each draft figure to its file and source, and lists what changed. The table below records the original
+> PNGs and flags as of the pack (`8fc7f02`), and is kept for the record.
+>
+> **One correction to a flag below.** Figure 6's flag says the dashed line should be redrawn at the
+> committed 0.2 floor. The regenerated figure draws both floors, because the Stage 0 analysis used 0.1
+> (`PREDICTIONS.md` entry 1) and DRAFT_v2 §6.1 now says so.
+
 These are existing figures, in story order. Nothing has been regenerated.
 
 - **Caption** is one line.
