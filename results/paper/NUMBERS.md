@@ -354,6 +354,103 @@ All runs used one RTX 3060 (12 GB).
 
 ---
 
+## 8. Setup constants, criteria and build details (added 2026-11-03)
+
+> **Added 2026-11-03.** `DRAFT_v3.md` cites these numbers, and §1–§7 did not list them. Each value was
+> copied from the committed source named. Each source is the one `results/paper/AUDIT_v1.md` used; its
+> row ids are given in the last column. Phase 3's number lint (`paper/tools/numlint.py`) checks the paper
+> against this file. Nothing in §1–§7 changed.
+>
+> **One new committed source.** The decoder parameter counts came from an audit helper that lived in the
+> session scratchpad. It is now committed with its output: `results/paper/tools/param_count.py` and
+> `param_count.txt`. It builds the decoder classes, loads no data and trains nothing.
+
+### 8.1 Simulator and data
+
+| item | value | src | audit |
+|---|---|---|---|
+| Domain, solver | periodic [0, 2π]², pseudo-spectral, 64 × 64, 2/3-rule dealiasing, float64 | `solver/ns2d.py` @ `f7237f2`; P1 §3 | M-1 |
+| Time stepping | integrating-factor (Lawson) fourth-order Runge–Kutta, CFL 0.3; measured convergence orders 4.13, 4.04, 4.03 | `solver/ns2d.py`, `configs/phase1_data.yaml` (`cfl: 0.3`) @ `f7237f2`; LOG 2026-10-14 (Phase 0 tests) | setup table |
+| Initial conditions | equal shares (`blob_fraction 0.5`): periodic Gaussian blobs, 2–12 vortices of random sign and position, radius log-uniform in [0.25, 0.6]; random fields with E(k) ∝ k⁴ exp(−2(k/k₀)²), k₀ ∈ [2, 5] | `configs/phase1_data.yaml` @ `f7237f2`; P1 §3 | M-3, M-4 |
+| Amplitude | rms vorticity log-uniform in [2, 4], which sets Z₀ | `configs/phase1_data.yaml` (`omega_rms [2, 4]`) | M-5 |
+| Viscosity | log-uniform from 3 × 10⁻³ to 5 × 10⁻² | `configs/phase1_data.yaml` (`nu_range [0.003, 0.05]`) | M-6 |
+| Inviscid share | a quarter (0.25) in Study 1; 378 of about 1,000 in the later sets (explore 1,006, confirm_v2 1,005, confirm3 1,007); matched-energy sets all inviscid (300) | `configs/phase1_data.yaml` (`inviscid_fraction 0.25`); LOG 2026-10-15 19:58; P3 §4 | M-7 |
+| Lower bound on ν | 64² runs track 128² runs: 95th-percentile palinstrophy error 6.0% (6%) at 3 × 10⁻³, 11.7% at 2 × 10⁻³ | LOG 2026-10-14 17:34 (Phase 0 pilot) @ `f7237f2` | M-8 |
+| Snapshots | every 0.04 time units; 64 per viscous trajectory (t ≤ 2.52); inviscid truncated at 24 (t ≤ 0.92) | `configs/phase1_data.yaml` (`dt_out`, `frames_viscous`, `frames_inviscid`) | M-9, M-10 |
+| Study 1 OOD band | interior Reynolds-number band, Re 286–389 | LOG 2026-10-14 18:21 @ `f7237f2` | M-13 |
+
+### 8.2 Encoders and measures
+
+| item | value | src | audit |
+|---|---|---|---|
+| Encoder (Studies 1–2) | circular padding, GELU, Kaiming, no normalization; 8 × 8 × 128 feature map; pooled latent 128-d (spatial mean) | `models/encoder.py` @ `f7237f2` | M-16 |
+| Input scale | one global scale, train velocity std 0.9548 | P1 §3 | M-15 |
+| Planning pilots (before the project, not reproducible from the repository) | about 70 CPU runs; per-sample normalization (instance norm; group or layer norm with bias-free convolutions) gave log-E R² 0.01–0.02 | LOG header, "Before the project" | M-18; P-19 |
+| Vortex cores | Okubo–Weiss Q < −0.2 σ_Q; 4-connected regions merged across the periodic boundary, area ≥ 4 cells | P1 §3 | M-22 |
+| Prominence | z-score, PCA to 32 dimensions, the three slowest directions (top-3), Ledoit–Wolf shrinkage on Σ_within only | P1 §6; `probes/slow_features.py` @ `f7237f2` | M-24, M-26 |
+| Shift-averaged readout | latent averaged over the 64 sub-stride circular shifts | P1 §2.6 | S1-13 |
+| Steering grid | decode z + α σ_d d for α from −2 to +2 in steps of 0.5 | `dials/harness.py` @ `a7e4b32`; P3 §5 | M-29 |
+
+### 8.3 Decision rules and dial criteria
+
+| item | value | src | audit |
+|---|---|---|---|
+| Study 1, S1 | a target counts if the gain is ≥ 0.20 or halves the control's unexplained variance, CI excluding 0; ≥ 3 of 5 count, Okubo–Weiss among them | P1 §2.1 | S1-9 |
+| Study 1, S2 | log ν from a frame pair: R² ≥ 0.6 and ≥ control + 0.3 | P1 §2.2 | S1-11 |
+| Study 1, S3 | \|r\| ≥ 0.8, control < 0.8, gap ≥ 0.1, CI excluding 0 | P1 §2.3 | S1-12 |
+| Study 2, H1 | E1 ≥ 0.70 and ≥ control + 0.25, CI excluding 0 | P2 §2 | S2-13 |
+| Study 2, H2 and H4 | plain − VICReg drop ≥ 0.20, CI excluding 0 | P2 §2–§3 | S2-13, S2-15 |
+| Study 2, H3 | the vorticity autoencoder's E4 closer to 1 on a log scale than the streamfunction autoencoder's, and the streamfunction autoencoder's E4 > 2 | P2 §3 | CHECK-2 |
+| Dial: effect | ≥ 0.2 per unit α (\|median Δa\| + \|median Δs\|); 0.1 at Stage 0, raised to 0.2 after it | BP1 @ `08c1511` (0.1); BP2 @ `5ef729a` (0.2); `dials/harness.py` @ `a7e4b32` | CHECK-1, M-37 |
+| Dial: monotonicity | median absolute Spearman correlation ≥ 0.9 | BP2 | CHECK-1 |
+| Dial: cycle | Pearson correlation ≥ 0.9; least-squares gain between 0.5 and 2 | BP2 | CHECK-1, M-33 |
+| Dial: shared pattern | at most half (≤ 0.5) of the α = ±2 change shared by all frames | BP2 | CHECK-1, M-36 |
+| Dial: envelope | no worse than an ideal dial of the same strength, tolerance −0.05, at every α | BP2 | M-34 |
+| Dial: grid artefacts | out-of-band power share > 10⁻² in no more than 1% of frames, at every α | BP6 @ `2382399` | M-34 |
+| Dial: selectivity | σ_shape ≥ 0.7 (shape), ≤ 0.2 (loudness) | BP2 | M-35 |
+| Study 3 verdict | both dials on both sets in ≥ 4 of 5 main seeds: pass; 3: partial; ≤ 2: fail | P3 §2 | S3-49 |
+| Study 3 controls | τ = 0: shape dial in ≤ 1 of 3 seeds; untrained: in 0 of 3 | P3 §2 | S3-44, S3-45 |
+| Loudness gradient g | finite differences of ±0.5 z-units per coordinate, averaged over the build's 256 explore steering frames | P3 §5 | S3-28 |
+
+### 8.4 The final dial model
+
+| item | value | src | audit |
+|---|---|---|---|
+| Dial code | separate dial encoder (same design, raw input, pooled), d = 8; all 8 dials modulate the input stage and each of 3 upsampling stages through zero-initialized FiLM | `dials/split.py` @ `fa7e95d` (`BranchHeads`, `FiLMDecoder`) | S3-8 |
+| Content | pooled content latent, 120-d (`content_dim: 120`); input RMS-normalized | `dials/split.py`; `configs/build/v3/b6_main_s100.yaml` @ `26921ea` | M-17 |
+| Shape noise | RMS-normalize; gains exp(L_k) on shells k = 1…21, L_k = τ(ε₁σ₁φ₁ + ε₂σ₂φ₂)/2; zero the mean and every shell above 21; RMS-normalize again | `dials/shape_noise.py` @ `afd31a1` | S3-12 |
+| Decoder | nearest-neighbour resize + two 3 × 3 convolutions per stage: 1,447,553 parameters (1.45 M), against 1,834,849 for the sub-pixel decoder; ratio 0.789 (79%); each count includes 8,640 FiLM parameters | `results/paper/tools/param_count.txt` (this commit); `dials/split.py` @ `fa7e95d` | S3-15; setup table |
+| Loss | 14.699 (cited as 14.7) · MSE(ω) + 25 · VICReg variance + 1 · VICReg covariance, on the pooled 120-d content latent | `configs/build/v3/b6_main_s100.yaml` @ `26921ea` (`loss_weights`); `train/train.py` @ `afd31a1` | S3-16 |
+| Training | AdamW, lr 10⁻³ (0.001), weight decay 0.05, batch 256, 30 epochs, 5% warmup then cosine decay, gradient clipping 1.0, bf16 | same; P3 §2 | S3-16 |
+
+### 8.5 Build results cited in the draft
+
+| item | value | src | audit |
+|---|---|---|---|
+| Stage 0, supervised s-direction readability | \|r\| 0.968–0.991 (0.97–0.99) in trained models; 0.956–0.958 (0.96) in an untrained encoder | `results/build/stage0.json.gz` @ `ae98ffa` | A-12, S3-6 |
+| Step A, symmetry rule | J 0.035–0.037 (3.5–3.7% of the steered change unexplained) against 0.308–0.587 (31–59%) for PC1; σ_shape 0.02–0.08; 0% artefact frames, all 3 seeds; a valid loudness dial in 2 of 3 (seed 2: cycle gain 0.48 on matched); cos² with the PC1–PC2 plane 0.79, 0.77, 0.65 (65–79%) | `results/build/stepA.md` @ `f40a279` | S3-22, S3-23, S3-24 |
+| Step A, Stage 2 loudness dials, retroactive | checkerboards in 5–14% of frames at α = +2 | `results/build/stepA.md` @ `f40a279` | S3-34 |
+| Step A′, projected-out shape rule | 50/50 mixtures: σ_shape 0.50–0.54 (explore), 0.58–0.76 (matched); cos² with loudness 0.00 | `results/build/stepA_prime.md` @ `6c9e29b` | S3-25, S3-26 |
+| Stage 2b, supervised shape direction | cycle gain 0.20–0.31 (explore; matched 0.14–0.27), below 0.5 | `results/build/stage2b.json.gz` @ `c9c3e6c` | D-5 |
+| Step B, τ = 0.5, artefact frames | shape (loudness-null) directions up to 9.4%; loudness directions up to 4.3% (0–4.3%) | `results/build/stepB.md` @ `5234145` | S3-34, S3-35 |
+| Steps B and C, τ = 0.5, loudness-null σ_shape (explore) | 0.92–1.00 (sub-pixel, Step B) against 0.86–1.00 (resize, Step C); Step C artefact frames 0.0% for every direction and seed | `results/build/stepB.md` @ `5234145`; `stepC.md` @ `f0f6c1f` | S3-37, S3-38 |
+
+### 8.6 Other results cited in the draft that §1–§7 did not list
+
+| item | value | src | audit |
+|---|---|---|---|
+| Study 1, every model (Table A1; untrained / JEPA / pixel / pooled JEPA / static VICReg / non-physical JEPA) | log enstrophy R² 0.727 / 0.930 / 0.890 / 0.862 / 0.973 / 0.956; log palinstrophy 0.437 / 0.746 / 0.733 / 0.665 / 0.900 / 0.802; log(1 + vortex count) 0.531 / 0.752 / 0.521 / 0.637 / 0.842 / 0.789; Okubo–Weiss fraction 0.456 / 0.507 / 0.270 / 0.423 / 0.673 / 0.504; log dissipation 0.134 / 0.176 / 0.156 / 0.148 / 0.191 / 0.178; log ν, frame pair 0.481 / 0.457 / 0.710 / 0.317 / 0.699 / 0.522; S3 enstrophy \|r\| 0.514 / 0.356 / 0.821 / 0.431 / 0.486 / 0.470; S3 energy \|r\| 0.948 / 0.794 / 0.916 / 0.702 / 0.667 / 0.734 | `REPORT.md` @ `31eba06`, appendix A1 | AP-A1 |
+| Study 2, decodability on the sealed set (log Z R² / log P R²) | velocity AE 0.862 / 0.700 → + VICReg 0.933 / 0.799; vorticity AE 0.806 / 0.694 → + VICReg 0.955 / 0.912; imaginer k = 4 0.941 / 0.830 → + VICReg 0.937 / 0.782 | `results/explore/stage3/confirm.md` @ `a88ddee` | S2-23, S2-24 |
+| Study 2, streamfunction autoencoder (Stage 2 seeds, sealed set) | E1 0.558 [0.52, 0.60], + VICReg 0.390 [0.34, 0.45]; E4 3.13 | `results/explore/stage3/confirm.md` @ `a88ddee` | S2-22, D-7 |
+| Abstract rounding of H1 | E1 0.80–0.86 = 0.799 and 0.860 | as §3 | A-4 |
+| Autopsy Table E1 (seeds 100, 101, 103, 104; seed 102 in §6) | cos²(g, PC2) 0.009, 0.057, 0.117, 0.001; removed fraction +0.07 / +0.08, +0.17 / +0.18, −0.66 / −0.70, +0.02 / +0.01; variance after projection, top / along PC2: 2.91 / 2.90, 2.44 / 2.43, 2.32 / 2.17, 3.08 / 2.94 | `results/build/autopsy/autopsy.md` @ `3c55d66` | AP-E1 |
+| J_T of the stored loudness-null direction, seed 104 | 0.268 (0.27) | `results/build/autopsy/autopsy.md` @ `3c55d66` | AP-E2 |
+| J_T ranges, rounded in §6.6 | about 0.10 (0.102–0.111) main; 0.34–0.41 (0.344–0.410) τ = 0; 0.82–0.87 (0.819–0.866) untrained | as §6 | S3-69 |
+| Seed 103, spatial-mean offset | 23% (23.0%) of confirm3 frames at α = −2 | as §5.3 | S3-60 |
+| Exact 95% interval for 8 of 10 | 44–97% (44% to 97%) | `AUTOPSY.md` @ `41b1213` | D-28 |
+
+---
+
 ## Corrections
 
 **2026-11-03, §2, divergences.**

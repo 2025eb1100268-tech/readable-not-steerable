@@ -1,0 +1,2 @@
+pixelshuffle total 1834849 without FiLM 1826209 FiLM only 8640
+resize total 1447553 without FiLM 1438913 FiLM only 8640
