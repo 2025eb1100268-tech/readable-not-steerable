@@ -10,7 +10,7 @@ decoder parameter count, now committed with its output (`results/paper/tools/par
 |---|---|
 | `out/anonymized.pdf` | TMLR submission build: "Anonymous authors", TMLR header; PDF info holds the title only, with no XMP and no dates. 28 pages. |
 | `out/preprint.pdf` | Named preprint (`[preprint]` option): author block, no TMLR header; PDF info holds the title and author. 28 pages. |
-| `out/supplementary_anonymized.zip` | Anonymized repository at `bf15cee`. Not committed (see Open items). It rebuilds byte for byte from that commit (checked). |
+| `out/supplementary_anonymized.zip` | Anonymized repository: every tracked file outside `paper/`, as at `bf15cee` (unchanged since). Not committed (see Open items). It rebuilds byte for byte from git HEAD (checked twice). |
 | `main.tex`, `main_preprint.tex` | One source, two builds. `main.tex` is generated from the draft by `tools/md2tex.py`. |
 | `refs.bib`, `refs_check.tsv` | References and the record of their source check. |
 | `figures/` | Copies of `results/paper/figures/*.pdf` (byte-identical, checked by the build). |
@@ -131,7 +131,12 @@ decompressed first, and the zip comment was checked.
   - `results/paper/AUDIT_v1.md`: the byline mention.
 - **A README at the root of the zip** lists these edits.
 
-**Zip size and hash:** 82,225,477 bytes (78.4 MB); SHA-256 `ca8388c8…5c833421d`.
+**Zip size and hash:** 82,225,490 bytes (78.4 MB); SHA-256 `36e8671b4a98edb268aa14aaea205abd58ecc15eb92a8411850da7fe4a0a76b3`.
+Its README lists `paper/` as one excluded folder, so commits that touch only `paper/` leave the zip unchanged.
+
+**PDF hashes:** the builds are deterministic; two rebuilds gave identical files.
+- `anonymized.pdf`: `b88b8e38630b29e1a80317a0783f4c96a7af6a3c5c228e9bd915450bf05b1c8c`
+- `preprint.pdf`: `674a6f1a8b959ba09e4abe7ca3fab92f7b1c3dc6c4f96c53da3cfe6a7a3c62bc`
 
 **Preprint:** it identifies the author as intended (name and email).
 
@@ -190,4 +195,4 @@ block to the end of the appendix named; each row includes the moves above it:
 4. **The two appendix figure captions** (above).
 5. **Length:** choose moves from the table, or accept a long submission.
 6. **Commit the supplementary zip?** I left it out of git: it is 78 MB and rebuilds byte for byte from
-   `bf15cee`. It sits in `paper/out/`.
+   HEAD. It sits in `paper/out/`.

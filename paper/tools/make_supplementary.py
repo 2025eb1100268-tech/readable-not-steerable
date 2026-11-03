@@ -79,7 +79,9 @@ def build(zip_path):
             info.external_attr = 0o644 << 16
             z.writestr(info, data)
             n += 1
-        readme = README.format(n=n, excluded="\n".join(f"- `{e}`" for e in excluded),
+        # list the paper/ folder as one entry, so that the zip does not change when only paper/ changes
+        shown = sorted({"paper/ (the whole folder)" if e.startswith("paper/") else e for e in excluded})
+        readme = README.format(n=n, excluded="\n".join(f"- `{e}`" for e in shown),
                                edited="\n".join(f"- `{e}`: {k} substitution(s)" for e, k in edited))
         info = zipfile.ZipInfo("supplementary/README_SUPPLEMENTARY.md", date_time=FIXED_TIME)
         info.compress_type = zipfile.ZIP_DEFLATED
