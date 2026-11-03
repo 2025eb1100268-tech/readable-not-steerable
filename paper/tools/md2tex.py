@@ -369,6 +369,12 @@ BRIDGES = [  # (kind, anchor, text): "after" inserts a paragraph after the ancho
 ]
 
 
+BUILD_EDITS = [  # (text removed or replaced, replacement, why): edits to moved text, applied after the moves
+    (" Each step is listed in Appendix C.", "",
+     "the moved build-history paragraph now sits inside Appendix C (investigator's decision of 2026-11-04)"),
+]
+
+
 def apply_moves(md):
     lines = md.split("\n")
 
@@ -411,6 +417,12 @@ def apply_moves(md):
         else:
             e = find(lambda l: re.match(r"^(#{2,3} |---$)", l) is not None, h + 1)
             lines[e:e] = block
+    for old, new, why in BUILD_EDITS:
+        joined = "\n".join(lines)
+        if joined.count(old) != 1:
+            raise SystemExit(f"build edit must match exactly once: {old!r}")
+        lines = joined.replace(old, new).split("\n")
+        NOTES.append(f"Build edit: {old.strip()!r} -> {new.strip()!r} ({why})")
     for kind, anchor, text in BRIDGES:
         if kind == "replace":
             joined = "\n".join(lines)

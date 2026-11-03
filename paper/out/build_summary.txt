@@ -10,6 +10,7 @@ conversion: Moved verbatim to Appendix C: > **Figure 6**
 conversion: Moved verbatim to Appendix F: 8.1
 conversion: Moved verbatim to Appendix F: 8.2
 conversion: Moved verbatim to Appendix F: 8.3
+conversion: Build edit: 'Each step is listed in Appendix C.' -> '' (the moved build-history paragraph now sits inside Appendix C (investigator's decision of 2026-11-04))
 conversion: Bridging sentence added after 'Models trained to render velocity or vorticit': 'These hypotheses came from an exploratory line on fresh data, summarized in Figure 2 and described in Section 5.1, in which we call the pixel predictor the "imaginer" and a JEPA trained at the same horizons the "summarizer".'
 conversion: Bridging sentence added after '- **Decoder and loss.**': 'Appendix C describes how this design was reached, step by step.'
 conversion: Bridging sentence added after '**Loudness-null PCA.**': 'Two other shape rules failed: the leading principal component after projecting loudness out of the latent, and the directions of largest raw output sensitivity (Appendix C).'
@@ -29,15 +30,15 @@ number lint: 976 numeric literals checked, 0 not traced
 figures: 9 PDFs copied from results/paper/figures/
 TeX: pdfTeX 3.141592653-2.6-1.40.29 (TeX Live 2026)
 LaTeX: anonymized (pdflatex, bibtex, then pdflatex until settled: 4 passes in all) and arXiv-style preprint (pdflatex until settled from the unpacked tarball, no bibtex: 3 passes) compiled; overfull boxes: anonymized 1, preprint 1 (largest 2.2pt)
-arXiv source: arxiv_source.tar.gz, 13 files (fancyhdr.sty, main.bbl, main.tex, tmlr.sty + 9 figures), 875 KB, sha256 63b305ffc7add525d2c17ad32cb3db5a99aaae3afde93751621f4aa289fee40a
+arXiv source: arxiv_source.tar.gz, 13 files (fancyhdr.sty, main.bbl, main.tex, tmlr.sty + 9 figures), 875 KB, sha256 92a90ee08a16741f41a845e598805f16cbdd0f48bfbaddcd0da219f0878f3e74
 PDF metadata: anonymized {'/Title': 'Readable Is Not Steerable: Pre-Registered Tests of Physical Structure in Learned Fluid Representations'}; preprint {'/Title': 'Readable Is Not Steerable: Pre-Registered Tests of Physical Structure in Learned Fluid Representations', '/Author': 'Manvendra Modgil'}
-supplementary: 564 files, 78.4 MB; excluded 34; anonymized by substitution: LICENSE (2), PREREGISTRATION.md (1), README.md (1), REPORT.md (1), requirements.txt (1), results/LOG.md (120), results/paper/AUDIT_v1.md (1)
+supplementary: 564 files, 78.4 MB; excluded 35; anonymized by substitution: LICENSE (2), PREREGISTRATION.md (1), README.md (1), REPORT.md (1), requirements.txt (1), results/LOG.md (120), results/paper/AUDIT_v1.md (1)
 anonymity needles: 10 identity strings found at run time + e-mail address, Windows home path, Unix home path, GitHub link
 anonymity, anonymized PDF: 0 hits; XMP metadata present: False
 anonymity, supplementary zip (564 files): 0 hits
 preprint (named, expected to identify): ['2025eb1100268-tech', 'GitHub link', 'Manvendra', 'Modgil', 'e-mail address', 'manvendramodgil.ai', 'manvendramodgil.ai@gmail.com', 'readable-not-steerable']
 length, anonymized: main text ends on page 18; appendices start on page 20; total 29 pages
 length, preprint: main text ends on page 18; appendices start on page 21; total 30 pages
-sha256 anonymized.pdf: b9e640ad0088f4b05ea6cb5ed5c2ae8bad4c2082d6aa1e77f3ad862b612010e7
-sha256 preprint.pdf: e69cfaadb15b69bafd7365ecaaf75129f013811bbbf0e0d0e73acefb9b377b61
+sha256 anonymized.pdf: fa605ec57f844fd999f6b372cf9bd13134d3c8c52b39dde4015d88bb2909aaa5
+sha256 preprint.pdf: 4adf5fb631b70ac60fde631bb14685ac7cbc3681720fd7e4e6ff0869b0cf2951
 sha256 supplementary_anonymized.zip: 65eecdc515d4b1c7540a33432398310039740eaf04e245215f2500b9deb16d7f

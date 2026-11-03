@@ -13,11 +13,12 @@ the data" becomes "on both the models and the data" (Locatello et al., 2019). Th
 | `arxiv_source.tar.gz` | 13 files: `main.tex` (preprint switch set), `main.bbl`, `tmlr.sty`, `fancyhdr.sty`, 9 figure PDFs. 875 KB. |
 | `supplementary_anonymized.zip` | For OpenReview; not committed. 564 files, 78.4 MB, built from git HEAD outside `paper/`. |
 | `build_summary.txt` | The build's own log of every check. |
+| `ARXIV_METADATA.md` | Title, plain-ASCII abstract (1,914 characters), comments field (30 pages, 9 figures, repository link) and categories (cs.LG; cross-lists cs.AI, physics.flu-dyn). |
 
 **SHA-256:**
-- `anonymized.pdf`: `b9e640ad0088f4b05ea6cb5ed5c2ae8bad4c2082d6aa1e77f3ad862b612010e7`
-- `preprint.pdf`: `e69cfaadb15b69bafd7365ecaaf75129f013811bbbf0e0d0e73acefb9b377b61`
-- `arxiv_source.tar.gz`: `63b305ffc7add525d2c17ad32cb3db5a99aaae3afde93751621f4aa289fee40a`
+- `anonymized.pdf`: `fa605ec57f844fd999f6b372cf9bd13134d3c8c52b39dde4015d88bb2909aaa5`
+- `preprint.pdf`: `4adf5fb631b70ac60fde631bb14685ac7cbc3681720fd7e4e6ff0869b0cf2951`
+- `arxiv_source.tar.gz`: `92a90ee08a16741f41a845e598805f16cbdd0f48bfbaddcd0da219f0878f3e74`
 - `supplementary_anonymized.zip`: `65eecdc515d4b1c7540a33432398310039740eaf04e245215f2500b9deb16d7f`
 
 Rebuilding gives byte-identical PDFs.
@@ -66,9 +67,9 @@ pages. Applying the float barriers only in the appendix would save 0.1 pages, so
    - **Version caveat:** arXiv's TeX Live version may differ from 2026. The `.bbl` is plain natbib output,
      so it should not depend on that.
 
-## Build-time moves (verbatim) and bridging text
+## Build-time moves, bridging text and build edit
 
-**Moved unchanged:**
+**Moved unchanged** (except one sentence, removed by the build edit below):
 - §5.1 → Appendix B.1. Figure 2 stays in the main text.
 - §6.6 → Appendix E.1.
 - §6.2's paragraph "This design was reached adaptively…" → Appendix C.
@@ -92,8 +93,15 @@ References to a moved section now read "Appendix" (for example, "Appendix E.1" i
   "Appendix F gives the record and lists the deviations;".
 - **§3.3 and §7.5:** "(Section 8)" becomes "(Appendix F.2)", where the criteria changes are now recorded.
 
-**One verbatim quirk:** the moved build-history paragraph ends "Each step is listed in Appendix C". It now
-sits in Appendix C itself, so it refers to Table C1 from inside that appendix.
+**Build edit (2026-11-04):** the moved build-history paragraph ended "Each step is listed in Appendix C.",
+and it now sits in Appendix C itself. That sentence is removed from both builds by `BUILD_EDITS` in
+`tools/md2tex.py`; the draft keeps it.
+
+Comparing the builds before and after the edit:
+- **PDF text:** in both PDFs, the only difference in the full text is that sentence.
+- **Pages:** only the page holding the paragraph renders differently (page 21 anonymized, page 22
+  preprint); page counts are unchanged.
+- **arXiv tarball:** only that one line of `main.tex` differs.
 
 ## Checks
 
