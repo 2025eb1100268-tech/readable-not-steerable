@@ -27,6 +27,16 @@ def needles():
         if out:
             words.add(out)
             words.add(out.split("@")[0])
+    # the public repository and its GitHub owner, and the account the GitHub CLI is logged in to
+    owner, name = md2tex.PUBLIC_REPO.rstrip("/").split("/")[-2:]
+    words.update({owner, name})
+    try:
+        login = subprocess.run(["gh", "api", "user", "--jq", ".login"], capture_output=True, text=True,
+                               timeout=30).stdout.strip()
+        if login:
+            words.add(login)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
     for env in ("USERNAME", "USER", "COMPUTERNAME", "HOSTNAME"):
         if os.environ.get(env):
             words.add(os.environ[env])

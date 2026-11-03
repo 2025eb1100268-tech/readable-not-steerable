@@ -9,7 +9,11 @@ the script and listed in paper/BUILD_REPORT.md, are:
   appendix figures get short captions;
 - the release placeholder in Section 8.4 is filled per build (anonymized or preprint);
 - the [CHECK] marker in Section 8.5 is replaced by the sentence it names only if every reference passed
-  the reference check (paper/refs_check.tsv); otherwise the sentence is left out.
+  the reference check (paper/refs_check.tsv); otherwise the sentence is left out;
+- the build-time moves to the appendix (MOVES), verbatim, with the bridging text in BRIDGES; references to
+  a moved section read "Appendix" instead of "Section".
+
+Output is pure ASCII (Greek, sub- and superscripts and symbols become macros), so it compiles with pdfLaTeX.
 
 Formulas and symbols are typeset from an explicit table below; every entry must match the draft, or the
 script stops.
@@ -213,7 +217,9 @@ def convert_inline(text, ctx):
     # 6. cross-references
     s = re.sub(r"\bSections (\d+(?:\.\d+)?)–(\d+(?:\.\d+)?)",
                lambda m: il.hold(rf"Sections~\ref{{sec:{m.group(1)}}}--\ref{{sec:{m.group(2)}}}"), s)
-    s = re.sub(r"\bSection (\d+(?:\.\d+)?)\b", lambda m: il.hold(rf"Section~\ref{{sec:{m.group(1)}}}"), s)
+    s = re.sub(r"\bSection (\d+(?:\.\d+)?)\b", lambda m: il.hold(
+        (r"Appendix~" if m.group(1) in MOVED_SECTIONS else r"Section~") + rf"\ref{{sec:{m.group(1)}}}"), s)
+    s = re.sub(r"\bFigure ([1-7])\b", lambda m: il.hold(rf"Figure~\ref{{fig:{m.group(1)}}}"), s)
     s = re.sub(r"\bAppendix ([A-F])\b", lambda m: il.hold(rf"Appendix~\ref{{app:{m.group(1)}}}"), s)
     s = re.sub(r"\bTable ([1-6]|[A-F]\d)\b(?!\.)", lambda m: il.hold(rf"Table~\ref{{tab:{m.group(1)}}}"), s)
     # 7. escape LaTeX specials in the remaining text
@@ -329,6 +335,98 @@ def appendix_figure(fname):
                       r"\caption{" + cap + "}", rf"\label{{{label}}}", r"\end{figure}"])
 
 
+# ---- build-time moves (investigator's decision of 2026-11-03: accept about 16 pages) ----
+# Blocks move verbatim; the only new text is the bridging below, all of it printed by the build.
+MOVED_SECTIONS = set()
+MOVES_ENABLED = True
+MOVES = [  # (what, how, where): subsections and single lines (paragraphs, figure lines) move to an appendix
+    (("sub", "5.1"), "start", "B"),
+    (("sub", "6.6"), "start", "E"),
+    (("line", "This design was reached adaptively."), "start", "C"),
+    (("line", "**Latent orthogonality is not output independence.**"), "start", "C"),
+    (("line", "A third rule, the singular value decomposition"), "start", "C"),
+    (("line", "> **Figure 5**"), "start", "C"),
+    (("line", "> **Figure 6**"), "start", "C"),
+    (("sub", "8.1"), "end", "F"),
+    (("sub", "8.2"), "end", "F"),
+    (("sub", "8.3"), "end", "F"),
+]
+KEEP_IN_MAIN = "> **Figure 2**"  # Figure 2 sits inside §5.1 but stays in the main text
+BRIDGES = [  # (kind, anchor, text): "after" inserts a paragraph after the anchor paragraph; "replace" swaps text
+    ("after", "Models trained to render velocity or vorticity without a whitening regularizer",
+     'These hypotheses came from an exploratory line on fresh data, summarized in Figure 2 and described in '
+     'Section 5.1, in which we call the pixel predictor the "imaginer" and a JEPA trained at the same horizons '
+     'the "summarizer".'),
+    ("after", "- **Decoder and loss.**", "Appendix C describes how this design was reached, step by step."),
+    ("after", "**Loudness-null PCA.**",
+     "Two other shape rules failed: the leading principal component after projecting loudness out of the latent, "
+     "and the directions of largest raw output sensitivity (Appendix C)."),
+    ("after", "**Decoder upsampling decides whether strong dials stay clean.**",
+     "Appendix C shows the artefacts (Figure 5) and the dose curve (Figure 6)."),
+    ("replace", "This section summarizes the record; Appendix F lists the deviations;",
+     "Appendix F gives the record and lists the deviations;"),
+    ("replace", "(Section 8)", "(Section 8.2)"),
+]
+
+
+def apply_moves(md):
+    lines = md.split("\n")
+
+    def find(pred, start=0):
+        idx = [i for i in range(start, len(lines)) if pred(lines[i])]
+        if not idx:
+            raise SystemExit("move anchor not found")
+        return idx[0]
+
+    def take(what):
+        kind, key = what
+        if kind == "sub":
+            s = find(lambda l: l.startswith(f"### {key} "))
+            e = find(lambda l: re.match(r"^#{2,3} ", l) is not None, s + 1)
+            block = lines[s:e]
+            del lines[s:e]
+            MOVED_SECTIONS.add(key)
+            return block, s
+        s = find(lambda l: l.startswith(key))
+        block = [lines[s]]
+        del lines[s]
+        return block, s
+
+    moved = {}
+    kept_fig = None
+    for what, where, app in MOVES:
+        block, at = take(what)
+        if what == ("sub", "5.1"):
+            k = [i for i, l in enumerate(block) if l.startswith(KEEP_IN_MAIN)]
+            kept_fig = block.pop(k[0])
+        while block and not block[-1].strip():
+            block.pop()
+        moved.setdefault((app, where), []).extend([""] + block + [""])
+        NOTES.append(f"Moved verbatim to Appendix {app}: {what[1] if what[0] == 'sub' else what[1][:40]}"
+                     + (" (Figure 2 stays in the main text)" if what == ("sub", "5.1") else ""))
+    for (app, where), block in moved.items():
+        h = find(lambda l: l.startswith(f"### {app} "))
+        if where == "start":
+            lines[h + 1:h + 1] = block
+        else:
+            e = find(lambda l: re.match(r"^(#{2,3} |---$)", l) is not None, h + 1)
+            lines[e:e] = block
+    for kind, anchor, text in BRIDGES:
+        if kind == "replace":
+            joined = "\n".join(lines)
+            n = joined.count(anchor)
+            if n == 0:
+                raise SystemExit(f"bridge anchor not found: {anchor}")
+            lines = joined.replace(anchor, text).split("\n")
+            NOTES.append(f"Bridging ({n}x): '{anchor}' -> '{text}'")
+            continue
+        i = find(lambda l: l.startswith(anchor))
+        insert = ["", text] + (["", kept_fig] if text.startswith("These hypotheses") else [])
+        lines[i + 1:i + 1] = insert
+        NOTES.append(f"Bridging sentence added after '{anchor[:45]}': '{text}'")
+    return "\n".join(lines)
+
+
 # ---- references check ----
 def references_verified():
     path = REPO / "paper/refs_check.tsv"
@@ -347,6 +445,9 @@ RELEASE = r"\[Anonymized repository link for review.\]"
 
 
 def convert(md):
+    MOVED_SECTIONS.clear()
+    if MOVES_ENABLED:
+        md = apply_moves(md)
     lines = md.splitlines()
     out = []
     title = lines[0].lstrip("# ").strip()
@@ -525,13 +626,17 @@ PREAMBLE = r"""%% Generated by paper/tools/md2tex.py from {src}. Edit the draft 
 \end{{document}}
 """
 
-AUTHOR = {  # the named preprint only; confirm before posting
+AUTHOR = {  # the named preprint only; copied from the author block of Paper 2's LaTeX source (Paper 1's has
+    # the same name and email and no affiliation)
     "author_name": "Manvendra Modgil",
     "author_email": "manvendramodgil.ai@gmail.com",
-    "author_addr": "Independent researcher",
+    "author_addr": "Modint Intelligence",
 }
+PUBLIC_REPO = "https://github.com/2025eb1100268-tech/readable-not-steerable"
 RELEASE_ANON = "An anonymized copy of the repository is provided as supplementary material."
-RELEASE_PREPRINT = r"\textbf{[Repository link to be added before posting.]}"
+RELEASE_PREPRINT = (r"The repository is public at \url{" + PUBLIC_REPO + r"}, and the scored checkpoints of "
+                    r"Studies~2 and~3 are attached to its v1.0 release, so that readers can verify the committed "
+                    r"hashes.")
 
 
 def main():
