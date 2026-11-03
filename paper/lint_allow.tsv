@@ -1,0 +1,5 @@
+# Numeric literals in the paper that are not results and so are not in results/paper/NUMBERS.md.
+# token<TAB>committed file that contains it (the lint checks)<TAB>what it is
+2020	paper/refs.bib	year of the first NeurIPS pre-registration workshop (bertinetto2021prereg, verified in refs_check.tsv)
+2021	paper/refs.bib	year of the second NeurIPS pre-registration workshop (albanie2022prereg, verified in refs_check.tsv)
+1*10^-4	results/paper/figures/README.md	Figure 4's plotting floor: effects below 10⁻⁴ are drawn in the shaded strip

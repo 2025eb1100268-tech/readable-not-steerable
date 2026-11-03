@@ -1,0 +1,6 @@
+# build intermediates (paper/build.py recreates them)
+out/tex_*/
+# the supplementary zip is rebuilt bit for bit from git HEAD by build.py (78 MB; SHA-256 in BUILD_REPORT.md)
+out/*.zip
+__pycache__/
+tools/__pycache__/

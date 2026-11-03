@@ -1,0 +1,20 @@
+draft: results/paper/DRAFT_v3.md
+references: 27 of 27 verified and unchanged since the check
+conversion: Byline dropped.
+conversion: Abstract: 3 paragraphs joined into one (TMLR template).
+conversion: Figure 2 caption: the pointer to the E4 panel moved to the end of the caption, as a figure reference.
+conversion: Section 8.5: reference check passed; the sentence was added and the [CHECK] marker removed.
+conversion: Reference list and its [CHECK] note dropped; references come from refs.bib.
+conversion: Appendix figure fig:B1: caption written for the build (the draft names the file only).
+conversion: Appendix figure fig:D1: caption written for the build (the draft names the file only).
+conversion: Author notes dropped.
+number lint: 976 numeric literals checked, 0 not traced
+figures: 9 PDFs copied from results/paper/figures/
+LaTeX: both builds compiled; overfull boxes: anonymized 1, preprint 1 (largest 2.2pt)
+PDF metadata: anonymized {'/Title': 'Readable Is Not Steerable: Pre-Registered Tests of Physical Structure in Learned Fluid Representations'}; preprint {'/Title': 'Readable Is Not Steerable: Pre-Registered Tests of Physical Structure in Learned Fluid Representations', '/Author': 'Manvendra Modgil'}
+supplementary: 560 files, 78.4 MB; excluded 3; anonymized by substitution: PREREGISTRATION.md (1), README.md (1), REPORT.md (1), requirements.txt (1), results/LOG.md (120), results/paper/AUDIT_v1.md (1)
+anonymity needles: 8 identity strings found at run time + e-mail address, Windows home path, Unix home path, GitHub link
+anonymity, anonymized PDF: 0 hits; XMP metadata present: False
+anonymity, supplementary zip (560 files): 0 hits
+preprint (named, expected to identify): ['Manvendra', 'Modgil', 'e-mail address', 'manvendramodgil.ai', 'manvendramodgil.ai@gmail.com']
+length: main text ends on page 20; references and appendices start after it; appendices start on page 23; total 28 pages (anonymized build)

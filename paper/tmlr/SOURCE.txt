@@ -1,0 +1,2 @@
+TMLR style files (tmlr.sty, tmlr.bst, fancyhdr.sty in paper/), copied unmodified from
+https://github.com/JmlrOrg/tmlr-style-file (branch main, fetched 2026-11-03). Apache License 2.0: see LICENSE.
