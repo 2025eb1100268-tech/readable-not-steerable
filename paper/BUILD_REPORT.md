@@ -16,9 +16,9 @@ the data" becomes "on both the models and the data" (Locatello et al., 2019). Th
 | `ARXIV_METADATA.md` | Title, plain-ASCII abstract (1,914 characters), comments field (30 pages, 9 figures, repository link) and categories (cs.LG; cross-lists cs.AI, physics.flu-dyn). |
 
 **SHA-256:**
-- `anonymized.pdf`: `fa605ec57f844fd999f6b372cf9bd13134d3c8c52b39dde4015d88bb2909aaa5`
-- `preprint.pdf`: `4adf5fb631b70ac60fde631bb14685ac7cbc3681720fd7e4e6ff0869b0cf2951`
-- `arxiv_source.tar.gz`: `92a90ee08a16741f41a845e598805f16cbdd0f48bfbaddcd0da219f0878f3e74`
+- `anonymized.pdf`: `752939f90f31e4fc101cf726d945394df0c72c35e1732fdee22ef9c23f87da10`
+- `preprint.pdf`: `2ac2618d4048740d61a07e6e4e1ad0e1229c043123ea98ef422d3e683409aec1`
+- `arxiv_source.tar.gz`: `20ff55dd2fe28cf123569ba2e7d5a5c209e640187d93f968719aa5417d80d1d3`
 - `supplementary_anonymized.zip`: `65eecdc515d4b1c7540a33432398310039740eaf04e245215f2500b9deb16d7f`
 
 Rebuilding gives byte-identical PDFs.
@@ -102,6 +102,25 @@ Comparing the builds before and after the edit:
 - **Pages:** only the page holding the paragraph renders differently (page 21 anonymized, page 22
   preprint); page counts are unchanged.
 - **arXiv tarball:** only that one line of `main.tex` differs.
+
+**Build edits (2026-11-04, second set).** The draft is unchanged; all three are applied by
+`tools/md2tex.py`.
+- **Abstract, preprint and arXiv builds only:** "will be released" becomes "are public", because the
+  repository is public. The anonymized TMLR build keeps "will be released". The macro `\AbstractRelease` is
+  set by the preprint switch.
+- **Hyphenation:** `\hyphenation{VICReg}` stops the name breaking across lines; it broke as "VI-CReg" in
+  Figure 2's caption.
+- **Figure 5 caption:** the v3 dials figure, Figure 7 in the draft, now ends with the "(C)" tag.
+
+Checked against the previous build:
+- **`main.tex`:** differs only by these three edits.
+- **Words:** with the running header and page numbers excluded, the anonymized PDF differs only by "(C)";
+  the preprint differs by "(C)" and "will be released" → "are public".
+- **"VI-CReg":** broken once before, never now.
+- **Layout:** the hyphenation change alters one paragraph's line count, so text moves across page breaks
+  on pages 9 and 11–13. The caption changes page 15, and the preprint abstract changes page 1. Page counts
+  are unchanged (29 and 30), and so are the lints: 976 numeric literals, 0 untraced; ASCII only;
+  anonymity 0 hits.
 
 ## Checks
 

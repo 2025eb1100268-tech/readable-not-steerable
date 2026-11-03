@@ -19,6 +19,7 @@
 \usepackage[section]{placeins}
 \usepackage{url}
 \usepackage[hidelinks]{hyperref}
+\hyphenation{VICReg}  % never break the name (it broke as VI-CReg)
 
 \title{Readable Is Not Steerable:\\Pre-Registered Tests of Physical Structure in Learned Fluid Representations}
 
@@ -27,10 +28,12 @@
           \addr Modint Intelligence}
   \hypersetup{pdftitle={Readable Is Not Steerable: Pre-Registered Tests of Physical Structure in Learned Fluid Representations}, pdfauthor={Manvendra Modgil}, pdfsubject={}, pdfkeywords={}, pdfcreator={}, pdfproducer={}}
   \newcommand{\ReleaseStatement}{The repository is public at \url{https://github.com/2025eb1100268-tech/readable-not-steerable}, and the scored checkpoints of Studies~2 and~3 are attached to its v1.0 release, so that readers can verify the committed hashes.}
+  \newcommand{\AbstractRelease}{are public}
 \else
   \author{}
   \hypersetup{pdftitle={Readable Is Not Steerable: Pre-Registered Tests of Physical Structure in Learned Fluid Representations}, pdfauthor={}, pdfsubject={}, pdfkeywords={}, pdfcreator={}, pdfproducer={}}
   \newcommand{\ReleaseStatement}{An anonymized copy of the repository is provided as supplementary material.}
+  \newcommand{\AbstractRelease}{will be released}
 \fi
 
 \begin{document}
@@ -38,7 +41,7 @@
 \maketitle
 
 \begin{abstract}
-Self-supervised world models are often described as organizing their latent spaces around physically meaningful quantities. We test this claim on two-dimensional decaying Navier--Stokes flow in three pre-registered studies, each tested once on held-out data opened a single time. In Study 1, a joint-embedding predictive architecture (JEPA) trained to predict the flow does not meet the pre-registered criteria for organizing its latent around fluid quantities better than an untrained network of the same architecture: the hypothesis is not supported. A JEPA trained on non-physical linear dynamics, and a static invariance model that never sees time, do as well or better. In Study 2, plain autoencoders that render the field make enstrophy prominent in their slowest unsupervised latent directions (best $|r|$ 0.80--0.86 against 0.38 for an untrained control, on fresh seeds and sealed data). Adding the VICReg regularizer lowers this prominence in every comparison, but not by the pre-registered margin for vorticity, while raising the autoencoders' linear decodability. The verdict is partially supported. In Study 3, we build steerable directions (``dials'') by routing information: the decoder can obtain overall scale only through a small conditioning code, and its other pathway carries only a degraded copy of spectral shape. Label-free rules find a loudness dial in all 8 trained models and a shape dial in 3 of 5 fresh seeds on sealed data, against a pre-registered bar of 4. Neither control shows a shape dial. The verdict is partially supported. Across the three studies, what a latent contains and what can be controlled through it come apart. In exploration, a supervised direction that reads spectral shape almost perfectly moved nothing when the latent was pushed along it. During the build, the loudness dial had to be identified by its effect on the output, as the direction closest to a pure rescaling, rather than by data variance; for shape, a variance rule and an effect-constrained rule each worked in 3 of 5 seeds. The full program used about 70 logged hours of compute on one consumer GPU; all pre-registrations, deviations, code and outputs will be released.
+Self-supervised world models are often described as organizing their latent spaces around physically meaningful quantities. We test this claim on two-dimensional decaying Navier--Stokes flow in three pre-registered studies, each tested once on held-out data opened a single time. In Study 1, a joint-embedding predictive architecture (JEPA) trained to predict the flow does not meet the pre-registered criteria for organizing its latent around fluid quantities better than an untrained network of the same architecture: the hypothesis is not supported. A JEPA trained on non-physical linear dynamics, and a static invariance model that never sees time, do as well or better. In Study 2, plain autoencoders that render the field make enstrophy prominent in their slowest unsupervised latent directions (best $|r|$ 0.80--0.86 against 0.38 for an untrained control, on fresh seeds and sealed data). Adding the VICReg regularizer lowers this prominence in every comparison, but not by the pre-registered margin for vorticity, while raising the autoencoders' linear decodability. The verdict is partially supported. In Study 3, we build steerable directions (``dials'') by routing information: the decoder can obtain overall scale only through a small conditioning code, and its other pathway carries only a degraded copy of spectral shape. Label-free rules find a loudness dial in all 8 trained models and a shape dial in 3 of 5 fresh seeds on sealed data, against a pre-registered bar of 4. Neither control shows a shape dial. The verdict is partially supported. Across the three studies, what a latent contains and what can be controlled through it come apart. In exploration, a supervised direction that reads spectral shape almost perfectly moved nothing when the latent was pushed along it. During the build, the loudness dial had to be identified by its effect on the output, as the direction closest to a pure rescaling, rather than by data variance; for shape, a variance rule and an effect-constrained rule each worked in 3 of 5 seeds. The full program used about 70 logged hours of compute on one consumer GPU; all pre-registrations, deviations, code and outputs \AbstractRelease{}.
 \end{abstract}
 
 \section{Introduction}\label{sec:1}
@@ -405,7 +408,7 @@ With PC2 as the shape rule, both dials were valid in 3 of 5 seeds, but in seeds 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/fig7_v3_dials.pdf}
-\caption{Both dials of the five fresh main models and one seed of each control, decoded on one exploration frame (the sealed sets are spent and are not reopened for plotting); \ding{51}/\ding{55} give each direction's verdict on both sealed sets. Loudness scales the field; shape moves energy between scales; seed 102's shape direction fails. All 11 models: Figure~\ref{fig:D1} (Appendix~\ref{app:D}).}
+\caption{Both dials of the five fresh main models and one seed of each control, decoded on one exploration frame (the sealed sets are spent and are not reopened for plotting); \ding{51}/\ding{55} give each direction's verdict on both sealed sets. Loudness scales the field; shape moves energy between scales; seed 102's shape direction fails. All 11 models: Figure~\ref{fig:D1} (Appendix~\ref{app:D}) (C).}
 \label{fig:7}
 \end{figure}
 
