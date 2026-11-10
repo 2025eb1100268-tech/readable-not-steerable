@@ -79,6 +79,31 @@ compute on the RTX 3060; one main model costs about 0.77 GPU-hours (30 epochs).
 Total ≈ 35 GPU-hours. **By 16 November**, Stages 0–3 are realistic (about 10 GPU-hours and the new
 harness); Stage 4 if the kill gate passes early. Stages 5–6 can be done later by following this file.
 
+### After Stage 6: generality, then 3D (agreed 2026-11-10)
+
+All of Stages 0–6 are 2D, on one simulator and one data distribution. These two stages address that, in
+this order, and **only if the Stage 6 confirmation holds**. If the model fails in 2D, 3D would repeat the
+same failure at higher cost.
+
+| stage | work | gate to pass | GPU-h |
+|---|---|---|---|
+| **7a. Another 2D setting** | Rerun the confirmed design on a different 2D setting: forced flow, or 128² resolution. New exploration and sealed data; same criteria. | The dials and the counterfactual result hold. | a few |
+| **7b. Coarse 3D** | See below. | Its own kill gate, as in Stage 3. | ≈ 40–60 before confirmation (rough guess) |
+
+Notes for 7b:
+- **What carries over:** the counterfactual test. The scaling symmetry (u → cu, t → t/c, ν → cν) holds in
+  3D, so "steer, then compare with the solver" is unchanged.
+- **Why it should be a sharper test:** without viscosity, 2D conserves enstrophy; in 3D, vortex stretching
+  makes it grow. Predicting it requires the dynamics, and a static model has nothing to read it from.
+- **What must be re-derived:** the quantities and dials. Energy stays; helicity replaces enstrophy as the
+  second inviscid invariant; there is no streamfunction. The Study 3 dials and criteria cannot be copied.
+- **Solver:** write a 3D pseudo-spectral solver here, extending `solver/ns2d.py`, with the same kind of
+  tests (conservation, energy budget, analytic solutions, convergence, sign checks). Public 3D datasets
+  cannot replace it, because the counterfactual test runs the solver on altered states.
+- **Scale on the RTX 3060:** about 32³ to 48³, decaying flow, fairly high viscosity. That is coarse 3D, not
+  turbulence at a realistic Reynolds number; any report must say so.
+- **Protocol:** 3D gets its own brief, exploration phase, sealed data and pre-registration.
+
 ## 5. Rules that carry over (do not skip)
 
 - **Spent data:** `confirm_v2`, `confirm3`, `matched-energy-confirm` and the v1 test splits are never
@@ -118,3 +143,5 @@ harness); Stage 4 if the kill gate passes early. Stages 5–6 can be done later 
 | 4. Controls | not started | | |
 | 5. Pre-registration | not started | | |
 | 6. Confirmation | not started | | |
+| 7a. Another 2D setting | not started (only if Stage 6 holds) | | |
+| 7b. Coarse 3D | not started (only if Stage 6 holds) | | |
